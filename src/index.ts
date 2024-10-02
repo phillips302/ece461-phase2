@@ -18,7 +18,6 @@ for (const url of urlArray) {
 
   if (linkType === "Unknown") {
     logMessage("ERROR", `Unknown link type: ${url}`);
-    process.exit(1);
   }
 
   let owner: string | null = null;
@@ -27,29 +26,48 @@ for (const url of urlArray) {
 
   if (linkType === "npm") {
     const packageName = parseNpmUrl(url);
+    let repoInfo = null;
     if (!packageName) {
       logMessage("ERROR", `Invalid npm link: ${url}`);
-      process.exit(1);
+    } else {
+      repoInfo = await npmToGitHub(packageName);
     }
 
-    const repoInfo = await npmToGitHub(packageName);
     if (repoInfo) {
       ({ owner, repo } = repoInfo);
       logMessage("INFO", `GitHub repository found for npm package: ${owner}/${repo}`);
     } else {
       logMessage("ERROR", `No GitHub repository found for npm package: ${owner}/${repo}`);
-      process.exit(1);
     }
   } else if (linkType === "GitHub") {
     ({ owner, repo } = parseGitHubUrl(url) || { owner: null, repo: null });
-    logMessage("INFO", `GitHub owner and repo extracted from GitHub link: ${owner}/${repo}`);
+    if(owner && repo){
+      logMessage("INFO", `GitHub owner and repo extracted from GitHub link: ${owner}/${repo}`);
+    } else {
+      logMessage("ERROR", `Invalid GitHub link: ${url}`);
+    }
   }
 
   if (!owner || !repo) {
-    logMessage("ERROR", `Invalid GitHub link: ${url}`);
-    process.exit(1);
+    output = {
+      "URL": url,
+      "NetScore": -1,
+      "NetScore_Latency": -1,
+      "RampUp": -1,
+      "RampUp_Latency": -1,
+      "Correctness": -1,
+      "Correctness_Latency": -1,
+      "BusFactor": -1,
+      "BusFactor_Latency": -1,
+      "ResponsiveMaintainer": -1,
+      "ResponsiveMaintainer_Latency": -1,
+      "License": -1,
+      "License_Latency": -1
+    };
+    output = JSON.stringify(output)
+  } else {
+    output = await getScores(owner, repo, url);
   }
 
-  output = await getScores(owner, repo, url);
   console.log(output);
 }
