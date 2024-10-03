@@ -5,14 +5,6 @@ import { gitHubRequest, logMessage } from './utils.js';
 const KEYWORDS = ["installation", "usage", "api", "examples"];
 const DEFAULT_SCORE = 0; // Default score when no documentation is found
 
-interface ReadmeResponse {
-    repository: {
-        object: {
-            text: string;
-        }
-    }
-}
-
 // Helper function to calculate the documentation score
 function calculateScore(text: string): number {
     const lowerCaseText = text.toLowerCase();
@@ -27,9 +19,17 @@ export async function getDocumentationScore(repoOwner: string, repoName: string)
     const query = gql`
         query GetReadme($repoOwner: String!, $repoName: String!) {
             repository(owner: $repoOwner, name: $repoName) {
-                object(expression: "HEAD:README.md") {
-                    ... on Blob {
-                        text
+                object(expression: "HEAD:") {
+                    ... on Tree {
+                        entries {
+                            name
+                            type
+                            object {
+                                ... on Blob {
+                                    text
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -37,8 +37,17 @@ export async function getDocumentationScore(repoOwner: string, repoName: string)
     `;
 
     try {
-        const data = await gitHubRequest(query, { repoOwner, repoName }) as ReadmeResponse;
-        const readmeContent = data.repository?.object?.text || '';
+        const data = await gitHubRequest(query, { repoOwner, repoName }) as any;
+        const readmeEntry = data.repository?.object?.entries?.find((entry: any) => {
+            return entry.type === 'blob' && entry.name.toLowerCase().includes('readme');
+        });
+        if (!readmeEntry) {
+            logMessage('INFO', `No README-like file found in ${repoOwner}/${repoName}`);
+            return DEFAULT_SCORE;
+        }
+        logMessage('INFO', `README-like file found in ${repoOwner}/${repoName}`);
+
+        const readmeContent = readmeEntry.object?.text || '';
         const dom = new JSDOM(readmeContent);
         const text = dom.window.document.body.textContent || '';
         return calculateScore(text);
