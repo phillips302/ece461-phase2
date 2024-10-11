@@ -2,7 +2,7 @@ import { gql } from 'graphql-request';
 import { logMessage, gitHubRequest } from './utils.js';
 
 // Define the dependency response based on the GraphQL query
-type DependencyResponse = {
+export type DependencyResponse = {
     [packageName: string]: string;
 };
 
@@ -21,7 +21,7 @@ type GraphQLResponse = {
  * @param name - The name of the repository.h * @returns A promise that resolves to a list of dependencies. *
  * @throws Will log an error message if the request fails and return an empty array. * * @example * ```typescript * const contributors = await fetchRepoContributors('octocat', 'Hello-World'); * console.log(contributors); * ```
  */
-export async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse[]> {
+async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse[]> {
     const query = `
         query($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {
@@ -65,7 +65,7 @@ export async function fetchDependencies(owner: string, name: string): Promise<De
  * @param dependencies - An array of `DependencyResponse` objects representing the dependecies found.
  * @returns The score based on the average score of each dependecy found
  */
-function calculateDependencyScore(dependencies: DependencyResponse[]): number {
+export function calculateDependencyScore(dependencies: DependencyResponse[]): number {
     let result = 0
     let totalDependencies = Object.keys(dependencies).length
 
