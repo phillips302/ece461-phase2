@@ -21,7 +21,7 @@ type GraphQLResponse = {
  * @param name - The name of the repository.h * @returns A promise that resolves to a list of dependencies. *
  * @throws Will log an error message if the request fails and return an empty array. * * @example * ```typescript * const contributors = await fetchRepoContributors('octocat', 'Hello-World'); * console.log(contributors); * ```
  */
-async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse[]> {
+async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse> {
     const query = `
         query($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {
@@ -41,7 +41,7 @@ async function fetchDependencies(owner: string, name: string): Promise<Dependenc
 
         //parse the package.json to grab a list of dependencies
         const packageJson = JSON.parse(packageJsonContent);
-        const dependencies: DependencyResponse[] = {
+        const dependencies: DependencyResponse = {
             ...(packageJson.dependencies || {}),
             // ...(packageJson.devDependencies || {})
         };
@@ -50,7 +50,7 @@ async function fetchDependencies(owner: string, name: string): Promise<Dependenc
     } catch (error) {
         const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
         logMessage('ERROR', `Error fetching fraction of dependencies: ${errorMessage}`);
-        return [];
+        return {};
     }
 }
 
@@ -65,7 +65,7 @@ async function fetchDependencies(owner: string, name: string): Promise<Dependenc
  * @param dependencies - An array of `DependencyResponse` objects representing the dependecies found.
  * @returns The score based on the average score of each dependecy found
  */
-export function calculateDependencyScore(dependencies: DependencyResponse[]): number {
+export function calculateDependencyScore(dependencies: DependencyResponse): number {
     let result = 0
     let totalDependencies = Object.keys(dependencies).length
 
