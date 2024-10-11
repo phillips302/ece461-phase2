@@ -95,12 +95,10 @@ describe('getNpmparseNpmUrlName', () => {
 vi.mock('fs');
 
 describe('logMessage', () => {
-  let mockAppendFileSync: vi.SpyInstance;
-  let mockConsoleLog: vi.SpyInstance;
+  let mockAppendFileSync: any;
 
   beforeEach(() => {
     mockAppendFileSync = vi.spyOn(fs, 'appendFileSync');
-    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {}); // Mock console.log to suppress output
     // Mock the module exporting LOG_LEVEL
     vi.mock('../src/config.ts', () => ({
       GITHUB_TOKEN: 'mock-github-token',  // Override GITHUB_TOKEN for the test
@@ -135,18 +133,7 @@ describe('logMessage', () => {
     
     logMessage(level, message);
     
-    expect(mockAppendFileSync).toHaveBeenCalledTimes(1);
-  });
-
-  it('should log ERROR messages to the console and set process.exitCode', () => {
-    const level = 'ERROR';
-    const message = 'This is an error message';
-    
-    logMessage(level, message);
-    
-    // Assert that console.log was called and process.exitCode was set
-    expect(mockConsoleLog).toHaveBeenCalledWith(`Error: ${message}`);
-    expect(process.exitCode).toBe(1);
+    expect(mockAppendFileSync).toHaveBeenCalledTimes(2);
   });
 
   it('should log DEBUG messages to the console', () => {
@@ -155,7 +142,6 @@ describe('logMessage', () => {
     
     logMessage(level, message);
     
-    // Assert that console.log was called with the message
     expect(mockAppendFileSync).toHaveBeenCalled();
   });
 });

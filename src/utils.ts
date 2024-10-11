@@ -76,7 +76,7 @@ export function parseNpmUrl(link: string): string | null {
 export function logMessage(level: string, message: string) {
   // Output the error messages to the console
   if (level === "ERROR") {
-    console.log(`Error: ${message}`);
+    logMessage("DEBUG", `Error: ${message}`);
     process.exitCode = 1;
   }
   
