@@ -35,6 +35,7 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
             try {
                 await fs.access(dir);
                 logMessage(`INFO`, `Repository already exists in directory: ${dir}`);
+                return;
             } catch (err) {
                 logMessage(`INFO`, `Repository does not exist, procedding to clone in ${dir}`);
             }
