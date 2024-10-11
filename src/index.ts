@@ -62,7 +62,9 @@ for (const url of urlArray) {
       "ResponsiveMaintainer": -1,
       "ResponsiveMaintainer_Latency": -1,
       "License": -1,
-      "License_Latency": -1
+      "License_Latency": -1,
+      "prFraction": -1,
+      "prFraction_Latency": -1
     };
     output = JSON.stringify(output)
   } else {
