@@ -7,7 +7,7 @@ dotenv.config();
 const maxPages = 20;
 
 // stores data of each pull request
-type RequestNode = {
+export type RequestNode = {
     node: {
         title: string;
         url: string;
@@ -43,7 +43,7 @@ type FetchResponse = {
  * @param pullRequests - An array of `RequestNode` objects representing the pull Request data.
  * @returns The pull request fraction, which is the ratio of changes from reviewed pull requests to the total changes.
  */
-function calculatePrFraction(pullRequests: RequestNode[]): number {
+export function calculatePrFraction(pullRequests: RequestNode[]): number {
     let totalCodeChanges = 0;
     let reviewedCodeChanges = 0;
 
