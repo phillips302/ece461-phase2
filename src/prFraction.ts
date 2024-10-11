@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const maxPages = 20;
+
 // stores data of each pull request
 type RequestNode = {
     node: {
@@ -102,9 +104,10 @@ export async function fetchMergedPullRequests(owner: string, name: string): Prom
     let allPullRequests: RequestNode[] = [];
     let hasNextPage = true;
     let afterCursor = null;
+    let counter = 0;
 
     //Loop through each page of pull requests, so its not only limited to the first 100
-    while (hasNextPage) {
+    while (hasNextPage && counter < maxPages) {
         try {
             //fetch pull request daya from current page and add it to to the total pull request data
             const response: FetchResponse = await gitHubRequest(query, { owner, name, afterCursor }) as FetchResponse;
@@ -118,6 +121,7 @@ export async function fetchMergedPullRequests(owner: string, name: string): Prom
             logMessage('ERROR', `Error fetching pull requests: ${errorMessage}`);
             return [];
         }
+        counter++;
     }
 
     return allPullRequests;
