@@ -4,6 +4,7 @@ import { getIRM } from "./irmMetric.js";
 import { calculateRampUpScore } from "./rampUpTime.js";
 import { getCorrectness } from "./correctness.js";
 import { measureConcurrentLatencies } from "./latency.js";
+import { getDependencyFraction } from "./fracDependencies.js";
 import { getPrFraction } from "./prFraction.js";
 
 /**
@@ -17,7 +18,7 @@ import { getPrFraction } from "./prFraction.js";
 export async function getScores(owner: string, repo: string, url: string): Promise<string> {
 
   // Run the functions concurrently and measure the latencies
-  const { latencies, results, errors } = await measureConcurrentLatencies([calculateRampUpScore, getCorrectness, getBusFactorScore, getIRM, isLicenseCompatible, getPrFraction], owner, repo);
+  const { latencies, results, errors } = await measureConcurrentLatencies([calculateRampUpScore, getCorrectness, getBusFactorScore, getIRM, isLicenseCompatible, getDependencyFraction, getPrFraction], owner, repo);
 
   const rampUp = results[0] ?? 0;
   const rampUpLatency = latencies[0];
@@ -34,8 +35,11 @@ export async function getScores(owner: string, repo: string, url: string): Promi
   const license = results[4] ?? 0;
   const licenseLatency = latencies[4];
 
-  const prFraction = results[5] ?? 0;
-  const prFractionLatency = latencies[5];
+  const fractionDependencies = results[5] ?? 0;
+  const fractionDependenciesLatency = latencies[5];
+
+  const prFraction = results[6] ?? 0;
+  const prFractionLatency = latencies[6];
 
   // calculate the net score and latency
   const netScore = Number(((0.125 * rampUp + 0.125 * correctness + 0.25 * busFactor + 0.25 * responsiveMaintainer + 0.125 * prFraction) * license).toFixed(3));
@@ -56,6 +60,8 @@ export async function getScores(owner: string, repo: string, url: string): Promi
     "ResponsiveMaintainer_Latency": responsiveMaintainerLatency,
     "License": license,
     "License_Latency": licenseLatency,
+    "FractionDependencies": fractionDependencies,
+    "FractionDependencies_Latency": fractionDependenciesLatency,
     "prFraction": prFraction,
     "prFraction_Latency": prFractionLatency
   };

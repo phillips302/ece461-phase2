@@ -85,6 +85,8 @@ for (const url of urlArray) {
       "ResponsiveMaintainer_Latency": -1,
       "License": -1,
       "License_Latency": -1,
+      "FractionDependencies": -1,
+      "FractionDependencies_Latency": -1,
       "prFraction": -1,
       "prFraction_Latency": -1
     };
