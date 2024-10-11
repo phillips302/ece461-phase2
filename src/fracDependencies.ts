@@ -22,10 +22,10 @@ type GraphQLResponse = {
  * @throws Will log an error message if the request fails and return an empty array. * * @example * ```typescript * const contributors = await fetchRepoContributors('octocat', 'Hello-World'); * console.log(contributors); * ```
  */
 export async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse[]> {
-    const query = gql`
-        query($owner: String!, $repo: String!) {
+    const query = `
+        query($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {
-                object(expression: "main:package.json") {
+                object(expression: "HEAD:package.json") {
                     ... on Blob {
                         text
                     }
@@ -46,7 +46,6 @@ export async function fetchDependencies(owner: string, name: string): Promise<De
             // ...(packageJson.devDependencies || {})
         };
 
-        console.log(dependencies);
         return dependencies;
     } catch (error) {
         const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
@@ -67,7 +66,7 @@ export async function fetchDependencies(owner: string, name: string): Promise<De
  * @returns The score based on the average score of each dependecy found
  */
 function calculateDependencyScore(dependencies: DependencyResponse[]): number {
-    let result = -1
+    let result = 0
     let totalDependencies = Object.keys(dependencies).length
 
     //check that the list is empty, if so return 1
@@ -77,12 +76,9 @@ function calculateDependencyScore(dependencies: DependencyResponse[]): number {
 
     //iterate through each dependency found
     Object.entries(dependencies).forEach(([packageName, version]) => {
-        /*
-           * Check if a version is pinned to at least a major+minor version.
-           * Accepts versions like "*2.3.x", "*2.3.0", "2.3.x", "2.3.0", "~2.3.0", but not "^2.3.0", ">=2.3.0", etc.
-        */
-        const isPinnedToMajorMinor = /^\*?(\d+)\.(\d+)\.(x|\d+)$/;
-        if (!isPinnedToMajorMinor.test(String(version))) {
+        //checks that the version is not #.0.0
+        const split_version = String(version).split('.')
+        if (!(split_version[1] == '0' && split_version[2] == '0')) {
             result++;  // Increment the count of pinned dependencies
         }
     });
@@ -90,7 +86,6 @@ function calculateDependencyScore(dependencies: DependencyResponse[]): number {
     //find the average of all dependencies to determine the score
     result = result / totalDependencies
 
-    console.log(result)
     return parseFloat(result.toFixed(2));
 }
 
