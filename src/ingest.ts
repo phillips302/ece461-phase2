@@ -1,8 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { exec } from 'child_process';
+import * as fs from 'fs/promises';
+import * as git from 'isomorphic-git';
+import * as http from 'isomorphic-git/http/node/index.js';
 import { logMessage } from "./utils.js";
-
 /**
  * Ingests a package if each of the non-latency scores is >= 0.5.
  *
@@ -15,7 +14,7 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
     let ingest = true;
     const filteredOutput = Object.entries(output)
         .filter(([key]) => 
-            !key.includes('_latency') && 
+            !key.includes('_Latency') && 
             key !== 'URL' && 
             key !== 'NetScore'
         );
@@ -23,46 +22,35 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
     filteredOutput.forEach(([key, value]) => {
         if (typeof value === 'number' && value < 0.5) {
             ingest = false;
+            logMessage('INFO', `Clamped ${key} @ value: ${value}`);
         }
     });
     
     if (ingest) {
         logMessage('INFO', `Ingesting package for repository: ${repo}`);
         const repoString = `https://github.com/${owner}/${repo}`;
-        
-        // Define the localPackages directory path
-        const localPackagesDir = path.join(__dirname, '../localPackages');
-        if (!fs.existsSync(localPackagesDir)) {
-            fs.mkdirSync(localPackagesDir);
-        }
 
+        const dir = `./ingestedPackages/${repo}`;
         try {
-            // Run 'npm install' for the package with the --prefix option to install in localPackages
-            await npmInstallPackage(repoString, localPackagesDir);
-            logMessage('INFO', `Package installed successfully in ${localPackagesDir}`);
-        } catch (error) {
-            logMessage('ERROR', `Failed to install package: ${error}`);
+            try {
+                await fs.access(dir);
+                logMessage(`INFO`, `Repository already exists in directory: ${dir}`);
+            } catch (err) {
+                logMessage(`INFO`, `Repository does not exist, procedding to clone in ${dir}`);
+            }
+
+            await git.clone({
+                fs,
+                http,
+                dir,
+                url: repoString,
+                singleBranch: true,
+            });
+            logMessage(`INFO`, `Repository cloned successfully in ${dir}`);
+        } catch (err) {
+            logMessage(`DEBUG`, `Failed to clone repository: ${err}`);
         }
     } else {
         logMessage('DEBUG', `Package not ingested due to failing metrics.`);
     }
-}
-
-// Helper function to run 'npm install' with the --prefix option
-function npmInstallPackage(repoString: string, installDir: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const command = `npm install ${repoString} --prefix ${installDir}`;
-        
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-            if (stderr) {
-                logMessage('DEBUG', `stderr: ${stderr}`);
-            }
-            logMessage('INFO', `stdout: ${stdout}`);
-            resolve();
-        });
-    });
 }

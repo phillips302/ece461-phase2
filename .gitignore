@@ -69,5 +69,5 @@ dist/
 /node_modules
 **/*.txt
 **/*.log
-localPackages/
+ingestedPackages/
 files/
