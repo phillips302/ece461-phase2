@@ -1,6 +1,5 @@
 import { getScores } from "./score.js";
 import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./utils.js";
-import { fetchVersionHistory } from "./fetchVersion.js";
 
 const args = process.argv.slice(2);
 
@@ -68,10 +67,6 @@ for (const url of urlArray) {
     output = JSON.stringify(output)
   } else {
     output = await getScores(owner, repo, url);
-    //Fetch the version history of the repository and this line returns the range from the earliest to latest version
-    const versionHistory = await fetchVersionHistory(owner, repo);
-    console.log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
-
   }
 
   console.log(output);
