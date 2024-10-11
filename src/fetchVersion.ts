@@ -1,4 +1,6 @@
-import {gitHubRequest} from "./utils.js";
+import { version } from "os";
+import {gitHubRequest, logMessage, npmToGitHub} from "./utils.js";
+
 /**
  * Fetches the version histories (releases) of a GitHub repository.
  * @param owner - The owner of the GitHub repository.
@@ -24,7 +26,7 @@ interface VersionHistoryResponse {
     };
 }
 
-export async function fetchVersionHistory(owner: string, repo: string): Promise<ReleaseNode[]> {
+export async function fetchVersionHistory(owner: string, repo: string): Promise<string> {
     const allReleases: ReleaseNode[] = [];
     let hasNextPage = true;
     let endCursor: string | null = null;
@@ -59,8 +61,20 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
         hasNextPage = data.repository.releases.pageInfo.hasNextPage;
         endCursor = data.repository.releases.pageInfo.endCursor;
     }
-    console.log("All Releases",allReleases);
-    return allReleases;
+    if(allReleases.length > 0){
+        //Sorts the version history into format "earliestVersion - latestVersion"
+        const sortedVersionHistory = allReleases.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
+        const earliestVersion = sortedVersionHistory[0].tagName.replace(/^v/, ''); // Remove leading 'v'
+        const latestVersion = sortedVersionHistory[sortedVersionHistory.length - 1].tagName.replace(/^v/, ''); // Remove leading 'v'
+        const versionRange = `${earliestVersion} - ${latestVersion}`;
+        return(versionRange);    
+
+    }
+    else{
+        logMessage("INFO", `No version history found for ${owner}/${repo}`);
+        return "No version history";
+    }
+    
 }
 
 

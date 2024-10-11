@@ -68,21 +68,9 @@ for (const url of urlArray) {
     output = JSON.stringify(output)
   } else {
     output = await getScores(owner, repo, url);
-    //Fetch the version history of the repository
+    //Fetch the version history of the repository and this line returns the range from the earliest to latest version
     const versionHistory = await fetchVersionHistory(owner, repo);
-    if(versionHistory.length >= 0){
-      // Sort the releases by published date (earliest first)
-      const sortedVersionHistory = versionHistory.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
-
-      // Get the earliest version (first) and the latest version (last)
-      const earliestVersion = sortedVersionHistory[0].tagName.replace(/^v/, ''); // Remove leading 'v'
-      const latestVersion = sortedVersionHistory[sortedVersionHistory.length - 1].tagName.replace(/^v/, ''); // Remove leading 'v'
-
-      // Log the version history in the desired format (earliest - latest)
-      console.log(`Version History: "${earliestVersion} - ${latestVersion}"`); 
-    }else{
-      logMessage("INFO", `No version history found for ${owner}/${repo}`);
-    }
+    console.log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
 
   }
 
