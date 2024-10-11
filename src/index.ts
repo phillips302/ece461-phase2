@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { getScores } from "./score.js";
 import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./utils.js";
+import { fetchVersionHistory } from "./fetchVersion.js";
 import { ingestPackage } from "./ingest.js";
 import { exit } from 'process';
 import { log } from 'console';
@@ -13,6 +14,7 @@ if (args.length !== 1) {
   process.exit(1);
 }
 
+let versionHistory: string = "";
 let urlArray: string[] = [];
 const input: string = args[0];
 let call: string = "";
@@ -82,12 +84,15 @@ for (const url of urlArray) {
       "ResponsiveMaintainer": -1,
       "ResponsiveMaintainer_Latency": -1,
       "License": -1,
-      "License_Latency": -1
+      "License_Latency": -1,
+      "prFraction": -1,
+      "prFraction_Latency": -1
     };
     output = JSON.stringify(output)
     let ingestCatch = true;
   } else {
     output = await getScores(owner, repo, url);
+    versionHistory = await fetchVersionHistory(owner, repo);
   }
 
   if (call === "ingest") {
@@ -100,6 +105,7 @@ for (const url of urlArray) {
       console.log(JSON.stringify(temp));
     }
   } else {
+    console.log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
     console.log(output);
   }
 }
