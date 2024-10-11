@@ -3,9 +3,7 @@ import { getLinkType, parseGitHubUrl, parseNpmUrl, logMessage, clearLog, getUrls
 import { GraphQLClient } from 'graphql-request';
 import * as fs from 'fs';
 import axios from "axios";
-import { LOG_FILE } from '../src/config.ts'; // Import LOG_FILE
-
-
+import { LOG_FILE } from '../src/config'; // Import LOG_FILE
 
 describe('getLinkType', () => {
   it('should return "GitHub" for GitHub URLs', () => {

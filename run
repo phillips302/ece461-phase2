@@ -20,6 +20,7 @@ elif [ "$1" == "test" ]; then
   # If Vitest fails, still display the number of passed tests
   if [ $VITEST_EXIT_CODE -ne 0 ]; then
     # Extract the number of passed tests and total tests
+    echo "$OUTPUT"
     TESTS_PASSED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $7}')
     TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $9}' | sed 's/[()]//g')
 
@@ -42,10 +43,7 @@ elif [ "$1" == "test" ]; then
   echo "$TESTS_PASSED/$TOTAL_TESTS test cases passed. $COVERAGE_ROUNDED% line coverage achieved."
 
   exit 0
-elif [ -f "$1" ]; then
-  # Handle the case where the argument is a file
-  node dist/index.js "$1"
 else
-  echo "Invalid argument. Please use 'install', 'test', or the name of a valid URL_FILE."
-  exit 1
+  # Handle the case where the argument is a file or a string (for ingestion)
+  node dist/index.js "$1"
 fi

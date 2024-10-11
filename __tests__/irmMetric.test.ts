@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateIRM, normalizeIRM, maxResponseTime } from '../src/irmMetric.js';
+import { calculateIRM, normalizeIRM, maxResponseTime } from '../src/irmMetric.ts';
 
 describe('IRM Metric Calculation', () => {
   it('should calculate the correct IRM for issues with responses', () => {

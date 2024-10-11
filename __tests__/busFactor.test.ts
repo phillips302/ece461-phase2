@@ -1,6 +1,5 @@
-
 import { describe, it, expect } from 'vitest';
-import { calculateBusFactor } from '../src/busFactor.js';
+import { calculateBusFactor } from '../src/busFactor';
 
 describe('Bus Factor Calculation', () => {
   it('should calculate the correct bus factor for contributors', () => {

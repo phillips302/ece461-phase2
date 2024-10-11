@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cleanUp, ensureRepoDir, getCorrectness } from '../src/correctness.js'; // Adjust the import as necessary
+import { cleanUp, ensureRepoDir, getCorrectness } from '../src/correctness'; // Adjust the import as necessary
 import fs from 'fs/promises';
 import { ESLint } from 'eslint';
 import { simpleGit } from 'simple-git';
@@ -11,6 +11,7 @@ vi.mock('simple-git');
 vi.mock('eslint');
 
 describe('cleanUp', () => {
+
   it('should clean up the repository directory', async () => {
     const repoDir = 'test-repo';
     (fs.rm as any).mockResolvedValueOnce(undefined); // Mock fs.rm to simulate successful removal
@@ -19,7 +20,6 @@ describe('cleanUp', () => {
 
     expect(fs.rm).toHaveBeenCalledWith(repoDir, { recursive: true, force: true });
   }, 30000);
-
   it('should log an error if cleanup fails', async () => {
     const repoDir = 'test-repo';
     const error = new Error('Cleanup error');
