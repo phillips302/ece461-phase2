@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getDocumentationScore, calculateRampUpScore } from '../src/rampUpTime.ts'; // Adjust the import path
+import { getDocumentationScore, calculateRampUpScore } from '../src/rampUpTime'; // Adjust the import path
 import * as utils from '../src/utils';
 
 vi.mock('./utils.js', () => ({

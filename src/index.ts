@@ -95,7 +95,7 @@ for (const url of urlArray) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {
       let temp = JSON.parse(output);
-      temp["BusFactor"] = 0.5;
+      //temp["BusFactor"] = 0.5;
       await ingestPackage(temp, owner, repo);
       console.log(JSON.stringify(temp));
     }
@@ -103,4 +103,4 @@ for (const url of urlArray) {
     console.log(output);
   }
 }
-process.exit(0);
+//process.exit(0);

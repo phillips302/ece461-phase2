@@ -20,6 +20,7 @@ elif [ "$1" == "test" ]; then
   # If Vitest fails, still display the number of passed tests
   if [ $VITEST_EXIT_CODE -ne 0 ]; then
     # Extract the number of passed tests and total tests
+    echo "$OUTPUT"
     TESTS_PASSED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $7}')
     TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $9}' | sed 's/[()]//g')
 
