@@ -13,37 +13,8 @@ if [ "$1" == "install" ]; then
     exit 1
   fi
 elif [ "$1" == "test" ]; then
-  # Run the tests and generate a coverage report, directing stderr to /dev/null
-  OUTPUT=$(npx vitest run --coverage 2>/dev/null)
-  VITEST_EXIT_CODE=$?
-
-  # If Vitest fails, still display the number of passed tests
-  if [ $VITEST_EXIT_CODE -ne 0 ]; then
-    # Extract the number of passed tests and total tests
-    echo "$OUTPUT"
-    TESTS_PASSED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $7}')
-    TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $9}' | sed 's/[()]//g')
-
-    # Output the results in the specified format
-    echo "$TESTS_PASSED/$TOTAL_TESTS test cases passed. ??% line coverage achieved."
-    exit 1
-  fi
-
-  # Extract the number of tests passed and total tests
-  TESTS_PASSED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $4}')
-  TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $6}' | sed 's/[()]//g')
-  
-  # Extract line coverage percentage
-  COVERAGE_PERCENT=$(echo "$OUTPUT" | grep 'All files' | awk '{print $10}')
-
-  # Round the coverage percentage to the nearest whole number
-  COVERAGE_ROUNDED=$(printf "%.0f" "$COVERAGE_PERCENT")
-
-  # Output the results in the specified format
-  echo "$TESTS_PASSED/$TOTAL_TESTS test cases passed. $COVERAGE_ROUNDED% line coverage achieved."
-
-  exit 0
-else
-  # Handle the case where the argument is a file or a string (for ingestion)
+  node dist/testOutput.js "$1"
+elif [ -f "$1" ]; then
+  # Handle the case where the argument is a file
   node dist/index.js "$1"
 fi
