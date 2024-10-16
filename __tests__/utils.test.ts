@@ -219,7 +219,7 @@ describe('getUrlsFromFile', () => {
     });
 });
 
-/*
+
 // Mock the GraphQLClient
 vi.mock('graphql-request');
 
@@ -269,7 +269,7 @@ describe('gitHubRequest', () => {
     expect(result).toBeNull();
   });
 });
-*/
+/*
 // Mock the GraphQLClient class
 vi.mock('graphql-request', () => {
   return {
@@ -325,7 +325,7 @@ describe('gitHubRequest', () => {
     expect(result).toBeNull();
   });
 });
-
+*/
 // Mock the axios module
 vi.mock("axios");
 vi.mock("./helpers");
