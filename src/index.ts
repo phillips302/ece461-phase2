@@ -3,6 +3,7 @@ import { getScores } from "./score.js";
 import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./utils.js";
 import { fetchVersionHistory } from "./fetchVersion.js";
 import { ingestPackage } from "./ingest.js";
+import { updatePackage } from './updatePackage.js';
 import { exit } from 'process';
 import { log } from 'console';
 
@@ -18,6 +19,14 @@ let urlArray: string[] = [];
 const input: string = args[0];
 let call: string = "";
 let ingestCatch: boolean = false;
+let updateMode: boolean = false;
+
+// Check for the '-u' flag to trigger the update mode ig: ./run -u "package URL"
+if (args[0] === '-u') {
+  logMessage("INFO", "Update mode activated");
+  updateMode = true;
+}
+
 
 // Check if the argument is a file or a string
 if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
@@ -94,6 +103,13 @@ for (const url of urlArray) {
   } else {
     output = await getScores(owner, repo, url);
     versionHistory = await fetchVersionHistory(owner, repo);
+    //If it is in update mode, update the package in the directory
+    if(updateMode){
+      // Update the package if '-u' flag is present
+      logMessage("INFO", `Attempting to update package: ${repo}`);
+      await updatePackage(repo);
+    }
+    
   }
 
   if (call === "ingest") {
