@@ -1,6 +1,5 @@
 import * as fs from 'fs/promises';
-import * as git from 'isomorphic-git';
-import * as http from 'isomorphic-git/http/node/index.js';
+import { simpleGit, SimpleGit, CleanOptions } from 'simple-git';
 import { logMessage } from "./utils.js";
 /**
  * Ingests a package if each of the non-latency scores is >= 0.5.
@@ -28,7 +27,7 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
     
     if (ingest) {
         logMessage('INFO', `Ingesting package for repository: ${repo}`);
-        const repoString = `https://github.com/${owner}/${repo}`;
+        const repoString = `https://github.com/${owner}/${repo}.git`;
 
         const dir = `./ingestedPackages/${repo}`;
         try {
@@ -40,13 +39,8 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
                 logMessage(`INFO`, `Repository does not exist, procedding to clone in ${dir}`);
             }
 
-            await git.clone({
-                fs,
-                http,
-                dir,
-                url: repoString,
-                singleBranch: true,
-            });
+            const git: SimpleGit = simpleGit().clean(CleanOptions.FORCE);
+            await git.clone(repoString, dir, ['--depth', '1']);
             logMessage(`INFO`, `Repository cloned successfully in ${dir}`);
         } catch (err) {
             logMessage(`DEBUG`, `Failed to clone repository: ${err}`);
