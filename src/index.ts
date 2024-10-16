@@ -101,18 +101,17 @@ for (const url of urlArray) {
     output = JSON.stringify(output)
     let ingestCatch = true;
   } else {
-    output = await getScores(owner, repo, url);
-    versionHistory = await fetchVersionHistory(owner, repo);
     //If it is in update mode, update the package in the directory
     if(updateMode){
       // Update the package if '-u' flag is present
       logMessage("INFO", `Attempting to update package: ${repo}`);
       await updatePackage(repo);
     }
-    
+    output = await getScores(owner, repo, url);
+    versionHistory = await fetchVersionHistory(owner, repo);
   }
 
-  if (call === "ingest") {
+  if (!updateMode && call === "ingest") {
     if (ingestCatch) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {
