@@ -269,63 +269,7 @@ describe('gitHubRequest', () => {
     expect(result).toBeNull();
   });
 });
-/*
-// Mock the GraphQLClient class
-vi.mock('graphql-request', () => {
-  return {
-    GraphQLClient: vi.fn().mockImplementation(() => ({
-      request: vi.fn(),
-    })),
-  };
-});
 
-describe('gitHubRequest', () => {
-  let mockClient: GraphQLClient;
-  let mockRequest: ReturnType<typeof vi.fn>;
-
-  const mockQuery = `
-    query($owner: String!, $name: String!) {
-      repository(owner: $owner, name: $name) {
-        name
-        description
-      }
-    }
-  `;
-  const mockVariables = { owner: 'someowner', name: 'somerepo' };
-
-  beforeEach(() => {
-    mockClient = new GraphQLClient('https://mockapi.com'); // Create a new instance of the mocked client
-    mockRequest = (mockClient.request as unknown) as ReturnType<typeof vi.fn>;
-  });
-
-  it('should fetch data when the request is successful', async () => {
-    const mockResponseData = {
-      repository: {
-        name: 'somerepo',
-        description: 'A test repository',
-      },
-    };
-
-    // Mock the request method to return mock data
-    mockRequest.mockResolvedValueOnce(mockResponseData);
-
-    const result = await gitHubRequest(mockQuery, mockVariables);
-
-    expect(mockRequest).toHaveBeenCalledWith(mockQuery, mockVariables);
-    expect(result).toEqual(mockResponseData);
-  });
-
-  it('should return null and log an error if the request fails', async () => {
-    const mockError = new Error('Request failed');
-    mockRequest.mockRejectedValueOnce(mockError);
-
-    const result = await gitHubRequest(mockQuery, mockVariables);
-
-    expect(mockRequest).toHaveBeenCalledWith(mockQuery, mockVariables);
-    expect(result).toBeNull();
-  });
-});
-*/
 // Mock the axios module
 vi.mock("axios");
 vi.mock("./helpers");
