@@ -71,7 +71,7 @@ export function calculatePrFraction(pullRequests: RequestNode[]): number {
  *
  * @param owner - The owner of the repository.
  * @param name - The name of the repository.h * @returns A promise that resolves to an array of commit nodes representing the contributors. *
- * @throws Will log an error message if the request fails and return an empty array. * * @example * ```typescript * const contributors = await fetchRepoContributors('octocat', 'Hello-World'); * console.log(contributors); * ```
+ * @throws Will log an error message if the request fails and return an empty array.
  * @returns A promise that resolves to an array of pull request nodes, each containing pull request details.
  */
 export async function fetchMergedPullRequests(owner: string, name: string): Promise<RequestNode[]> {

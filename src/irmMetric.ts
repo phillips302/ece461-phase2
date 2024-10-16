@@ -42,9 +42,7 @@ type RepoIssuesResponse = {
  *
  * @example
  * ```typescript
- * const issues = await fetchRepoIssues('octocat', 'Hello-World');
- * console.log(issues);
- * ```
+ * const issues = await fetchRepoIssues('octocat', 'Hello-World'); * ```
  */
 export async function fetchRepoIssues(owner: string, name: string) {
     const client = new GraphQLClient(endpoint, {
@@ -117,7 +115,6 @@ export async function fetchRepoIssues(owner: string, name: string) {
  *   }
  * ];
  * const irmScore = calculateIRM(issues);
- * console.log(irmScore); // Output: normalized IRM score
  * ```
  */
 export function calculateIRM(issues: IssueNode[]) {
@@ -169,7 +166,6 @@ export function calculateIRM(issues: IssueNode[]) {
  * @example
  * ```typescript
  * const irmScore = normalizeIRM(30, 60);
- * console.log(irmScore); // Output: 0.5
  * ```
  */
 export function normalizeIRM (averageResponseTime: number, maxResponseTime: number) {

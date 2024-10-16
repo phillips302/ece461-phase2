@@ -10,7 +10,6 @@ const args = process.argv.slice(2);
 
 if (args.length !== 1) {
   logMessage("ERROR", "Incorrect number of arguments provided");
-  console.log('Incorrect number of args')
   process.exit(1);
 }
 
@@ -111,4 +110,3 @@ for (const url of urlArray) {
     console.log(output);
   }
 }
-//process.exit(0);
