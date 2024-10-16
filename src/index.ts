@@ -3,6 +3,7 @@ import { getScores } from "./score.js";
 import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./utils.js";
 import { fetchVersionHistory } from "./fetchVersion.js";
 import { ingestPackage } from "./ingest.js";
+import { getPackageNames } from "./fetchPackages.js";
 import { updatePackage } from './updatePackage.js';
 import { exit } from 'process';
 import { log } from 'console';
@@ -15,6 +16,7 @@ if (args.length !== 1) {
 }
 
 let versionHistory: string = "";
+let packageDirectory: string[] = [];
 let urlArray: string[] = [];
 const input: string = args[0];
 let call: string = "";
@@ -116,10 +118,12 @@ for (const url of urlArray) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {
       let temp = JSON.parse(output);
-      //temp["BusFactor"] = 0.5;
-      //temp["prFraction"] = 0.5;
+      // temp["BusFactor"] = 0.5;
+      // temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
-      console.log(JSON.stringify(temp));
+      packageDirectory = getPackageNames();
+      console.log("Package Directory: ", packageDirectory);
+      //console.log(JSON.stringify(temp));
     }
   } else {
     console.log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
