@@ -102,6 +102,7 @@ for (const url of urlArray) {
     } else {
       let temp = JSON.parse(output);
       //temp["BusFactor"] = 0.5;
+      //temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
       console.log(JSON.stringify(temp));
     }
