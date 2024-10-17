@@ -4,6 +4,7 @@ import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, 
 import { fetchVersionHistory } from "./fetchVersion.js";
 import { ingestPackage } from "./ingest.js";
 import { updatePackage } from './updatePackage.js';
+import { getCumulativeSize } from './dependencyCost.js';
 import { exit } from 'process';
 import { log } from 'console';
 
@@ -39,6 +40,18 @@ if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   logMessage("INFO", "Processing input as a string for ingestion");
   urlArray = [input]; // Assuming you're processing a single string into an array
   call = "ingest";
+}
+
+if (args[1] === '-c') {
+  logMessage("INFO", "Finding Dependency Cost...");
+  try {
+    const dependencySize: number = await getCumulativeSize(urlArray);
+    console.log("The total cumulative size is: ", dependencySize, " bytes.");
+  } catch (error) {
+    logMessage("ERROR", "Failed to find Dependency Cost");
+    process.exit(1);
+  }
+  process.exit(0);
 }
 
 for (const url of urlArray) {
