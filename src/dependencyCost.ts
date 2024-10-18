@@ -19,7 +19,7 @@ interface PackageLockJson {
     };
 }
 
-async function saveSeenPackagesToFile(seenPackages: Map<string | null, number>, filePath: string): Promise<void> {
+export async function saveSeenPackagesToFile(seenPackages: Map<string | null, number>, filePath: string): Promise<void> {
     const objectToWrite = Object.fromEntries(seenPackages); // Convert Map to an object
     const jsonData = JSON.stringify(objectToWrite, null, 2); // Pretty print with indentation
     try {
@@ -30,7 +30,7 @@ async function saveSeenPackagesToFile(seenPackages: Map<string | null, number>, 
     }
 }
 
-async function loadSeenPackagesFromFile(filePath: string): Promise<Map<string | null, number>> {
+export async function loadSeenPackagesFromFile(filePath: string): Promise<Map<string | null, number>> {
     try {
       const jsonData = await fs.readFile(filePath, 'utf-8');
       const objectData = JSON.parse(jsonData); // Parse the JSON string back into an object
@@ -41,7 +41,7 @@ async function loadSeenPackagesFromFile(filePath: string): Promise<Map<string | 
     }
 }
 
-async function packageLockExists(): Promise<boolean> {
+export async function packageLockExists(): Promise<boolean> {
     try {
       await fs.access('package-lock.json');
       logMessage('INFO', 'package-lock.json already exists.');
@@ -53,7 +53,7 @@ async function packageLockExists(): Promise<boolean> {
 }
   
 // Function to generate package-lock.json only if it doesn't already exist
-async function generatePackageLock(): Promise<void> {
+export async function generatePackageLock(): Promise<void> {
     const exists = await packageLockExists();
     if (exists) {
         logMessage('INFO', 'Skipping package-lock.json generation because it already exists.');
@@ -72,7 +72,7 @@ async function generatePackageLock(): Promise<void> {
     });
 }
 
-async function getDirectorySize(dir: string): Promise<number> {
+export async function getDirectorySize(dir: string): Promise<number> {
     let totalSize: number = 0;
   
     // Read all items (files and directories) in the current directory
@@ -94,7 +94,7 @@ async function getDirectorySize(dir: string): Promise<number> {
     return totalSize;
 }
 
-async function getFileSize(url: string): Promise<number> {
+export async function getFileSize(url: string): Promise<number> {
     try {
       // Using GET instead of HEAD to fetch the headers
       const response = await fetch(url, { method: 'GET' });
@@ -111,7 +111,7 @@ async function getFileSize(url: string): Promise<number> {
     }
 }
 
-async function readPackageJson(): Promise<{ dependencies: string[], devDependencies: string[] }> {
+export async function readPackageJson(): Promise<{ dependencies: string[], devDependencies: string[] }> {
     try {
         const packageData = await fs.readFile('package.json', 'utf-8');
         const packageJson = JSON.parse(packageData);
@@ -124,7 +124,7 @@ async function readPackageJson(): Promise<{ dependencies: string[], devDependenc
     }
 }
 
-async function readPackageLock(): Promise<PackageLockJson | undefined> {
+export async function readPackageLock(): Promise<PackageLockJson | undefined> {
     try {
       const packageLockData = await fs.readFile('package-lock.json', 'utf-8');
       const packageLock: PackageLockJson = JSON.parse(packageLockData);
@@ -135,7 +135,7 @@ async function readPackageLock(): Promise<PackageLockJson | undefined> {
     }
 }
 
-async function calculateDependenciesSize(packageLock: PackageLockJson | undefined, packages: string[], seenPackages: Map<string | null, number>): Promise<number> {
+export async function calculateDependenciesSize(packageLock: PackageLockJson | undefined, packages: string[], seenPackages: Map<string | null, number>): Promise<number> {
     let totalSize = 0;
 
     async function traversePackages(packagesMap: PackageLockJson['packages']): Promise<void> {
@@ -175,7 +175,7 @@ async function calculateDependenciesSize(packageLock: PackageLockJson | undefine
     4.1 sum all sizes
 5. add the sum to the totalSize
 */
-async function getPackageSize(owner: string | null, name: string | null, seenPackages: Map<string | null, number>): Promise<number> {
+export async function getPackageSize(owner: string | null, name: string | null, seenPackages: Map<string | null, number>): Promise<number> {
     let totalSize: number = 0;
     if (seenPackages.has(name)) {
         return seenPackages.get(name) || 0;
@@ -202,7 +202,7 @@ async function getPackageSize(owner: string | null, name: string | null, seenPac
     return totalSize;
 }
 
-async function changeDirectory(dir: string): Promise<void> {
+export async function changeDirectory(dir: string): Promise<void> {
     try {
         await fs.access(dir);
         logMessage('INFO', `Directory exists: ${dir}`);
