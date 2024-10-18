@@ -8,6 +8,7 @@ import { updatePackage } from './tools/updatePackage.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
 import { exit } from 'process';
 import { log } from 'console';
+ import { searchPackages } from "./searchPackages.js";
 
 const args = process.argv.slice(2);
 
