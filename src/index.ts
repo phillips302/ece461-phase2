@@ -10,48 +10,56 @@ import { log } from 'console';
 
 const args = process.argv.slice(2);
 
-if (args.length !== 1) {
-  logMessage("ERROR", "Incorrect number of arguments provided");
-  process.exit(1);
-}
-
 let versionHistory: string = "";
 let urlArray: string[] = [];
-const input: string = args[0];
+let input: string = args[0];
 let call: string = "";
 let ingestCatch: boolean = false;
 let updateMode: boolean = false;
+let dependCostMode: boolean = false;
 
 // Check for the '-u' flag to trigger the update mode ig: ./run -u "package URL"
 if (args[0] === '-u') {
   logMessage("INFO", "Update mode activated");
+  input = args[1];
   updateMode = true;
+} else if (args[0] === '-c') {
+  logMessage("INFO", "Dependency Cost mode activated");
+  dependCostMode = true;
+  input = args[1];
+} else if (args[0] === '-i') {
+  logMessage("INFO", "Ingest mode activated");
+  call = "ingest";
+  input = args[1];
+} else if (args[0] === '-h') {
+  console.log("Usage: ./run [-u] [-c] <package URL>");
+  console.log("Options:");
+  console.log("  -u: Update mode, updates the package in the directory");
+  console.log("  -c: Dependency Cost mode, finds the cumulative size of all dependencies");
+  exit(0);
 }
 
 
-// Check if the argument is a file or a string
+// Check if the argument is a file
 if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
-  // The argument is a file, so process it as a file
   logMessage("INFO", "Processing input as a file");
   urlArray = getUrlsFromFile(input);
   call = "file";
 } else {
-  // The argument is a string, process it as a string
-  logMessage("INFO", "Processing input as a string for ingestion");
-  urlArray = [input]; // Assuming you're processing a single string into an array
-  call = "ingest";
+  logMessage("INFO", "Processing input as a URL");
+  urlArray.push(input);
 }
 
-if (args[1] === '-c') {
+if (dependCostMode) {
   logMessage("INFO", "Finding Dependency Cost...");
   try {
     const dependencySize: number = await getCumulativeSize(urlArray);
-    console.log("The total cumulative size is: ", dependencySize, " bytes.");
+    console.log("The total cumulative size is: ", dependencySize.toFixed(2), " MB.");
   } catch (error) {
     logMessage("ERROR", "Failed to find Dependency Cost");
-    process.exit(1);
+    exit(1);
   }
-  process.exit(0);
+  exit(0);
 }
 
 for (const url of urlArray) {
@@ -124,7 +132,7 @@ for (const url of urlArray) {
     versionHistory = await fetchVersionHistory(owner, repo);
   }
 
-  if (!updateMode && call === "ingest") {
+  if (call === "ingest") {
     if (ingestCatch) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {

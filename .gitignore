@@ -70,4 +70,5 @@ dist/
 **/*.txt
 **/*.log
 ingestedPackages/
+packageCost/
 files/

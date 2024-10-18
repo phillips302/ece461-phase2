@@ -1,103 +1,242 @@
-import { parseGitHubUrl, parseNpmUrl, gitHubRequest, getLinkType, logMessage, npmToGitHub } from "./utils.js";
-import { gql } from 'graphql-request';
+import { logMessage, getOwnerRepo } from "./utils.js";
+import { ingestPackageFree } from "./ingest.js";
+import { exec } from 'child_process';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
-interface PackageMetadata {
-  name: string;
-  size: number;  // Size in bytes.
-  dependencies: string[];
+interface PackageLockJson {
+    name: string;
+    version: string;
+    lockfileVersion: number;
+    requires?: boolean;
+    packages?: {
+        [packagePath: string]: {
+        version: string;
+        resolved: string;
+        integrity?: string;
+        dev?: boolean;
+        };
+    };
 }
 
-async function getPackageMetadata(owner: string | null, name: string | null): Promise<PackageMetadata> {
-  // Simulating a call to fetch package metadata from the registry or an API.
-    const query = gql`
-        query($owner: String!, $name: String!) {
-            repository(owner: $owner, name: $name) {
-            name
-            version
-            size
-            dependencies {
-                name
-                size
+async function saveSeenPackagesToFile(seenPackages: Map<string | null, number>, filePath: string): Promise<void> {
+    const objectToWrite = Object.fromEntries(seenPackages); // Convert Map to an object
+    const jsonData = JSON.stringify(objectToWrite, null, 2); // Pretty print with indentation
+    try {
+      await fs.writeFile(filePath, jsonData, 'utf-8');
+      logMessage(`INFO`, `Seen packages saved to ${filePath}`);
+    } catch (error) {
+      logMessage(`DEBUG`, `Error saving seenPackages to file: ${error}`);
+    }
+}
+
+async function loadSeenPackagesFromFile(filePath: string): Promise<Map<string | null, number>> {
+    try {
+      const jsonData = await fs.readFile(filePath, 'utf-8');
+      const objectData = JSON.parse(jsonData); // Parse the JSON string back into an object
+      return new Map(Object.entries(objectData)); // Convert the object back into a Map
+    } catch (error) {
+        logMessage(`INFO`, `No existing seenPackages file found, starting fresh.`);
+        return new Map(); // Return an empty map if the file doesn't exist
+    }
+}
+
+async function packageLockExists(): Promise<boolean> {
+    try {
+      await fs.access('package-lock.json');
+      logMessage('INFO', 'package-lock.json already exists.');
+      return true;
+    } catch (error) {
+      logMessage('INFO', 'package-lock.json does not exist.');
+      return false;
+    }
+}
+  
+// Function to generate package-lock.json only if it doesn't already exist
+async function generatePackageLock(): Promise<void> {
+    const exists = await packageLockExists();
+    if (exists) {
+        logMessage('INFO', 'Skipping package-lock.json generation because it already exists.');
+        return;
+    }
+    return new Promise((resolve, reject) => {
+        exec('npm install --package-lock-only --package-lock', (error, stdout, stderr) => {
+        if (error) {
+            console.error(stderr);
+            reject(new Error(`Failed to generate package-lock.json: ${error.message}`));
+            return;
+        }
+        logMessage(`INFO`, 'Generated package-lock.json successfully.');
+        resolve();
+        });
+    });
+}
+
+async function getDirectorySize(dir: string): Promise<number> {
+    let totalSize: number = 0;
+  
+    // Read all items (files and directories) in the current directory
+    const files = await fs.readdir(dir, { withFileTypes: true });
+  
+    for (const file of files) {
+      const filePath = join(dir, file.name);
+  
+      if (file.isDirectory()) {
+        // Recursively calculate the size of the directory
+        totalSize += await getDirectorySize(filePath);
+      } else if (file.isFile()) {
+        // Get the file size and add it to the total size
+        const stats = await fs.stat(filePath);
+        totalSize += stats.size;
+      }
+    }
+  
+    return totalSize;
+}
+
+async function getFileSize(url: string): Promise<number> {
+    try {
+      // Using GET instead of HEAD to fetch the headers
+      const response = await fetch(url, { method: 'GET' });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+      }
+  
+      // Get the 'content-length' from headers
+      const contentLength = response.headers.get('content-length');
+      return contentLength ? parseInt(contentLength, 10) : 0;
+    } catch (error) {
+      console.error(error);
+      return 0;
+    }
+}
+
+async function readPackageJson(): Promise<{ dependencies: string[], devDependencies: string[] }> {
+    try {
+        const packageData = await fs.readFile('package.json', 'utf-8');
+        const packageJson = JSON.parse(packageData);
+        const dependencies = Object.keys(packageJson.dependencies || {});
+        const devDependencies = Object.keys(packageJson.devDependencies || {});
+        return { dependencies, devDependencies };
+    } catch (error) {
+        logMessage(`DEBUG`, `Failed to read package.json: ${error}`);
+        return { dependencies: [], devDependencies: [] };
+    }
+}
+
+async function readPackageLock(): Promise<PackageLockJson | undefined> {
+    try {
+      const packageLockData = await fs.readFile('package-lock.json', 'utf-8');
+      const packageLock: PackageLockJson = JSON.parse(packageLockData);
+      return packageLock;
+    } catch (error) {
+      logMessage('DEBUG', `Failed to read package-lock.json: ${error}`);
+      return undefined; // Return undefined in case of failure
+    }
+}
+
+async function calculateDependenciesSize(packageLock: PackageLockJson | undefined, packages: string[], seenPackages: Map<string | null, number>): Promise<number> {
+    let totalSize = 0;
+
+    async function traversePackages(packagesMap: PackageLockJson['packages']): Promise<void> {
+        for (const [packagePath, details] of Object.entries(packagesMap || {})) {
+        const packageName = packagePath.replace('node_modules/', '');
+
+        // Check if the package name exists in the list of dependencies or devDependencies
+        if (packages.includes(packageName) && details.resolved) {
+            if (seenPackages.has(packageName)) {
+                totalSize += seenPackages.get(packageName) || 0;
+            } else {
+                const resolvedUrl = details.resolved;
+                logMessage(`INFO`, `Found resolved URL for ${packageName}: ${resolvedUrl}`);
+                let fileSize = await getFileSize(resolvedUrl);
+                fileSize = fileSize;
+                logMessage(`INFO`, `Size of ${packageName}: ${fileSize} KB`);
+                seenPackages.set(packageName, fileSize);
+                totalSize += fileSize;
             }
         }
+        }
     }
-    `;
-    const variables = { owner, name };
-    const response: PackageMetadata = await gitHubRequest(query, variables) as PackageMetadata;
-  if (!response) {
-    logMessage(`DEBUG`, `Failed to fetch metadata for ${name}`);
-  }
-  return response;
+
+    if (packageLock?.packages) {
+        await traversePackages(packageLock.packages);
+    }
+
+    return totalSize;
+}
+  
+/*
+1. navigate to the folder where the package is stored
+2. run the command npm install --package-lock-only
+3. read the package-lock.json file
+    3.1 parse the file and find each of the .tgz files
+4. for each of the .tgz files, get the size using the getFileSize function
+    4.1 sum all sizes
+5. add the sum to the totalSize
+*/
+async function getPackageSize(owner: string | null, name: string | null, seenPackages: Map<string | null, number>): Promise<number> {
+    let totalSize: number = 0;
+    if (seenPackages.has(name)) {
+        return seenPackages.get(name) || 0;
+    }
+
+    totalSize += await getDirectorySize(process.cwd());
+    seenPackages.set(name, totalSize);
+    logMessage(`INFO`, `Size of ${name}: ${totalSize} KB`);
+
+    //Step 2
+    logMessage(`INFO`, `Generating package-lock.json for ${name}`);
+    await generatePackageLock();
+
+    //Step 3
+    const packageLock = await readPackageLock();
+    const { dependencies, devDependencies } = await readPackageJson();
+    const allPackages = [...dependencies, ...devDependencies];
+
+    //Step 4
+    const dependenciesSize = await calculateDependenciesSize(packageLock, allPackages, seenPackages);
+
+    //Step 5
+    totalSize += dependenciesSize;
+    return totalSize;
 }
 
-async function getPackageSize(owner: string | null, name: string | null, seenPackages: Set<string | null>): Promise<number> {
-  // If we've already computed the size for this package, return 0 to avoid double-counting.
-  if (seenPackages.has(name)) {
-    return 0;
-  }
+async function changeDirectory(dir: string): Promise<void> {
+    try {
+        await fs.access(dir);
+        logMessage('INFO', `Directory exists: ${dir}`);
+    } catch (err) {
+        // Directory doesn't exist, so create it
+        logMessage('DEBUG', `Directory does not exist, creating: ${dir}`);
+        await fs.mkdir(dir, { recursive: true });
+        logMessage('INFO', `Directory created: ${dir}`);
+    }
 
-  // Add this package to the set.
-  seenPackages.add(name);
-
-  // Fetch package metadata.
-  const metadata = await getPackageMetadata(owner, name);
-  let totalSize = metadata.size;
-
-  // Recursively get the size of dependencies.
-  /*
-  for (const dependency of metadata.dependencies) {
-    const { owner, repo } = await getOwnerRepo(dependency);
-    totalSize += await getPackageSize(owner, repo, seenPackages);
-  }
-    */
-
-  return totalSize;
+    process.chdir(dir);
+    logMessage('INFO', `Moved into directory: ${process.cwd()}`);
 }
 
-async function getOwnerRepo(url: string): Promise<{owner: string | null, repo: string | null}> {
-    const linkType = getLinkType(url);
-
-    if (linkType === "Unknown") {
-      logMessage("ERROR", `Unknown link type: ${url}`);
-    }
-  
-    let owner: string | null = null;
-    let repo: string | null = null;
-  
-    if (linkType === "npm") {
-      const packageName = parseNpmUrl(url);
-      let repoInfo = null;
-      if (!packageName) {
-        logMessage("ERROR", `Invalid npm link: ${url}`);
-      } else {
-        repoInfo = await npmToGitHub(packageName);
-      }
-  
-      if (repoInfo) {
-        ({ owner, repo } = repoInfo);
-        logMessage("INFO", `GitHub repository found for npm package: ${owner}/${repo}`);
-      } else {
-        logMessage("ERROR", `No GitHub repository found for npm package: ${owner}/${repo}`);
-      }
-    } else if (linkType === "GitHub") {
-      ({ owner, repo } = parseGitHubUrl(url) || { owner: null, repo: null });
-      if(owner && repo){
-        logMessage("INFO", `GitHub owner and repo extracted from GitHub link: ${owner}/${repo}`);
-      } else {
-        logMessage("ERROR", `Invalid GitHub link: ${url}`);
-      }
-    }
-    return { owner, repo };
-}
-
+/**
+ * Finds the cumulative size of all the packages in the given URLs.
+ * @param urls - The URLs of the packages to be analyzed.
+ * @returns number - The cumulative size of all the packages in MB.
+ */
 export async function getCumulativeSize(urls: string[]): Promise<number> {
-  const seenPackages = new Set<string | null>();
-  let cumulativeSize = 0;
+    const packageCostFile = './files/seenPackages.json';
+    let seenPackages = await loadSeenPackagesFromFile(packageCostFile);
+    let cumulativeSize: number = 0;
+    await changeDirectory("./packageCost");
 
-  for (const url of urls) {
-    const { owner, repo } = await getOwnerRepo(url);
-    cumulativeSize += await getPackageSize(owner, repo, seenPackages);
-  }
-
-  return cumulativeSize;
+    for (const url of urls) {
+        const { owner, repo } = await getOwnerRepo(url);
+        const packageDir = `./${repo}`;
+        await ingestPackageFree(owner, repo, packageDir);
+        await changeDirectory(packageDir);
+        cumulativeSize += await getPackageSize(owner, repo, seenPackages);
+        await changeDirectory("../");
+    }
+    await changeDirectory("../");
+    await saveSeenPackagesToFile(seenPackages, packageCostFile);
+    return cumulativeSize / 1024 / 1024;
 }
