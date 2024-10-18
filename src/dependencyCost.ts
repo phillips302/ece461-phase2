@@ -98,10 +98,6 @@ export async function getFileSize(url: string): Promise<number> {
     try {
       // Using GET instead of HEAD to fetch the headers
       const response = await fetch(url, { method: 'GET' });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
-      }
-  
       // Get the 'content-length' from headers
       const contentLength = response.headers.get('content-length');
       return contentLength ? parseInt(contentLength, 10) : 0;
@@ -202,6 +198,15 @@ export async function getPackageSize(owner: string | null, name: string | null, 
     return totalSize;
 }
 
+export async function removeDirectory(dirPath: string): Promise<void> {
+    try {
+      await fs.rm(dirPath, { recursive: true, force: true });
+      logMessage('INFO', `Directory ${dirPath} removed successfully.`);
+    } catch (error) {
+      logMessage('ERROR', `Failed to remove directory ${dirPath}: ${error}`);
+    }
+  }
+
 export async function changeDirectory(dir: string): Promise<void> {
     try {
         await fs.access(dir);
@@ -237,6 +242,9 @@ export async function getCumulativeSize(urls: string[]): Promise<number> {
         await changeDirectory("../");
     }
     await changeDirectory("../");
-    await saveSeenPackagesToFile(seenPackages, packageCostFile);
+    await Promise.all([
+        saveSeenPackagesToFile(seenPackages, packageCostFile),
+        removeDirectory("./packageCost")
+      ]);
     return cumulativeSize / 1024 / 1024;
 }
