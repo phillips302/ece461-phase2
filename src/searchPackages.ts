@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { logMessage } from "./tools/utils.js";
+import { match } from 'assert';
 
 /**
  * Searches for packname or README content for a given regular expression.
