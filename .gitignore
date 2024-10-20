@@ -71,4 +71,3 @@ dist/
 **/*.log
 ingestedPackages/
 packageCost/
-files/

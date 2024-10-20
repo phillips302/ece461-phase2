@@ -146,7 +146,6 @@ export async function calculateDependenciesSize(packageLock: PackageLockJson | u
                 const resolvedUrl = details.resolved;
                 logMessage(`INFO`, `Found resolved URL for ${packageName}: ${resolvedUrl}`);
                 let fileSize = await getFileSize(resolvedUrl);
-                fileSize = fileSize;
                 logMessage(`INFO`, `Size of ${packageName}: ${fileSize} KB`);
                 seenPackages.set(packageName, fileSize);
                 totalSize += fileSize;
@@ -225,13 +224,14 @@ export async function changeDirectory(dir: string): Promise<void> {
 /**
  * Finds the cumulative size of all the packages in the given URLs.
  * @param urls - The URLs of the packages to be analyzed.
+ * @param packDir - The directory where the packages will be stored.
+ * @param packCostFile - The file where the package costs will be stored.
  * @returns number - The cumulative size of all the packages in MB.
  */
-export async function getCumulativeSize(urls: string[]): Promise<number> {
-    const packageCostFile = './files/seenPackages.json';
-    let seenPackages = await loadSeenPackagesFromFile(packageCostFile);
+export async function getCumulativeSize(urls: string[], packDir: string ="./packageCost", packCostFile: string = "./files/seenPackages.json"): Promise<number> {
+    let seenPackages = await loadSeenPackagesFromFile(packCostFile);
     let cumulativeSize: number = 0;
-    await changeDirectory("./packageCost");
+    await changeDirectory(packDir);
 
     for (const url of urls) {
         const { owner, repo } = await getOwnerRepo(url);
@@ -243,8 +243,8 @@ export async function getCumulativeSize(urls: string[]): Promise<number> {
     }
     await changeDirectory("../");
     await Promise.all([
-        saveSeenPackagesToFile(seenPackages, packageCostFile),
-        removeDirectory("./packageCost")
+        saveSeenPackagesToFile(seenPackages, packCostFile),
+        removeDirectory(packDir)
       ]);
     return cumulativeSize / 1024 / 1024;
 }
