@@ -1,11 +1,14 @@
 import express from 'express';
-const app = express();
-const port = 3000;
+import homeRoutes from './apis/helloWorld.js';
+import screen1Routes from './apis/route1.js';
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+const app = express();
+const port = 8080;
+
+// Use imported routes
+app.use('/', homeRoutes);
+app.use('/screen1', screen1Routes);
 
 app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
+  console.log(`Express is listening at http://localhost:${port}`);
 });

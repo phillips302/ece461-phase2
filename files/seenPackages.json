@@ -48,5 +48,20 @@
   "utils-merge": 1953,
   "vary": 3772,
   "vhost": 3956,
-  "lodash": 5593837
+  "lodash": 5593837,
+  "nodist": 300340,
+  "@octokit/rest": 3470,
+  "axios": 119242,
+  "bluebird": 139293,
+  "mkdirp": 6665,
+  "ncp": 5985,
+  "node-unzip-2": 149400,
+  "progress": 6000,
+  "promisepipe": 4343,
+  "recursive-readdir": 2477,
+  "request": 59214,
+  "rimraf": 6480,
+  "semver": 26879,
+  "tar": 41474,
+  "vows": 56139
 }
