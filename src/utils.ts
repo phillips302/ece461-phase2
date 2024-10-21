@@ -1,5 +1,4 @@
 import { GraphQLClient } from "graphql-request";
-
 import { GITHUB_TOKEN, LOG_FILE, LOG_LEVEL } from "./config.js";
 import * as fs from "fs";
 import axios from "axios";
@@ -192,3 +191,40 @@ export async function npmToGitHub(packageName: string): Promise<{owner: string, 
   }
   return null;
 }
+
+export async function getOwnerRepo(url: string): Promise<{owner: string | null, repo: string | null}> {
+  const linkType = getLinkType(url);
+
+  if (linkType === "Unknown") {
+    logMessage("ERROR", `Unknown link type: ${url}`);
+  }
+
+  let owner: string | null = null;
+  let repo: string | null = null;
+
+  if (linkType === "npm") {
+    const packageName = parseNpmUrl(url);
+    let repoInfo = null;
+    if (!packageName) {
+      logMessage("ERROR", `Invalid npm link: ${url}`);
+    } else {
+      repoInfo = await npmToGitHub(packageName);
+    }
+
+    if (repoInfo) {
+      ({ owner, repo } = repoInfo);
+      logMessage("INFO", `GitHub repository found for npm package: ${owner}/${repo}`);
+    } else {
+      logMessage("ERROR", `No GitHub repository found for npm package: ${owner}/${repo}`);
+    }
+  } else if (linkType === "GitHub") {
+    ({ owner, repo } = parseGitHubUrl(url) || { owner: null, repo: null });
+    if(owner && repo){
+      logMessage("INFO", `GitHub owner and repo extracted from GitHub link: ${owner}/${repo}`);
+    } else {
+      logMessage("ERROR", `Invalid GitHub link: ${url}`);
+    }
+  }
+  return { owner, repo };
+}
+

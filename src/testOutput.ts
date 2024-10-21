@@ -27,7 +27,7 @@ try {
                 }
             }
         });
-
+        process.stdout.write(stdout);
         process.stdout.write(`Total: ${totalTests}\n`);
         process.stdout.write(`Passed: ${passedTests}\n`);
         process.stdout.write(`Coverage: ${coverage}%\n`);
