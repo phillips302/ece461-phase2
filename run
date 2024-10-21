@@ -14,12 +14,16 @@ if [ "$1" == "install" ]; then
     echo "Install failed"
     exit 1
   fi
+#check if argument is test
 elif [ "$1" == "test" ]; then
   node dist/tools/testOutput.js "$1"
+#check if argument is start
 elif [ "$1" == "start" ]; then
   node dist/app.js
+#check if argument is reset
 elif [ "$1" == "reset" ]; then
   node dist/reset.js "$1"
+#any other argument send to index.js
 else
   node dist/index.js "$@"
 fi
