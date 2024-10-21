@@ -121,7 +121,7 @@ for (const url of urlArray) {
       // temp["BusFactor"] = 0.5;
       // temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
-      packageDirectory = getPackageNames();
+      packageDirectory = getPackageNames('./ingestedPackages');
       console.log("Package Directory: ", packageDirectory);
       //console.log(JSON.stringify(temp));
     }

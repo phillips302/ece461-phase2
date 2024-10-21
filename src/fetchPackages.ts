@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 
-const folderPath = './ingestedPackages';
-export function getPackageNames(): string[] {
+export function getPackageNames(folderPath: string): string[] {
     try {
         // Read all entries in the specified folder
         const entries = fs.readdirSync(folderPath, { withFileTypes: true });
