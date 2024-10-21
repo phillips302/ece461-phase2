@@ -18,6 +18,8 @@ elif [ "$1" == "test" ]; then
   node dist/tools/testOutput.js "$1"
 elif [ "$1" == "start" ]; then
   node dist/app.js
+elif [ "$1" == "reset" ]; then
+  node dist/reset.js "$1"
 else
   node dist/index.js "$@"
 fi
