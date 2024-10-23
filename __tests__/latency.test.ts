@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { measureConcurrentLatencies } from '../src/latency'; // Adjust this import to the correct file
+import { measureConcurrentLatencies } from '../src/tools/metrics/latency'; // Adjust this import to the correct file
 
 describe('measureConcurrentLatencies', () => {
   

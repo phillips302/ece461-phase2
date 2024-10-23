@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GraphQLClient } from 'graphql-request';
-import { validateGitHubToken } from '../src/config.ts'; // Adjust the import based on your file name
+import { validateGitHubToken } from '../src/tools/config.ts'; // Adjust the import based on your file name
 
 describe('GitHub Token Validation', () => {
   const mockToken = 'mockToken';

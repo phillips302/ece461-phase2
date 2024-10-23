@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getDocumentationScore, calculateRampUpScore } from '../src/rampUpTime'; // Adjust the import path
-import * as utils from '../src/utils';
+import { getDocumentationScore, calculateRampUpScore } from '../src/tools/metrics/rampUpTime'; // Adjust the import path
+import * as utils from '../src/tools/utils';
 
 vi.mock('./utils.js', () => ({
   gitHubRequest: vi.fn(),

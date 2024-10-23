@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { updatePackage } from "../src/updatePackage.js"; // Adjust the import path as necessary
+import { updatePackage } from "../src/tools/updatePackage.js"; // Adjust the import path as necessary
 import * as fs from 'fs/promises';
 import { exec } from 'child_process';
-import { logMessage } from '../src/utils.js';
+import { logMessage } from '../src/tools/utils.js';
 
 // Mock the fs and exec functions
 vi.mock('fs/promises', () => ({

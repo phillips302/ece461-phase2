@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchVersionHistory } from "../src/fetchVersion.js";
-import { gitHubRequest, logMessage } from "../src/utils.js";
+import { fetchVersionHistory } from "../src/tools/fetchVersion.js";
+import { gitHubRequest, logMessage } from "../src/tools/utils.js";
 
 // Mock the gitHubRequest and logMessage functions
 vi.mock("../src/utils.js", () => ({

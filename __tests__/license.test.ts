@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { isLicenseCompatible,  extractLicenseFromText } from '../src/license';
-import * as utils from '../src/utils';
+import { isLicenseCompatible,  extractLicenseFromText } from '../src/tools/metrics/license';
+import * as utils from '../src/tools/utils';
 
 
 

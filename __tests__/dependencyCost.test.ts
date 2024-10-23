@@ -5,10 +5,10 @@ import { readPackageLock,
          loadSeenPackagesFromFile,
          generatePackageLock,
          getFileSize,
-         calculateDependenciesSize } from '../src/dependencyCost.js';
+         calculateDependenciesSize } from '../src/tools/dependencyCost.js';
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';
-import { logMessage } from '../src/utils.js';
+import { logMessage } from '../src/tools/utils.js';
 
 
 vi.mock('fs/promises', () => ({

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getLinkType, parseGitHubUrl, parseNpmUrl, logMessage, clearLog, getUrlsFromFile, gitHubRequest, npmToGitHub } from '../src/utils.ts'; // adjust the path as necessary
+import { getLinkType, parseGitHubUrl, parseNpmUrl, logMessage, clearLog, getUrlsFromFile, gitHubRequest, npmToGitHub } from '../src/tools/utils.ts'; // adjust the path as necessary
 import { GraphQLClient } from 'graphql-request';
 import * as fs from 'fs';
 import axios from "axios";
-import { LOG_FILE } from '../src/config'; // Import LOG_FILE
+import { LOG_FILE } from '../src/tools/config'; // Import LOG_FILE
 
 describe('getLinkType', () => {
   it('should return "GitHub" for GitHub URLs', () => {

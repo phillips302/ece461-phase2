@@ -1,11 +1,11 @@
-import { isLicenseCompatible } from "./license.js";
-import { getBusFactorScore } from "./busFactor.js";
-import { getIRM } from "./irmMetric.js";
-import { calculateRampUpScore } from "./rampUpTime.js";
-import { getCorrectness } from "./correctness.js";
-import { measureConcurrentLatencies } from "./latency.js";
-import { getDependencyFraction } from "./fracDependencies.js";
-import { getPrFraction } from "./prFraction.js";
+import { isLicenseCompatible } from "./metrics/license.js";
+import { getBusFactorScore } from "./metrics/busFactor.js";
+import { getIRM } from "./metrics/irmMetric.js";
+import { calculateRampUpScore } from "./metrics/rampUpTime.js";
+import { getCorrectness } from "./metrics/correctness.js";
+import { measureConcurrentLatencies } from "./metrics/latency.js";
+import { getDependencyFraction } from "./metrics/fracDependencies.js";
+import { getPrFraction } from "./metrics/prFraction.js";
 
 /**
  * Gets the scores for a given repository.
