@@ -43,10 +43,9 @@ describe('getPackageNames', () => {
 
     it('should handle errors and return an empty array if readdirSync throws an error', () => {
         // Mock implementation of readdirSync to throw an error
-        vi.spyOn(fs, 'readdirSync').mockImplementation(() => {
-            throw new Error('Some error');
-        });
-
+        vi.spyOn(fs, 'readdirSync').mockImplementation(() => { throw new Error('Mock error'); });
+        // Mock console.error to suppress error output during test
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const folderPath = './some/folder';
         const result = getPackageNames(folderPath);
 
