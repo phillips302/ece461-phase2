@@ -1,7 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
-import { logMessage, gitHubRequest } from './utils.js';
+import { logMessage, gitHubRequest } from '../utils.js';
 import axios from 'axios';
-import { GITHUB_TOKEN } from './config.js';
+import { GITHUB_TOKEN } from '../config.js';
 
 // GraphQL endpoint
 const endpoint = 'https://api.github.com/graphql';

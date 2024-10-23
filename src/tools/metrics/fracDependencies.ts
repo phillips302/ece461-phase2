@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { logMessage, gitHubRequest } from './utils.js';
+import { logMessage, gitHubRequest } from '../utils.js';
 
 // Define the dependency response based on the GraphQL query
 export type DependencyResponse = {

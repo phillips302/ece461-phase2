@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePrFraction, RequestNode } from '../src/prFraction.js';
+import { calculatePrFraction, RequestNode } from '../../../src/tools/metrics/prFraction.js';
 
 const mockPullRequestData: RequestNode[] = [
     {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as utils from '../src/utils.ts';
-import * as score from '../src/score.ts';
+import * as utils from '../src/tools/utils.ts';
+import * as score from '../src/tools/score.ts';
 import * as fs from "fs";
 
 vi.mock('./score');

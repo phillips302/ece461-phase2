@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ingestPackage } from '../src/ingest.ts'; // Adjust the import based on the actual location of the file
-import { logMessage } from '../src/utils.js';
+import { ingestPackage } from '../../src/tools/ingest.ts'; // Adjust the import based on the actual location of the file
+import { logMessage } from '../../src/tools/utils.js';
 import * as fs from 'fs/promises';
 import simpleGit, { SimpleGit } from 'simple-git';
 
@@ -9,7 +9,7 @@ vi.mock('fs/promises', () => ({
   mkdir: vi.fn(async () => undefined), 
 }));
 
-vi.mock('../src/utils.js', () => ({
+vi.mock('../../src/tools/utils.js', () => ({
   logMessage: vi.fn(),
 }));
 

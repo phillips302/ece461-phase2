@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { calculateDependencyScore, DependencyResponse } from '../src/fracDependencies.js';
+import { calculateDependencyScore, DependencyResponse } from '../../../src/tools/metrics/fracDependencies.js';
 
 vi.mock('./utils.js', () => ({
     gitHubRequest: vi.fn(),

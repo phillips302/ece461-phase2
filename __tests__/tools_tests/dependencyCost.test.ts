@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { readPackageLock,
          readPackageJson,
          saveSeenPackagesToFile,
          loadSeenPackagesFromFile,
          generatePackageLock,
          getFileSize,
-         calculateDependenciesSize } from '../src/dependencyCost.js';
+         calculateDependenciesSize } from '../../src/tools/dependencyCost.js';
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';
-import { logMessage } from '../src/utils.js';
+import { logMessage } from '../../src/tools/utils.js';
 
 
 vi.mock('fs/promises', () => ({
@@ -24,7 +24,7 @@ vi.mock('child_process', () => ({
   exec: vi.fn(),
 }));
 
-vi.mock('../src/utils.js', () => ({
+vi.mock('../../src/tools/utils.js', () => ({
   logMessage: vi.fn(),
 }));
 
@@ -39,7 +39,7 @@ describe('dependencyCost functions', () => {
         const parsedObject = JSON.parse(mockData);
         const seenPackages = new Map<string, number>(Object.entries(parsedObject));
         const mockWriteFile = vi.fn().mockResolvedValueOnce(mockData);
-        (fs.writeFile as unknown as vi.Mock) = mockWriteFile;
+        (fs.writeFile as unknown as Mock) = mockWriteFile;
         await saveSeenPackagesToFile(seenPackages, './__tests__/files/seenPackages.json');
 
         expect(logMessage).toHaveBeenCalledWith('INFO', 'Seen packages saved to ./__tests__/files/seenPackages.json');
@@ -50,7 +50,7 @@ describe('dependencyCost functions', () => {
     it('should load seen packages from a file', async () => {
       const mockData = JSON.stringify({ package1: 12345 });
       const mockReadFile = vi.fn().mockResolvedValueOnce(mockData);
-      (fs.readFile as unknown as vi.Mock) = mockReadFile;
+      (fs.readFile as unknown as Mock) = mockReadFile;
 
       const seenPackages = await loadSeenPackagesFromFile('./__tests__/files/seenPackages.json');
       expect(seenPackages.get('package1')).toBe(12345);
@@ -60,7 +60,7 @@ describe('dependencyCost functions', () => {
   describe('readPackageLock', () => {
     it('should read package-lock.json if it exists', async () => {
       const mockReadFile = vi.fn().mockResolvedValueOnce(undefined);
-      (fs.readFile as unknown as vi.Mock) = mockReadFile;
+      (fs.readFile as unknown as Mock) = mockReadFile;
 
       const packageLock = await readPackageLock();
       if (packageLock) {

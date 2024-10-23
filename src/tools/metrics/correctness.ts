@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ESLint } from 'eslint';
 import { simpleGit, SimpleGit, CleanOptions } from 'simple-git';
-import { logMessage } from './utils.js';
+import { logMessage } from '../utils.js';
 import { log } from 'console';
 
 

@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { logMessage, gitHubRequest } from './utils.js';
+import { logMessage, gitHubRequest } from '../utils.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
