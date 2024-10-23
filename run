@@ -3,6 +3,8 @@
 # Check if the argument is 'install'
 if [ "$1" == "install" ]; then
   echo "Installing.."
+  rm -rf node_modules
+  rm package-lock.json
   npm install
   npm run build
   if [ $? -eq 0 ]; then
