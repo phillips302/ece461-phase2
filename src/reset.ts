@@ -16,7 +16,7 @@ import { logMessage } from "./utils.js";
  * @param log - Optional. If true, logs the deletion of each file and folder. Defaults to false.
  * @returns A promise that resolves when the folder has been cleared.
  */
-async function clearFolder(folderPath: string, deleteRootFolder: boolean = false, log: boolean = false): Promise<void> {
+export async function clearFolder(folderPath: string, deleteRootFolder: boolean = false, log: boolean = false): Promise<void> {
     try {
         // Check if the folder exists before trying to clear it
         if (!fs.existsSync(folderPath)) {
