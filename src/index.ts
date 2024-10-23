@@ -3,7 +3,7 @@ import { getScores } from "./tools/score.js";
 import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./tools/utils.js";
 import { fetchVersionHistory } from "./tools/fetchVersion.js";
 import { ingestPackage } from "./tools/ingest.js";
-import { getPackageNames } from "./fetchPackages.js";
+import { getPackageNames } from "./tools/fetchPackages.js";
 import { updatePackage } from './tools/updatePackage.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
 import { exit } from 'process';
