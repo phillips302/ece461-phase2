@@ -5,10 +5,10 @@ import { readPackageLock,
          loadSeenPackagesFromFile,
          generatePackageLock,
          getFileSize,
-         calculateDependenciesSize } from '../src/tools/dependencyCost.js';
+         calculateDependenciesSize } from '../../src/tools/dependencyCost.js';
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';
-import { logMessage } from '../src/tools/utils.js';
+import { logMessage } from '../../src/tools/utils.js';
 
 
 vi.mock('fs/promises', () => ({
@@ -24,7 +24,7 @@ vi.mock('child_process', () => ({
   exec: vi.fn(),
 }));
 
-vi.mock('../src/utils.js', () => ({
+vi.mock('../../src/tools/utils.js', () => ({
   logMessage: vi.fn(),
 }));
 

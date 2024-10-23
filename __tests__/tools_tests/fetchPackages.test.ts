@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import * as fs from 'fs';
-import { getPackageNames } from '../src/tools/fetchPackages';
+import { getPackageNames } from '../../src/tools/fetchPackages';
 
 // Mock the fs module
 vi.mock('fs');

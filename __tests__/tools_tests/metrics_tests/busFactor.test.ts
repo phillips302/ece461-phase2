@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateBusFactor } from '../src/tools/metrics/busFactor';
+import { calculateBusFactor } from '../../../src/tools/metrics/busFactor';
 
 describe('Bus Factor Calculation', () => {
   it('should calculate the correct bus factor for contributors', () => {

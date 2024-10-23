@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cleanUp, ensureRepoDir, getCorrectness } from '../src/tools/metrics/correctness'; // Adjust the import as necessary
+import { cleanUp, ensureRepoDir, getCorrectness } from '../../../src/tools/metrics/correctness'; // Adjust the import as necessary
 import fs from 'fs/promises';
 import { ESLint } from 'eslint';
 import { simpleGit } from 'simple-git';
