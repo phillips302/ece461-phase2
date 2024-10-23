@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { getLinkType, parseGitHubUrl, parseNpmUrl, logMessage, clearLog, getUrlsFromFile, gitHubRequest, npmToGitHub } from '../src/tools/utils.ts'; // adjust the path as necessary
 import { GraphQLClient } from 'graphql-request';
 import * as fs from 'fs';
@@ -235,7 +235,7 @@ describe('gitHubRequest', () => {
   const mockVariables = { owner: 'someowner', name: 'somerepo' };
   
   it('should fetch data when the request is successful', async () => {
-    const mockClient = GraphQLClient as unknown as { new (): { request: vi.Mock } };
+    const mockClient = GraphQLClient as unknown as { new (): { request: Mock } };
     const mockRequest = vi.fn();
     mockClient.prototype.request = mockRequest;
 
@@ -256,7 +256,7 @@ describe('gitHubRequest', () => {
   });
 
   it('should return null and log an error if the request fails', async () => {
-    const mockClient = GraphQLClient as unknown as { new (): { request: vi.Mock } };
+    const mockClient = GraphQLClient as unknown as { new (): { request: Mock } };
     const mockRequest = vi.fn();
     mockClient.prototype.request = mockRequest;
 
