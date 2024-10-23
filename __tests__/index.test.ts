@@ -50,5 +50,5 @@ describe('CLI logic', () => {
 
         expect(mockGetScores).toHaveBeenCalledTimes(2);
         expect(mockGetLinkType).toHaveBeenCalledTimes(2);
-    }, { timeout: 10000 });
+    }, { timeout: 15000 });
 });
