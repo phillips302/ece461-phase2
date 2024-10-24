@@ -3,8 +3,8 @@
 # Check if the argument is 'install'
 if [ "$1" == "install" ]; then
   echo "Installing.."
-  rm -rf node_modules
-  rm package-lock.json
+  # rm -rf node_modules
+  # rm package-lock.json
   npm install
   npm run build
   if [ $? -eq 0 ]; then
@@ -16,7 +16,7 @@ if [ "$1" == "install" ]; then
   fi
 #check if argument is test
 elif [ "$1" == "test" ]; then
-  node dist/tools/testOutput.js "$1"
+  node dist/testOutput.js "$1"
 #check if argument is start
 elif [ "$1" == "start" ]; then
   node dist/app.js
