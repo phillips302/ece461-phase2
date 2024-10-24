@@ -16,7 +16,7 @@ if [ "$1" == "install" ]; then
   fi
 #check if argument is test
 elif [ "$1" == "test" ]; then
-  node dist/tools/testOutput.js "$1"
+  node dist/testOutput.js "$1"
 #check if argument is start
 elif [ "$1" == "start" ]; then
   node dist/app.js
