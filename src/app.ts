@@ -5,7 +5,7 @@ import screen1Routes from './routes/route1.js';
 const app = express();
 const port = 8080;
 
-// Use imported routes
+// Use imported routes ?
 app.use('/', homeRoutes);
 app.use('/', screen1Routes);
 
