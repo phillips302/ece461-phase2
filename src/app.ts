@@ -5,7 +5,7 @@ import apiRoutes from './routes/api.js';
 import queryVersionRoutes from './routes/queryVersion.js';
 
 const app: Application = express();
-const port = 5000;
+const port = 8081;
 
 app.use(express.json());
 // Use imported routes
