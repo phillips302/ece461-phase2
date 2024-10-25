@@ -23,6 +23,7 @@ jobs:
         
     - name: Build the Docker image
       run: docker build -t phillips302/ece461-phase2 .
+    - name: List Docker images
       run: docker image ls
     - name: Push to Dockerhub
       run: docker push phillips302/ece461-phase2
