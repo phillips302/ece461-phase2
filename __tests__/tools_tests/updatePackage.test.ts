@@ -33,7 +33,7 @@ describe("updatePackage", () => {
 
         await updatePackage(repo);
         expect(logMessage).toHaveBeenCalledWith('INFO', `Repository found in directory: ${dir}`);
-        expect(exec).toHaveBeenCalledWith(`cd ${dir} && npm outdated -u`, expect.any(Function));
+        expect(exec).toHaveBeenCalledWith(`cd ${dir} && npm update`, expect.any(Function));
         expect(logMessage).toHaveBeenCalledWith('INFO', `Running npm update in directory: ${dir}`);
         expect(logMessage).toHaveBeenCalledWith('INFO', `npm update output: Update successful`);
     });
