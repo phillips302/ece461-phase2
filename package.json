@@ -9,7 +9,8 @@
     "clean": "rimraf dist",
     "build": "npm run clean && tsc",
     "test": "npx vitest run --coverage",
-    "clean:logs": "node dist/clearLog.js"
+    "clean:logs": "node dist/clearLog.js",
+    "start": "node dist/app.js"
   },
   "keywords": [],
   "author": "",

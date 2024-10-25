@@ -16,8 +16,7 @@ COPY . .
 # Expose the port on which the Node.js application will run
 EXPOSE 8080
 
-RUN chmod +x run
-RUN ./run install
+RUN npm run build
 
 # Command to start the Node.js application
-CMD ["./run", "start"]
+CMD ["npm", "run", "start"]
