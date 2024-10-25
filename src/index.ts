@@ -33,10 +33,12 @@ if (args[0] === '-u') {
   logMessage("INFO", "Ingest mode activated");
   call = "ingest";
   input = args[1];
-} else if (args[0] === '-h') {
-  console.log("Usage: ./run [-u] [-c] <package URL>");
+} else if (args[0] === '-h' || args[0] === '--help') {
+  console.log("Usage: ./run [options] [URL or file path] | install");
   console.log("Options:");
-  console.log("  -u: Update mode, updates the package in the directory");
+  console.log("  -h: Help mode, displays the help menu");
+  console.log("  -i: Ingest mode, ingests the package into the directory");
+  console.log("  -u: Update mode, updates a package that already exists in the directory");
   console.log("  -c: Dependency Cost mode, finds the cumulative size of all dependencies");
   exit(0);
 }
@@ -46,7 +48,6 @@ if (args[0] === '-u') {
 if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   logMessage("INFO", "Processing input as a file");
   urlArray = getUrlsFromFile(input);
-  call = "file";
 } else {
   logMessage("INFO", "Processing input as a URL");
   urlArray.push(input);
@@ -139,8 +140,8 @@ for (const url of urlArray) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {
       let temp = JSON.parse(output);
-      // temp["BusFactor"] = 0.5;
-      // temp["prFraction"] = 0.5;
+      temp["BusFactor"] = 0.5;
+      temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
       packageDirectory = getPackageNames('./ingestedPackages');
       console.log("Package Directory: ", packageDirectory);
