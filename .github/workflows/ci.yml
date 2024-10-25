@@ -22,6 +22,6 @@ jobs:
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         
     - name: Build the Docker image
-      run: docker build -t ece461-phase2 .
+      run: docker build -t ece461-phase2:latest .
     - name: Push to Dockerhub
-      run: docker push phillips302/ece461-phase2
+      run: docker push phillips302/ece461-phase2:latest
