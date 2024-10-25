@@ -1,0 +1,21 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - name: Pull Docker image
+      run: sudo docker pull phillips302/ece461-phase2:latest
+    - name: Delete old docker container
+      run: sudo docker rm -f ece461-phase2-container || true
+    - name: Run new docker container
+      run: sudo docker run -d --name ece461-phase2-container -p 8080:8080 phillips302/ece461-phase2:latest
