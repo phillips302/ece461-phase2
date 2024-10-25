@@ -1,23 +1,27 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { logMessage } from "./tools/utils.js";
-import { exit } from 'process';
+import { exit } from "process";
 
 /**
  * Recursively clears the contents of a specified folder, including all files and subfolders.
  * 
  * This function reads all the entries in the provided folder, deleting each file or recursively 
- * clearing each subfolder.
+ * clearing each subfolder. Optionally, it can also delete the root folder itself after its contents 
+ * have been cleared. It supports asynchronous operations using promises and includes error handling 
+ * for file system operations.
  * 
  * @param folderPath - The path to the folder to clear.
+ * @param deleteRootFolder - Optional. If true, the root folder itself will be deleted after its contents 
+ *                           are cleared. Defaults to false.
  * @returns A promise that resolves when the folder has been cleared.
  */
-export async function clearFolder(folderPath: string): Promise<number> {
+async function clearFolder(folderPath: string, deleteRootFolder: boolean = false): Promise<void> {
     try {
         // Check if the folder exists before trying to clear it
         if (!fs.existsSync(folderPath)) {
             logMessage("ERROR", `The folder "${folderPath}" does not exist.`);
-            return 1;
+            exit(1);
         }
 
         // Read all entries (files and folders) inside the specified folder
@@ -29,27 +33,27 @@ export async function clearFolder(folderPath: string): Promise<number> {
 
             if (stats.isDirectory()) {
                 // Recursively remove the subfolder
-                await clearFolder(fullPath);
+                await clearFolder(fullPath, true);
             } else {
                 // If it's a file, delete it
                 await fs.promises.unlink(fullPath);
                 logMessage("INFO",`Deleted file: ${fullPath}`);
             }
         }
-        return 0;
+
+        // Optionally delete the root folder itself
+        if (deleteRootFolder) {
+            await fs.promises.rmdir(folderPath);
+            logMessage("INFO", `Deleted folder: ${folderPath}`);
+        }
     } catch (error) {
         logMessage("ERROR", `Error clearing folder "${folderPath}": ${(error as Error).message}`);
-        return 1;
+        exit(1);
     }
 }
 
 const folderPath = './ingestedPackages'; //change this file path if the registry folder changes
-clearFolder(folderPath).then((exit_val) => {
-    if(exit_val) {
-        logMessage("INFO", 'Folder cleared successfully.');
-    }
-    else {
-        logMessage("ERROR", 'Failed to clear folder.');
-    }
-    exit(exit_val);
+clearFolder(folderPath, false).then(() => {
+    logMessage("INFO", 'Folder cleared successfully.');
+    exit(0);
 });
