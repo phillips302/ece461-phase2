@@ -19,9 +19,9 @@ jobs:
         DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run:
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD --password-stdin
         
     - name: Build the Docker image
-      run: docker build -t ECE461-Phase2
+      run: docker build -t ece461-phase2 .
     - name: Push to Dockerhub
-      run: docker push phillips302/ECE461-Phase2:latest
+      run: docker push phillips302/ece461-phase2:latest
