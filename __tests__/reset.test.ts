@@ -1,75 +1,69 @@
-// import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 // import * as fs from 'fs';
 // import * as path from 'path';
-// import { clearFolder } from '../src/reset'; // Update the import path as needed
-// import { logMessage } from '../src/tools/utils';
+// import { clearFolder } from '../src/reset';
+// import { logMessage } from "../src/tools/utils";
+// import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 
-// // Mock the logMessage function
-// vi.mock('../src/tools/utils.js', () => ({
+// // Mocking file system methods
+// vi.mock('fs', () => ({
+//     existsSync: vi.fn(),
+//     promises: {
+//         readdir: vi.fn(),
+//         stat: vi.fn(),
+//         unlink: vi.fn(),
+//         rmdir: vi.fn(),
+//     },
+// }));
+
+// vi.mock('../src/tools/utils', () => ({
 //     logMessage: vi.fn(),
 // }));
 
-// // Helper function to create a test folder with sample files and subfolders
-// async function setupTestFolder(testFolderPath: string) {
-//     await fs.promises.mkdir(testFolderPath, { recursive: true });
-//     await fs.promises.writeFile(path.join(testFolderPath, 'file1.txt'), 'Sample content 1');
-//     await fs.promises.writeFile(path.join(testFolderPath, 'file2.txt'), 'Sample content 2');
-//     const subfolderPath = path.join(testFolderPath, 'subfolder');
-//     await fs.promises.mkdir(subfolderPath);
-//     await fs.promises.writeFile(path.join(subfolderPath, 'file3.txt'), 'Sample content 3');
-// }
-
-// // Helper function to clean up the test folder
-// async function cleanupTestFolder(testFolderPath: string) {
-//     if (fs.existsSync(testFolderPath)) {
-//         await fs.promises.rm(testFolderPath, { recursive: true, force: true });
-//     }
-// }
-
 // describe('clearFolder', () => {
-//     const testFolderPath = './testFolder';
+//     const folderPath = './testFolder';
 
-//     beforeEach(async () => {
-//         // Set up the test folder before each test
-//         await setupTestFolder(testFolderPath);
-//     });
-
-//     afterEach(async () => {
-//         // Clean up the test folder after each test
-//         await cleanupTestFolder(testFolderPath);
+//     beforeEach(() => {
 //         vi.clearAllMocks();
 //     });
 
+//     it('should log an error and exit if the folder does not exist', async () => {
+//         (fs.existsSync as Mock).mockReturnValue(false);
+
+//         await expect(clearFolder(folderPath, false)).rejects.toThrow();
+//         expect(logMessage).toHaveBeenCalledWith("ERROR", `The folder "${folderPath}" does not exist.`);
+//     });
+
 //     it('should clear all files and subfolders in the specified folder', async () => {
-//         const exit_val = await clearFolder(testFolderPath);
+//         (fs.existsSync as Mock).mockReturnValue(true);
+//         (fs.promises.readdir as Mock).mockResolvedValue(['file1.txt', 'subfolder']);
+//         (fs.promises.stat as Mock)
+//             .mockResolvedValueOnce({ isDirectory: () => false }) // file1.txt
+//             .mockResolvedValueOnce({ isDirectory: () => true }); // subfolder
+//         (fs.promises.readdir as Mock).mockResolvedValueOnce([]); // subfolder is empty
 
-//         // Check that the folder exists but is empty
-//         const entries = await fs.promises.readdir(testFolderPath);
-//         expect(entries.length).toEqual(0);
-//         expect(exit_val).toEqual(0);
+//         await clearFolder(folderPath, false);
+
+//         expect(fs.promises.unlink).toHaveBeenCalledWith(path.join(folderPath, 'file1.txt'));
+//         expect(fs.promises.rmdir).toHaveBeenCalledWith(path.join(folderPath, 'subfolder'));
+//         expect(logMessage).toHaveBeenCalledWith("INFO", `Deleted file: ${path.join(folderPath, 'file1.txt')}`);
+//         expect(logMessage).toHaveBeenCalledWith("INFO", `Deleted folder: ${path.join(folderPath, 'subfolder')}`);
 //     });
 
-//     it('should handle non-existent folder gracefully', async () => {
-//         const nonExistentFolder = './nonExistentFolder';
-
-//         const exit_val = await clearFolder(nonExistentFolder);
-
-//         // Check that logMessage was called with an error message
-//         expect(logMessage).toHaveBeenCalledWith('ERROR', expect.stringContaining('The folder "'));
-//         expect(exit_val).toEqual(1);
+//     it('should delete the root folder if deleteRootFolder is true', async () => {
+//         (fs.existsSync as Mock).mockReturnValue(true);
+//         (fs.promises.readdir as Mock).mockResolvedValue([]);
+        
+//         await clearFolder(folderPath, true);
+        
+//         expect(fs.promises.rmdir).toHaveBeenCalledWith(folderPath);
+//         expect(logMessage).toHaveBeenCalledWith("INFO", `Deleted folder: ${folderPath}`);
 //     });
 
-//     it('should handle errors during file system operations', async () => {
-//         // Make the test folder read-only to simulate a permission error
-//         await fs.promises.chmod(testFolderPath, 0o444);
-      
-//         const exit_val = await clearFolder(testFolderPath);
+//     it('should log an error if an exception occurs during clearing', async () => {
+//         (fs.existsSync as Mock).mockReturnValue(true);
+//         (fs.promises.readdir as Mock).mockRejectedValue(new Error('Test error'));
 
-//         // Check that logMessage was called with an error message
-//         expect(logMessage).toHaveBeenCalledWith('ERROR', expect.stringContaining('Error clearing folder'));
-//         expect(exit_val).toEqual(1);
-
-//         // Restore folder permissions and clean up
-//         await fs.promises.chmod(testFolderPath, 0o755);
+//         await expect(clearFolder(folderPath, false)).rejects.toThrow();
+//         expect(logMessage).toHaveBeenCalledWith("ERROR", `Error clearing folder "${folderPath}": Test error`);
 //     });
 // });
