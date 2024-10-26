@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest';
-import { searchPackages } from '../src/searchPackages.js';
+import { searchPackages } from '../../src/tools/searchPackages.js';
 import path from 'path';
 
-vi.mock('./utils.js', () => ({
+vi.mock('../../src/tools/utils.js', () => ({
     gitHubRequest: vi.fn(),
     logMessage: vi.fn(),
 }));

@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { logMessage } from "./tools/utils.js";
+import { logMessage } from "./utils.js";
 import { match } from 'assert';
 
 /**
