@@ -19,4 +19,4 @@ jobs:
     - name: Delete old docker container
       run: docker rm -f ece461-phase2-container || true
     - name: Run new docker container
-      run: docker run -d --name ece461-phase2-container -p 8080:8080 phillips302/ece461-phase2:latest
+      run: docker run -d --name ece461-phase2-container -p 8080:80 phillips302/ece461-phase2:latest
