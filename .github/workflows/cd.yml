@@ -14,9 +14,23 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Install AWS CLI
+      run: |
+        if ! command -v aws &> /dev/null; then
+          sudo yum install -y aws-cli
+        fi
+    
     - name: Pull Docker image
       run: docker pull phillips302/ece461-phase2:latest
+    
     - name: Delete old docker container
       run: docker rm -f ece461-phase2-container || true
+    
     - name: Run new docker container
-      run: docker run -d --name ece461-phase2-container -p 8080:80 phillips302/ece461-phase2:latest
+      #run: docker run -d --name ece461-phase2-container -p 8080:80 phillips302/ece461-phase2:latest
+      run: |
+        docker run -d --name ece461-phase2-container -p 8080:80 \
+        -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token" --with-decryption --query "Parameter.Value" --output text) \
+        -e LOG_LEVEL=2 \
+        -e LOG_FILE=/var/log/app.log \
+        phillips302/ece461-phase2:latest
