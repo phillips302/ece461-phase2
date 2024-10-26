@@ -6,9 +6,9 @@ import { ingestPackage } from "./tools/ingest.js";
 import { getPackageNames } from "./tools/fetchPackages.js";
 import { updatePackage } from './tools/updatePackage.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
+import { searchPackages } from "./searchPackages.js";
 import { exit } from 'process';
 import { log } from 'console';
- import { searchPackages } from "./searchPackages.js";
 
 const args = process.argv.slice(2);
 
