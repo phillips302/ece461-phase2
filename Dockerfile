@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expose the port on which the Node.js application will run
-EXPOSE 8080
+EXPOSE 5000
 
 RUN npm run build
 
