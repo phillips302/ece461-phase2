@@ -4,16 +4,6 @@ import screen1Routes from './routes/route1.js';
 import apiRoutes from './routes/api.js';
 import queryVersionRoutes from './routes/queryVersion.js';
 
-const app = express();
-const port = 80;
-
-// Use imported routes ?
-app.use('/', homeRoutes);
-app.use('/', screen1Routes);
-app.use('/', queryVersionRoutes);
-=======
-import apiRoutes from './routes/api.js';
-
 const app: Application = express();
 const port = 5000;
 
