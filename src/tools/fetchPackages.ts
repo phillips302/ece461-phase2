@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import path from 'path';
 import { logMessage } from "./utils.js";
 
 /**
@@ -27,5 +28,35 @@ export function getPackageNames(folderPath: string): string[] {
     } catch (error) {
         logMessage("ERROR", `Error reading folder: ${error}`);
         return [];
+    }
+}
+
+/**
+ * Retrieves the repository URL from the package.json file in the specified folder.
+ * @param folderPath - The path to the folder containing package.json.
+ * @returns The repository URL if found, otherwise null.
+ */
+export function getRepositoryUrl(folderPath: string): string | null {
+    const packageJsonPath = path.join(folderPath, 'package.json');
+    
+    try {
+        // Read and parse the package.json file
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) as {
+            repository?: {
+                type?: string;
+                url?: string;
+            };
+        };
+        
+        // Retrieve the repository URL if it exists
+        if (packageJson.repository && packageJson.repository.url) {
+            return packageJson.repository.url;
+        } else {
+            logMessage("ERROR", 'Repository URL not found in package.json');
+            return null;
+        }
+    } catch (error) {
+        logMessage("ERROR", `Failed to read package.json: ${(error as Error).message}`);
+        return null;
     }
 }

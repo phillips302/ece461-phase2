@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { getScores } from "./tools/score.js";
-import { parseGitHubUrl, parseNpmUrl, getUrlsFromFile, getLinkType, logMessage, npmToGitHub } from "./tools/utils.js";
+import { getUrlsFromFile, logMessage, getOwnerRepo } from "./tools/utils.js";
 import { fetchVersionHistory } from "./tools/fetchVersion.js";
 import { ingestPackage } from "./tools/ingest.js";
 import { getPackageNames } from "./tools/fetchPackages.js";
@@ -34,10 +34,10 @@ if (args[0] === '-u') {
   call = "ingest";
   input = args[1];
 } else if (args[0] === '-h') {
-  console.log("Usage: ./run [-u] [-c] <package URL>");
-  console.log("Options:");
-  console.log("  -u: Update mode, updates the package in the directory");
-  console.log("  -c: Dependency Cost mode, finds the cumulative size of all dependencies");
+  log("Usage: ./run [-u] [-c] <package URL>");
+  log("Options:");
+  log("  -u: Update mode, updates the package in the directory");
+  log("  -c: Dependency Cost mode, finds the cumulative size of all dependencies");
   exit(0);
 }
 
@@ -65,41 +65,11 @@ if (dependCostMode) {
 }
 
 for (const url of urlArray) {
-  logMessage("INFO", `Analyzing repository: ${url}`);
-
-  const linkType = getLinkType(url);
-
-  if (linkType === "Unknown") {
-    logMessage("ERROR", `Unknown link type: ${url}`);
-  }
-
   let owner: string | null = null;
   let repo: string | null = null;
   let output;
-
-  if (linkType === "npm") {
-    const packageName = parseNpmUrl(url);
-    let repoInfo = null;
-    if (!packageName) {
-      logMessage("ERROR", `Invalid npm link: ${url}`);
-    } else {
-      repoInfo = await npmToGitHub(packageName);
-    }
-
-    if (repoInfo) {
-      ({ owner, repo } = repoInfo);
-      logMessage("INFO", `GitHub repository found for npm package: ${owner}/${repo}`);
-    } else {
-      logMessage("ERROR", `No GitHub repository found for npm package: ${owner}/${repo}`);
-    }
-  } else if (linkType === "GitHub") {
-    ({ owner, repo } = parseGitHubUrl(url) || { owner: null, repo: null });
-    if(owner && repo){
-      logMessage("INFO", `GitHub owner and repo extracted from GitHub link: ${owner}/${repo}`);
-    } else {
-      logMessage("ERROR", `Invalid GitHub link: ${url}`);
-    }
-  }
+  
+  ({ owner, repo } = await getOwnerRepo(url));
 
   if (!owner || !repo) {
     output = {
@@ -143,11 +113,11 @@ for (const url of urlArray) {
       // temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
       packageDirectory = getPackageNames('./ingestedPackages');
-      console.log("Package Directory: ", packageDirectory);
+      log("Package Directory: ", packageDirectory);
       //console.log(JSON.stringify(temp));
     }
   } else {
-    console.log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
-    console.log(output);
+    log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
+    log(output);
   }
 }
