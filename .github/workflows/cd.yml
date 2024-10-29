@@ -27,9 +27,8 @@ jobs:
       run: docker rm -f ece461-phase2-container || true
     
     - name: Run new docker container
-      #run: docker run -d --name ece461-phase2-container -p 8080:80 phillips302/ece461-phase2:latest
       run: |
-        docker run -d --name ece461-phase2-container -p 8080:8080 \
+        docker run -d --name ece461-phase2-container -p 8080:5000 \
         -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token" --with-decryption --query "Parameter.Value" --output text) \
         -e LOG_LEVEL=2 \
         -e LOG_FILE=/var/log/app.log \
