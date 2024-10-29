@@ -5,12 +5,13 @@ import apiRoutes from './routes/api.js';
 import queryVersionRoutes from './routes/queryVersion.js';
 
 const app: Application = express();
-const port = 8080;
+const port = 5000;
 
 app.use(express.json());
 // Use imported routes
 app.use('/', homeRoutes);
 app.use('/', screen1Routes);
+app.use('/', queryVersionRoutes);
 app.use('/api', apiRoutes);
 
 app.get('/', (req: Request, res: Response) => {
