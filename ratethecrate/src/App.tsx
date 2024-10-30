@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 
+//run app by cding into ratethecrate then running npm start
+
 const App: React.FC = () => {
   //variables to hold
   const [searchValue, setSearchValue] = useState('');
