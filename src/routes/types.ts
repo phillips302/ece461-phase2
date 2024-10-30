@@ -1,13 +1,3 @@
-// Define the schema for PackageQuery, EnumerateOffset, and PackageMetadata
-
-  export interface PackageQuery {
-    Version?: string;
-    Name: string;
-  }
-  
-  export interface EnumerateOffset {
-    offset: number;
-  }
 
   export interface Package {
     metadata: PackageMetadata;
@@ -27,6 +17,25 @@
     JSProgram: string;
   }
 
+  export interface User {
+    name: string;
+    isAdmin: boolean;
+  }
+
+  export interface UserAuthenticationInfo {
+    password: string;
+  }
+
+  export interface PackageID {
+    PackageID: string;
+  }
+  
+  export interface PackageCost {
+    ID: string;
+    standaloneCost: number;
+    totalCost: number;
+  }
+  
   export interface PackageRating {
     BusFactor: number;
     BusFactorLatency: number;
@@ -46,10 +55,33 @@
     NetScoreLatency: number;
   }
 
-  export interface PackageCost {
-    ID: string;
-    standaloneCost: number;
-    totalCost: number;
+  export interface PackageHistoryEntry {
+    User: User;
+    Date: string;
+    PackageMetadata: PackageMetadata;
+    Action: string;
+  }
+
+  export interface PackageName {
+    PackageName: string;
+  }
+
+  export interface AuthenticationRequest{
+    User: User;
+    Secret:	UserAuthenticationInfo
+  }
+
+  export interface SemverRange {
+    SemverRange: string;
+  }
+
+  export interface PackageQuery {
+    Version?: SemverRange;
+    Name: PackageName;
+  }
+  
+  export interface EnumerateOffset {
+    offset: number;
   }
 
   export interface PackageByRegEx {
