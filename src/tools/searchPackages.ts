@@ -1,7 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { logMessage } from "./utils.js";
-import { match } from 'assert';
 
 /**
  * Searches for packname or README content for a given regular expression.
@@ -56,18 +55,16 @@ export async function searchPackages(regex_string: string): Promise<{ Version: s
 
                 // If a match is found, copy the package directory to the results directory
                 if (match) {
-                    if (match) {
-                        let packageJsonPath = path.join(packagePath, 'package.json');
-                        try {
-                            let packageContent = await fs.readFile(packageJsonPath, 'utf8');
-                            let packageData = JSON.parse(packageContent); // Parse the JSON content
-                            let packageVersion = packageData.version || 'unknown'; // Extract version
-                            matchedPackages.push({ Version: packageVersion, Name: packageName });
-    
-                            logMessage('INFO', `Copied matched package: ${packageName}, Version: ${packageVersion}`);
-                        } catch (err) {
-                            logMessage('DEBUG', `package.json not found or invalid for package: ${packageName}`);
-                        }
+                    let packageJsonPath = path.join(packagePath, 'package.json');
+                    try {
+                        let packageContent = await fs.readFile(packageJsonPath, 'utf8');
+                        let packageData = JSON.parse(packageContent); // Parse the JSON content
+                        let packageVersion = packageData.version || 'unknown'; // Extract version
+                        matchedPackages.push({ Version: packageVersion, Name: packageName });
+
+                        logMessage('INFO', `Copied matched package: ${packageName}, Version: ${packageVersion}`);
+                    } catch (err) {
+                        logMessage('DEBUG', `package.json not found or invalid for package: ${packageName}`);
                     }
                 }
             }
