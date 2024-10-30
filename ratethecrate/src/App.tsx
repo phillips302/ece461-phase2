@@ -6,13 +6,37 @@ import './App.css';
 
 const App: React.FC = () => {
   //variables to hold
+  const [isSearchSinking, setIsSearchSinking] = useState(false);
+  const [isUploadSinking, setIsUploadSinking] = useState(false);
+
   const [searchValue, setSearchValue] = useState('');
 
+  const packages = [
+    { id: 1, name: 'Browserify' },
+    { id: 2, name: 'Cloudinary' },
+    { id: 3, name: 'Lodash' }
+  ]
+
   //helper functions
+  const handleSearchClick = () => {
+    setIsSearchSinking(true);
+    // Reset sinking effect after a brief delay
+    setTimeout(() => {
+      setIsSearchSinking(false);
+    }, 200); // 200ms corresponds to the duration of the sinking effect
+  };
+
+  const handleUploadClick = () => {
+    setIsUploadSinking(true);
+    // Reset sinking effect after a brief delay
+    setTimeout(() => {
+      setIsUploadSinking(false);
+    }, 200); // 200ms corresponds to the duration of the sinking effect
+  };
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
   };
-
 
   return (
     <div className="App">
@@ -24,9 +48,21 @@ const App: React.FC = () => {
         onChange={handleChange}
         placeholder="Search Packages..."
       />
-      <button className='searchButton'>
+      <button className={`searchButton ${isSearchSinking ? 'sunk' : ''}`} onClick={handleSearchClick}>
         <i className="fas fa-search"></i>
       </button>
+      <button className={`uploadButton ${isUploadSinking ? 'sunk' : ''}`} onClick={handleUploadClick}>
+          <i className="fas fa-upload"></i>
+      </button>
+      <div className='darkBlueBox'>
+        <ul>
+          {packages.map((product) => (
+            <li key={product.id}>
+              <strong>{product.name}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
