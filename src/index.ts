@@ -49,7 +49,6 @@ if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   urlArray = getUrlsFromFile(input);
   call = "file";
 } else {
-  // The argument is a string, process it as a string
   if (input.includes("https://")){
     logMessage("INFO", "Processing input as a string for ingestion");
     urlArray = [input]; // Assuming you're processing a single string into an array
@@ -58,8 +57,20 @@ if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   else{
     logMessage("INFO", "Processing input as a string for searching");
     call = "search";
-    await searchPackages(input); 
+    await searchPackages(input);
   }
+}
+
+if (dependCostMode) {
+  logMessage("INFO", "Finding Dependency Cost...");
+  try {
+    const dependencySize: number = await getCumulativeSize(urlArray);
+    console.log("The total cumulative size is: ", dependencySize.toFixed(2), " MB.");
+  } catch (error) {
+    logMessage("ERROR", "Failed to find Dependency Cost");
+    exit(1);
+  }
+  exit(0);
 }
 
 for (const url of urlArray) {
