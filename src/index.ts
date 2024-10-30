@@ -6,6 +6,7 @@ import { ingestPackage } from "./tools/ingest.js";
 import { getPackageNames } from "./tools/fetchPackages.js";
 import { updatePackage } from './tools/updatePackage.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
+import { searchPackages } from "./tools/searchPackages.js";
 import { exit } from 'process';
 import { log } from 'console';
 
@@ -48,8 +49,16 @@ if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   urlArray = getUrlsFromFile(input);
   call = "file";
 } else {
-  logMessage("INFO", "Processing input as a URL");
-  urlArray.push(input);
+  if (input.includes("https://")){
+    logMessage("INFO", "Processing input as a string for ingestion");
+    urlArray = [input]; // Assuming you're processing a single string into an array
+    call = "ingest";
+  }
+  else{
+    logMessage("INFO", "Processing input as a string for searching");
+    call = "search";
+    await searchPackages(input);
+  }
 }
 
 if (dependCostMode) {
