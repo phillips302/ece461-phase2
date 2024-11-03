@@ -1,0 +1,27 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [ "prod" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Login Dockerhub
+      env:
+        DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run:
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        
+    - name: Build the Docker image
+      run: docker build -t phillips302/ece461-phase2 .
+    - name: List Docker images
+      run: docker image ls
+    - name: Push to Dockerhub
+      run: docker push phillips302/ece461-phase2
