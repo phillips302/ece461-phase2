@@ -1,8 +1,6 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches: [ "deploy-project" ]
   pull_request:
     branches: [ "prod" ]
 
