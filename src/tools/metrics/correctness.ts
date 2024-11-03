@@ -54,7 +54,7 @@ export async function getCorrectness(owner: string, repo: string): Promise<numbe
     const results = await eslint.lintFiles([path.join(repoDir, '**', '*.{ts,tsx,js,jsx}')]);
 
     // Calculate ESLint score
-    const totalProblems = results.reduce((sum, result) => sum + result.errorCount + result.warningCount, 0);
+    const totalProblems = results.reduce((sum, result) => sum + result.errorCount + (Math.floor(result.warningCount / 5)), 0);
     const eslintScore = results.length > 0 ? Math.max(0, 1 - (totalProblems / (results.length * 10))) : 0;
 
     logMessage('INFO', `Final ESLint score: ${eslintScore}`);

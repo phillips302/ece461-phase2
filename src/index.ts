@@ -47,7 +47,6 @@ if (args[0] === '-u') {
 if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
   logMessage("INFO", "Processing input as a file");
   urlArray = getUrlsFromFile(input);
-  call = "file";
 } else {
   if (input.includes("https://")){
     logMessage("INFO", "Processing input as a string for ingestion");
@@ -118,8 +117,8 @@ for (const url of urlArray) {
       logMessage("ERROR", `Failed to ingest package for repository: ${url}`);
     } else {
       let temp = JSON.parse(output);
-      // temp["BusFactor"] = 0.5;
-      // temp["prFraction"] = 0.5;
+      //temp["BusFactor"] = 0.5;
+      //temp["prFraction"] = 0.5;
       await ingestPackage(temp, owner, repo);
       packageDirectory = getPackageNames('./ingestedPackages');
       log("Package Directory: ", packageDirectory);
