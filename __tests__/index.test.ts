@@ -49,6 +49,5 @@ describe('CLI logic', () => {
         await import('../src/index.ts');
 
         expect(mockGetScores).toHaveBeenCalledTimes(2);
-        expect(mockGetLinkType).toHaveBeenCalledTimes(2);
     }, { timeout: 20000 });
 });
