@@ -34,11 +34,7 @@ async function runNpmUpdate(dir: string): Promise<void> {
     return new Promise((resolve, reject) => {
         logMessage('INFO', `Running npm update in directory: ${dir}`);
         
-<<<<<<< HEAD
-        exec(`npm outdated -u`, { cwd: dir }, (error, stdout, stderr) => {
-=======
         exec(`cd ${dir} && npm update`, (error, stdout, stderr) => {
->>>>>>> main
             if (error) {
                 logMessage('ERROR', `During npm update: ${stderr}`);
                 logMessage('ERROR', `stdout: ${stdout}`);
