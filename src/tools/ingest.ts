@@ -10,7 +10,7 @@ import { logMessage } from "./utils.js";
  * @param repo - Name of the repository.
  * @returns Promise<void>.
  */
-export async function ingestPackage(output: { [key: string]: number | string }, owner: string | null, repo: string | null): Promise<void> {
+export async function ingestPackage(output: { [key: string]: number | string }, owner: string | null, repo: string | null): Promise<boolean> {
     let ingest = true;
     const filteredOutput = Object.entries(output)
     .filter(([key]) => 
@@ -35,7 +35,7 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
             try {
                 await fs.access(dir);
                 logMessage(`INFO`, `Repository already exists in directory: ${dir}`);
-                return;
+                return false;
             } catch (err) {
                 logMessage(`INFO`, `Repository does not exist, procedding to clone in ${dir}`);
             }
@@ -50,6 +50,8 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
         logMessage('DEBUG', `Package not ingested due to failing metrics.`);
         console.log(`${repo} not ingested due to failing metrics.`);
     }
+
+    return ingest;
 }
 
 /**

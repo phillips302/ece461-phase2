@@ -44,6 +44,7 @@ export async function clearFolder(folderPath: string): Promise<number> {
     }
 }
 
+
 const folderPath = './ingestedPackages'; //change this file path if the registry folder changes
 clearFolder(folderPath).then((exit_val) => {
     if(exit_val) {

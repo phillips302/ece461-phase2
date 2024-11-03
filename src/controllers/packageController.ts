@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getPackageNames, getRepositoryUrl } from '../tools/fetchPackages.js';
 import { getOwnerRepo } from '../tools/utils.js';
 import { fetchVersionHistory } from '../tools/fetchVersion.js';
+import { clearFolder } from '../reset.js';
 
 export const getPackageInfo = async (req: Request, res: Response) => {
     let packages = []
@@ -20,4 +21,13 @@ export const getPackageInfo = async (req: Request, res: Response) => {
         packages.push({ Version: versionHistory, Name: name.charAt(0).toUpperCase() + name.slice(1), ID: name });
     }
   res.json(packages);
+};
+
+export const resetState = async (req: Request, res: Response) => {
+    try {
+        await clearFolder('./ingestedPackages', false);
+        res.status(200).json({ message: 'Registry is reset.' });
+    } catch (error) { 
+        res.status(500).json({ message: 'Error resetting registry.' });
+    }
 };

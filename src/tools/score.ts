@@ -6,6 +6,7 @@ import { getCorrectness } from "./metrics/correctness.js";
 import { measureConcurrentLatencies } from "./metrics/latency.js";
 import { getDependencyFraction } from "./metrics/fracDependencies.js";
 import { getPrFraction } from "./metrics/prFraction.js";
+import { PackageRating } from "../routes/types.js";
 
 /**
  * Gets the scores for a given repository.
@@ -66,5 +67,26 @@ export async function getScores(owner: string, repo: string, url: string): Promi
     "prFraction_Latency": prFractionLatency
   };
 
-  return JSON.stringify(output);
+  //return JSON.stringify(output);
+
+  const rating: PackageRating = {
+    BusFactor: busFactor,
+    BusFactorLatency: busFactorLatency,
+    Correctness: correctness,
+    CorrectnessLatency: correctnessLatency,
+    RampUp: rampUp,
+    RampUpLatency: rampUpLatency,
+    ResponsiveMaintainer: responsiveMaintainer,
+    ResponsiveMaintainerLatency: responsiveMaintainerLatency,
+    LicenseScore: license,
+    LicenseScoreLatency: licenseLatency,
+    GoodPinningPractice: fractionDependencies,
+    GoodPinningPracticeLatency: fractionDependenciesLatency,
+    PullRequest: prFraction,
+    PullRequestLatency: prFractionLatency,
+    NetScore: netScore,
+    NetScoreLatency: netScoreLatency,
+  };
+
+  return JSON.stringify(rating);
 }

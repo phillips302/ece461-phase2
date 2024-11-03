@@ -11,7 +11,7 @@
   }
 
   export interface PackageData {
-    content: string;
+    Content: string;
     URL: string;
     debloat: boolean;
     JSProgram: string;
@@ -31,9 +31,10 @@
   }
   
   export interface PackageCost {
-    ID: string;
-    standaloneCost: number;
-    totalCost: number;
+    [ID: string]: {
+        standaloneCost?: number;
+        totalCost: number;
+    }
   }
   
   export interface PackageRating {
