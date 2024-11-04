@@ -1,8 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import homeRoutes from './routes/helloWorld.js';
-import screen1Routes from './routes/route1.js';
-import packageRoutes from './routes/packageRoutes.js';
-import apiRoutes from './routes/api.js';
 import { Package, PackageQuery, PackageMetadata, PackageData, PackageCost } from './routes/types.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
@@ -49,11 +45,7 @@ let packageDatabase: Package[] = [];
 
 app.use(express.json());
 // Use imported routes
-app.use('/', homeRoutes);
-app.use('/', screen1Routes);
 app.use('/', queryVersionRoutes);
-app.use('/api', apiRoutes)
-app.use('/package', packageRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
@@ -182,7 +174,7 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => {
   res.status(200).json(pkgCost);
 });
 
-app.get('package/byRegEx', (req: Request, res: Response) => {
+app.get('/package/byRegEx', (req: Request, res: Response) => {
   //implement
 });
 
@@ -195,5 +187,6 @@ app.get('/tracks', (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
+  //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
+  console.log(`Express is listening at http://localhost:${port}`);
 });
