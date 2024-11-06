@@ -48,6 +48,7 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
         }
     } else {
         logMessage('DEBUG', `Package not ingested due to failing metrics.`);
+        console.log(`${repo} not ingested due to failing metrics.`);
     }
 }
 

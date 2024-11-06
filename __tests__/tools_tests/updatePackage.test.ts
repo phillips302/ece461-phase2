@@ -62,7 +62,7 @@ describe("updatePackage", () => {
         });
 
         await updatePackage(repo);
-        expect(logMessage).toHaveBeenCalledWith('ERROR', `Error during npm update: Some error output`);
+        expect(logMessage).toHaveBeenCalledWith('ERROR', `During npm update: Some error output`);
     });
 });
 
