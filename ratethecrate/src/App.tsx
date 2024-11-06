@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
+import * as schemaTypes from '../../src/schemaTypes';
 
 //run app by cding into ratethecrate then running npm start
 
