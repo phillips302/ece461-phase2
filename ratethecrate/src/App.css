@@ -2,7 +2,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #3781E1;
+  background-color: #2374de;
   color: white;
 }
 
@@ -14,18 +14,13 @@ body {
   border-radius: 4px;
 }
 
-.searchBar::placeholder {
-  color: #757575;
-  opacity: 1;
-}
-
 .searchButton {
   display: inline-flex;
   align-items: center;
   padding: 13px 20px;
   font-size: 16px;
   color: white;
-  background-color: #193861;
+  background-color: #1f467a;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -40,7 +35,7 @@ body {
   margin-left: 10px;
   font-size: 16px;
   color: white;
-  background-color: #193861;
+  background-color: #1f467a;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -55,7 +50,7 @@ body {
   margin-left: 10px;
   font-size: 16px;
   color: white;
-  background-color: #193861;
+  background-color: #1f467a;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -69,7 +64,7 @@ body {
   margin-left: 100px;
   margin-right: 100px;
   padding: 0;
-  background-color: #193861;
+  background-color: #1f467a;
   color: white;
   border-radius: 4px;
   flex-grow: 1;
@@ -95,7 +90,7 @@ body {
   justify-content: space-between;
   margin-right: 20px;
   padding: 10px;
-  background-color: #3781E1;
+  background-color: #2374de;
   color: white;
   border-radius: 4px;
   flex-grow: 1;
