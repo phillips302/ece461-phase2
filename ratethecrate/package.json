@@ -47,5 +47,8 @@
       ".localhost"
     ],
     "proxy": "https://localhost:3386/"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17"
   }
 }

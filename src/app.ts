@@ -18,6 +18,11 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
 });
 
+app.get('/api/hello', (req: Request, res: Response) => {
+  res.json({ message: 'Hello from the Express server!' });
+});
+
 app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
   console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
 });

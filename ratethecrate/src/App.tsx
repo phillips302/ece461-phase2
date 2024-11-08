@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getHelloMessage } from './api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
-import * as schemaTypes from '../../src/schemaTypes';
+//import * as schemaTypes from '../../src/schemaTypes';
 
 //run app by cding into ratethecrate then running npm start
 
@@ -67,10 +68,20 @@ const App: React.FC = () => {
     setSearchValue(event.target.value);
   };
 
+  //Test connection
+  const [message, setMessage] = useState<string>('');
+
+  useEffect(() => {
+    getHelloMessage()
+      .then(data => setMessage(data.message))
+      .catch(error => console.error('Error fetching message:', error));
+  }, []);
+
   return (
     <div className="App">
       <header>
         <h1>Rate the Crate</h1>
+        <p>Message from server: {message}</p>
       </header>
       <main>
         <label htmlFor="searchBar" className="visually-hidden"></label>
