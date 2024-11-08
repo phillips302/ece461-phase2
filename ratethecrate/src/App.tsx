@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getHelloMessage } from './api';
+import { getHelloMessage, getPackageRate } from './api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
-//import * as schemaTypes from '../../src/schemaTypes';
+import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
 
@@ -12,15 +12,16 @@ const App: React.FC = () => {
   const [isSearchSinking, setIsSearchSinking] = useState(false);
   const [isUploadSinking, setIsUploadSinking] = useState(false);
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
+  const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
 
   const packages = [
-    { id: 1, name: 'Browserify' },
-    { id: 2, name: 'Cloudinary' },
-    { id: 3, name: 'Lodash' }
+    { id: "12345", name: 'Browserify' }
+    // { id: "2", name: 'Cloudinary' },
+    // { id: "3", name: 'Lodash' }
   ]
 
   //helper functions
-  const handleSinkingClick = (id: number, action: string) => {
+  const handleSinkingClick = (id: string, action: string) => {
     const key = `${id}-${action}`;
 
     setSinkingButtons((prevState) => ({
@@ -42,7 +43,7 @@ const App: React.FC = () => {
       handleUpdateClick()
     }
     else if (action === "rate") {
-      handleRateClick()
+      handleRateClick(id)
     }
   };
 
@@ -62,13 +63,23 @@ const App: React.FC = () => {
 
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
   const handleUpdateClick = () => { alert(`Update Button clicked!`); }
-  const handleRateClick = () => {alert(`Rate Button clicked!`);  }
+
+  const handleRateClick = ( id: string ) => { 
+    getPackageRate(id) //call function to get that package rate
+    .then((data) => {
+      setRatePackages((prevState) => ({ //set the rate of the package
+        ...prevState,
+        [id]: data.rating,
+      }));
+      // Alert directly using `data.rating`
+      alert(`Rating for package ${id}: ${data.rating}`);
+    })
+  }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
   };
 
-  //Test connection
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
@@ -118,6 +129,12 @@ const App: React.FC = () => {
               <li key={product.id}>
                 <div className="lightBlueBox">
                   <span>{product.name}</span>
+
+                  {/* Display rating */}
+                  <span className="rating">
+                    {ratePackages[product.id] !== undefined ? `Rating: ${ratePackages[product.id]}` : 'No rating available'}
+                  </span>
+
                   <div className="rightAligned">
                     <button
                       title='Download'
