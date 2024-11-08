@@ -170,16 +170,20 @@ export async function calculateDependenciesSize(packageLock: PackageLockJson | u
     4.1 sum all sizes
 5. add the sum to the totalSize
 */
-export async function getPackageSize(owner: string | null, name: string | null, seenPackages: Map<string | null, number>): Promise<number> {
+export async function getPackageSize(name: string | null, seenPackages: Map<string | null, number>, depends: boolean): Promise<[number, number]> {
+    let packageSize: number = 0;
     let totalSize: number = 0;
     if (seenPackages.has(name)) {
-        return seenPackages.get(name) || 0;
+        packageSize = seenPackages.get(name) || 0;
+    } else {
+      packageSize = await getDirectorySize(process.cwd());
+      seenPackages.set(name, packageSize);
     }
-
-    totalSize += await getDirectorySize(process.cwd());
-    seenPackages.set(name, totalSize);
-    logMessage(`INFO`, `Size of ${name}: ${totalSize} KB`);
-
+    logMessage(`INFO`, `Size of ${name}: ${packageSize} KB`);
+    if (!depends) {
+        return [packageSize, totalSize];
+    }
+    totalSize += packageSize;
     //Step 2
     logMessage(`INFO`, `Generating package-lock.json for ${name}`);
     await generatePackageLock();
@@ -194,7 +198,7 @@ export async function getPackageSize(owner: string | null, name: string | null, 
 
     //Step 5
     totalSize += dependenciesSize;
-    return totalSize;
+    return [packageSize, totalSize];
 }
 
 export async function removeDirectory(dirPath: string): Promise<void> {
@@ -228,23 +232,21 @@ export async function changeDirectory(dir: string): Promise<void> {
  * @param packCostFile - The file where the package costs will be stored.
  * @returns number - The cumulative size of all the packages in MB.
  */
-export async function getCumulativeSize(urls: string[], packDir: string ="./packageCost", packCostFile: string = "./files/seenPackages.json"): Promise<number> {
+export async function getCumulativeSize(url: string, depends: boolean, packDir: string ="./packageCost", packCostFile: string = "./files/seenPackages.json"): Promise<[number, number]> {
     let seenPackages = await loadSeenPackagesFromFile(packCostFile);
-    let cumulativeSize: number = 0;
+    let packageSize: number = 0;
+    let totalSize: number = 0;
     await changeDirectory(packDir);
 
-    for (const url of urls) {
-        const { owner, repo } = await getOwnerRepo(url);
-        const packageDir = `./${repo}`;
-        await ingestPackageFree(owner, repo, packageDir);
-        await changeDirectory(packageDir);
-        cumulativeSize += await getPackageSize(owner, repo, seenPackages);
-        await changeDirectory("../");
-    }
-    await changeDirectory("../");
+    const { owner, repo } = await getOwnerRepo(url);
+    const packageDir = `./${repo}`;
+    await ingestPackageFree(owner, repo, packageDir);
+    await changeDirectory(packageDir);
+    [packageSize, totalSize] = await getPackageSize(repo, seenPackages, depends);
+    await changeDirectory("../../");
     await Promise.all([
         saveSeenPackagesToFile(seenPackages, packCostFile),
         removeDirectory(packDir)
       ]);
-    return cumulativeSize / 1024 / 1024;
+    return [packageSize / 1024 / 1024, totalSize / 1024 / 1024];
 }

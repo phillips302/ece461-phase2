@@ -240,7 +240,7 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  pkgCost.ID.totalCost = await getCumulativeSize([pkg.data.URL]);
+  [ , pkgCost.ID.totalCost] = await getCumulativeSize(pkg.data.URL, true);
 
   if(req.query.dependency) {
     //not finished
