@@ -11,10 +11,11 @@
   }
 
   export interface PackageData {
-    Content: string;
-    URL: string;
-    debloat: boolean;
-    JSProgram: string;
+    Name?: string;
+    Content?: string;
+    URL?: string;
+    debloat?: boolean;
+    JSProgram?: string;
   }
 
   export interface User {
@@ -77,8 +78,8 @@
   }
 
   export interface PackageQuery {
-    Version?: SemverRange;
-    Name: PackageName;
+    Version?: string;
+    Name: string;
   }
   
   export interface EnumerateOffset {
