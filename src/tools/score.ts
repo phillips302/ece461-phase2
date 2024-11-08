@@ -6,7 +6,7 @@ import { getCorrectness } from "./metrics/correctness.js";
 import { measureConcurrentLatencies } from "./metrics/latency.js";
 import { getDependencyFraction } from "./metrics/fracDependencies.js";
 import { getPrFraction } from "./metrics/prFraction.js";
-import { PackageRating } from "../routes/types.js";
+import { PackageRating } from "../apis/types.js";
 
 /**
  * Gets the scores for a given repository.

@@ -1,13 +1,13 @@
 import express, { Application, Request, Response } from 'express';
 import JSZip from 'jszip';
 import { Buffer } from 'buffer';
-import { Package, PackageQuery, PackageMetadata, PackageCost } from './routes/types.js';
-import { validatePackageQuerySchema, validatePackageSchema } from './routes/validation.js';
+import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
+import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
 import { getOwnerRepo } from './tools/utils.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
-import queryVersionRoutes from './routes/queryVersion.js';
+import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 
@@ -296,6 +296,6 @@ app.delete('/package/:id', (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
-  console.log(`Express is listening at http://localhost:${port}`);
+  console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
+  //console.log(`Express is listening at http://localhost:${port}`);
 });
