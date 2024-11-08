@@ -1,43 +1,44 @@
 
-export interface Package {
+  export interface Package {
     metadata: PackageMetadata;
     data: PackageData;
-}
-
-export interface PackageMetadata {
+  }
+  
+  export interface PackageMetadata {
     Name: string;
     ID: string;
     Version: string;
-}
+  }
 
-export interface PackageData {
-    Content: string;
-    URL: string;
-    debloat: boolean;
-    JSProgram: string;
-}
+  export interface PackageData {
+    Name?: string;
+    Content?: string;
+    URL?: string;
+    debloat?: boolean;
+    JSProgram?: string;
+  }
 
-export interface User {
+  export interface User {
     name: string;
     isAdmin: boolean;
-}
+  }
 
-export interface UserAuthenticationInfo {
+  export interface UserAuthenticationInfo {
     password: string;
-}
+  }
 
-export interface PackageID {
+  export interface PackageID {
     PackageID: string;
-}
-
-export interface PackageCost {
+  }
+  
+  export interface PackageCost {
     [ID: string]: {
         standaloneCost?: number;
         totalCost: number;
     }
-}
-
-export interface PackageRating {
+  }
+  
+  export interface PackageRating {
     BusFactor: number;
     BusFactorLatency: number;
     Correctness: number;
@@ -54,37 +55,38 @@ export interface PackageRating {
     PullRequestLatency: number;
     NetScore: number;
     NetScoreLatency: number;
-}
+  }
 
-export interface PackageHistoryEntry {
+  export interface PackageHistoryEntry {
     User: User;
     Date: string;
     PackageMetadata: PackageMetadata;
     Action: string;
-}
+  }
 
-export interface PackageName {
+  export interface PackageName {
     PackageName: string;
-}
+  }
 
-export interface AuthenticationRequest{
+  export interface AuthenticationRequest{
     User: User;
     Secret:	UserAuthenticationInfo
-}
+  }
 
-export interface SemverRange {
+  export interface SemverRange {
     SemverRange: string;
-}
+  }
 
-export interface PackageQuery {
-    Version?: SemverRange;
-    Name: PackageName;
-}
-
-export interface EnumerateOffset {
+  export interface PackageQuery {
+    Version?: string;
+    Name: string;
+  }
+  
+  export interface EnumerateOffset {
     offset: number;
-}
+  }
 
-export interface PackageByRegEx {
+  export interface PackageByRegEx {
     RegEx: string;
-}
+  }
+  
