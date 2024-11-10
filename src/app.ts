@@ -51,7 +51,7 @@ app.post('/packages', (req: Request, res: Response) => {
       return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
     }
   }
-  const offset = req.params.offset ? parseInt(req.params.offset) : 1;
+  const offset = req.params.offset ? parseInt(req.params.offset) : 1; //set pffset to 1 if its undefined
   
   let results: PackageMetadata[] = [];
   let counter = 0;
@@ -104,13 +104,13 @@ app.get('/package/:id', (req: Request, res: Response) => { //works
   res.status(200).json(pkg);
 });
 
-app.post('/package/:id', (req: Request, res: Response) => {
+app.post('/package/:id', (req: Request, res: Response) => { //feel like this isn't totally right
   //assumes all IDs are unique
-  if(!req.params.id && !validatePackageSchema(req.body)) {
+  if(!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
-  if((!req.body.data.Content && !req.body.data.URL) || (!req.body.data.Content && !req.body.data.URL)) { //should i be concerned about URL being dark blue
+  if((!req.body.data.Content && !req.body.data.URL) || (req.body.data.Content && req.body.data.URL)) { //make sure exactly one of these fields is defined
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
