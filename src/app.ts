@@ -257,7 +257,7 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   res.status(200).json(pkgCost);
 });
 
-app.get('/package/byRegEx', async (req: Request, res: Response) => {
+app.post('/package/byRegEx', async (req: Request, res: Response) => {
   if (!req.body.RegEx) {
     return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
   }
