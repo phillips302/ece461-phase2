@@ -14,7 +14,8 @@ import cors from 'cors';
 
 const app: Application = express();
 const port = 8081;
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors());
+// app.use(cors({ origin: 'http://localhost:3000' }));
 
 let packageDatabase: Package[] = [];
 

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getHelloMessage, getPackageRate } from './api';
+import React, { useState } from 'react';
+import { getPackageRate } from './api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import * as types from '../../src/apis/types.js';
@@ -71,8 +71,8 @@ const App: React.FC = () => {
         ...prevState,
         [id]: data.rating,
       }));
-      // Alert directly using `data.rating`
-      alert(`Rating for package ${id}: ${data.rating}`);
+      
+      alert(`Bus Factor: ${data.rating["BusFactor"]}\nNet Score: ${data.rating["NetScore"]}`);
     })
   }
 
@@ -80,19 +80,10 @@ const App: React.FC = () => {
     setSearchValue(event.target.value);
   };
 
-  const [message, setMessage] = useState<string>('');
-
-  useEffect(() => {
-    getHelloMessage()
-      .then(data => setMessage(data.message))
-      .catch(error => console.error('Error fetching message:', error));
-  }, []);
-
   return (
     <div className="App">
       <header>
         <h1>Rate the Crate</h1>
-        <p>Message from server: {message}</p>
       </header>
       <main>
         <label htmlFor="searchBar" className="visually-hidden"></label>
@@ -132,7 +123,7 @@ const App: React.FC = () => {
 
                   {/* Display rating */}
                   <span className="rating">
-                    {ratePackages[product.id] !== undefined ? `Rating: ${ratePackages[product.id]}` : 'No rating available'}
+                    {ratePackages[product.id] !== undefined ? `Rating: ${ratePackages[product.id]["NetScore"]}` : ''}
                   </span>
 
                   <div className="rightAligned">
