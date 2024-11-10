@@ -40,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^8.6.0",
     "@typescript-eslint/parser": "^8.6.0",
     "axios": "^1.7.7",
+    "chromedriver": "^130.0.4",
     "date-fns": "^4.0.0",
     "dotenv": "^16.4.5",
     "eslint": "^9.11.0",
@@ -48,6 +49,7 @@
     "graphql-request": "^7.1.0",
     "jsdom": "^25.0.0",
     "jszip": "^3.10.1",
+    "selenium-webdriver": "^4.26.0",
     "simple-git": "^3.27.0",
     "url": "^0.11.4",
     "uuid": "^11.0.2"
