@@ -223,7 +223,7 @@ app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
   res.status(200).json(obj);
 });
 
-app.get('/package/:id/cost', async (req: Request, res: Response) => {
+app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   if(!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
@@ -234,17 +234,25 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => {
     return res.status(404).send("Package does not exist.");
   }
 
-  const pkgCost: PackageCost = { [pkg.metadata.ID]: { standaloneCost: undefined, totalCost: 0 } };
+  const pkgCost: PackageCost = { [pkg.metadata.ID]: { standaloneCost: 0, totalCost: 0 } };
 
   if (!pkg.data.URL) {
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  pkgCost.ID.totalCost = await getCumulativeSize([pkg.data.URL]);
-
-  if(req.query.dependency) {
-    //not finished
+  if (req.query.dependency == 'true') {
+    [ pkgCost[pkg.metadata.ID].standaloneCost, pkgCost[pkg.metadata.ID].totalCost] = await getCumulativeSize(pkg.data.URL, true);
+  } else {
+    [ pkgCost[pkg.metadata.ID].totalCost, pkgCost[pkg.metadata.ID].standaloneCost] = await getCumulativeSize(pkg.data.URL, false);
   }
+
+  const temp = pkgCost[pkg.metadata.ID].standaloneCost as number;
+  pkgCost[pkg.metadata.ID].standaloneCost = parseFloat(temp.toFixed(2));
+  if (req.query.dependency != 'true') {
+    pkgCost[pkg.metadata.ID].standaloneCost = undefined;
+  }
+
+  pkgCost[pkg.metadata.ID].totalCost = parseFloat(pkgCost[pkg.metadata.ID].totalCost.toFixed(2));
 
   res.status(200).json(pkgCost);
 });
@@ -296,6 +304,6 @@ app.delete('/package/:id', (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
-  //console.log(`Express is listening at http://localhost:${port}`);
+  //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
+  console.log(`Express is listening at http://localhost:${port}`);
 });
