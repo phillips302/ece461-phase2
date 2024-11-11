@@ -46,10 +46,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
 });
 
-app.get('/api/hello', (req: Request, res: Response) => {
-  res.json({ message: 'Hello from the Express server!' });
-});
-
 app.post('/packages', (req: Request, res: Response) => {
   const pkgqry: PackageQuery[] = req.body;
 

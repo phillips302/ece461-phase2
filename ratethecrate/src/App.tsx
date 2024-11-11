@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getPackageRate } from './api';
+import { deletePackages, getPackageRate } from './api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import * as types from '../../src/apis/types.js';
@@ -11,13 +11,17 @@ let title = ""
 let message = ``
 
 //pop up
-const Modal: React.FC<{ isVisible: boolean, onClose: () => void, ratingData: types.PackageRating | null }> = ({ isVisible, onClose, ratingData }) => {
+const Modal: React.FC<{ isVisible: boolean, onClose: () => void, ratingData: types.PackageRating | null, title: string, message: string }> = ({ isVisible, onClose, ratingData, title, message }) => {
+  const handleClose = () => {
+    onClose(); // Close the modal
+  };
+
   if (!isVisible) return null;
 
   return (
     <div className="modalOverlay">
       <div className="modalContent">
-        <button className="closeButton" onClick={onClose}>&times;</button>
+        <button className="closeButton" onClick={handleClose}>&times;</button>
         <h2>{title}</h2>
         {ratingData ? (
           <div>
@@ -37,10 +41,13 @@ const App: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
   const [isSearchSinking, setIsSearchSinking] = useState(false);
   const [isUploadSinking, setIsUploadSinking] = useState(false);
+  const [isDeleteSinking, setIsDeleteSinking] = useState(false);
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
   const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentRating, setCurrentRating] = useState<types.PackageRating | null>(null);
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState(''); // Message state
 
   const packages = [
     { id: "12345", name: 'Browserify' }
@@ -64,7 +71,10 @@ const App: React.FC = () => {
       }));
     }, 200);
 
-    if (action === "download") {
+    if (action === "package") {
+      handlePackageClick()
+    }
+    else if (action === "download") {
       handleDownloadClick()
     }
     else if (action === "update") {
@@ -72,6 +82,9 @@ const App: React.FC = () => {
     }
     else if (action === "rate") {
       handleRateClick(id)
+    }
+    else if (action === "cost") {
+      handleCostClick()
     }
   };
 
@@ -89,6 +102,21 @@ const App: React.FC = () => {
     }, 200);
   };
 
+  const handleDeleteClick = () => {
+    setIsDeleteSinking(true);
+    setTimeout(() => {
+      setIsDeleteSinking(false);
+    }, 200);
+
+    deletePackages() //call function to delete all packages
+    .then((data) => {
+      setTitle("");
+      setMessage(data.message);
+      setIsModalVisible(true);
+    })
+  };
+
+  const handlePackageClick = () => { alert(`Package Button clicked!`); }
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
   const handleUpdateClick = () => { alert(`Update Button clicked!`); }
 
@@ -100,11 +128,9 @@ const App: React.FC = () => {
         [id]: data.rating,
       }));
       setCurrentRating(data.rating); // Set the rating data for the modal
-      setIsModalVisible(true); // Show the modal
-      // alert(`Bus Factor: ${data.rating["BusFactor"]}\nNet Score: ${data.rating["NetScore"]}`);
 
-      title = "Package Rating"
-      message = `Bus Factor: ${data.rating["BusFactor"]} <br />
+      setTitle("Package Rating")
+      setMessage(`Bus Factor: ${data.rating["BusFactor"]} <br />
       Bus Factor Latency: ${data.rating["BusFactorLatency"]} <br />
       Correctness: ${data.rating["Correctness"]} <br />
       Correctness Latency: ${data.rating["CorrectnessLatency"]} <br />
@@ -119,9 +145,12 @@ const App: React.FC = () => {
       Pull Request: ${data.rating["PullRequest"]} <br />
       Pull Request Latency: ${data.rating["PullRequestLatency"]} <br />
       Net Score: ${data.rating["NetScore"]} <br />
-      Net Score Latency: ${data.rating["NetScoreLatency"]} <br />`
+      Net Score Latency: ${data.rating["NetScoreLatency"]} <br />`)
+      setIsModalVisible(true); // Show the modal
     })
   }
+
+  const handleCostClick = () => { alert(`Cost Button clicked!`); }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
@@ -161,6 +190,15 @@ const App: React.FC = () => {
           <i className="fas fa-upload" aria-hidden="true"></i>
         </button>
 
+        <button
+          title="Delete"
+          aria-label="Delete All Packages"
+          className={`uploadButton ${isDeleteSinking ? 'sunk' : ''}`}
+          onClick={handleDeleteClick}
+        >
+          <i className="fas fa-trash" aria-hidden="true"></i>
+        </button>
+
         <section className="darkBlueBox">
           <ul>
             {packages.map((product) => (
@@ -174,6 +212,14 @@ const App: React.FC = () => {
                   </span>
 
                   <div className="rightAligned">
+                    <button
+                      title='Package'
+                      aria-label={`Link to ${product.name}`}
+                      className={`packageButtons ${sinkingButtons[`${product.id}-package`] ? 'sunk' : ''}`}
+                      onClick={() => handleSinkingClick(product.id, 'package')}
+                    >
+                      <i className="fas fa-box-open" aria-hidden="true"></i>
+                    </button>
                     <button
                       title='Download'
                       aria-label={`Download ${product.name}`}
@@ -198,6 +244,14 @@ const App: React.FC = () => {
                     >
                       <i className="fas fa-star" aria-hidden="true"></i>
                     </button>
+                    <button
+                      title='Cost'
+                      aria-label={`Cost of ${product.name}`}
+                      className={`packageButtons ${sinkingButtons[`${product.id}-cost`] ? 'sunk' : ''}`}
+                      onClick={() => handleSinkingClick(product.id, 'cost')}
+                    >
+                      <i className="fas fa-dollar-sign" aria-hidden="true"></i>
+                    </button>
                   </div>
                 </div>
               </li>
@@ -205,7 +259,13 @@ const App: React.FC = () => {
           </ul>
         </section>
         {/* Pop Up */}
-        <Modal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} ratingData={currentRating} />
+        <Modal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          ratingData={currentRating}
+          title={title}
+          message={message}
+        />
       </main>
     </div>
   );
