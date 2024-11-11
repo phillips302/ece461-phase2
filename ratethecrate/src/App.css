@@ -120,7 +120,7 @@ body {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3); /* Reduce shadow for a sunk effect */
 }
 
-.popup-overlay {
+.modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -132,12 +132,23 @@ body {
   justify-content: center;
 }
 
-.popup {
-  background: white;
+.modalContent {
+  background: #3781E1;
   padding: 20px;
+  width: 300px;
   border-radius: 8px;
-  max-width: 400px;
   text-align: center;
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
 .App {

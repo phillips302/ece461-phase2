@@ -6,6 +6,32 @@ import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
 
+//pop up variables
+let title = ""
+let message = ``
+
+//pop up
+const Modal: React.FC<{ isVisible: boolean, onClose: () => void, ratingData: types.PackageRating | null }> = ({ isVisible, onClose, ratingData }) => {
+  if (!isVisible) return null;
+
+  return (
+    <div className="modalOverlay">
+      <div className="modalContent">
+        <button className="closeButton" onClick={onClose}>&times;</button>
+        <h2>{title}</h2>
+        {ratingData ? (
+          <div>
+            <p dangerouslySetInnerHTML={{ __html: message }} />
+          </div>
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+//main app
 const App: React.FC = () => {
   //variables to hold
   const [searchValue, setSearchValue] = useState('');
@@ -13,6 +39,8 @@ const App: React.FC = () => {
   const [isUploadSinking, setIsUploadSinking] = useState(false);
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
   const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentRating, setCurrentRating] = useState<types.PackageRating | null>(null);
 
   const packages = [
     { id: "12345", name: 'Browserify' }
@@ -71,8 +99,27 @@ const App: React.FC = () => {
         ...prevState,
         [id]: data.rating,
       }));
-      
-      alert(`Bus Factor: ${data.rating["BusFactor"]}\nNet Score: ${data.rating["NetScore"]}`);
+      setCurrentRating(data.rating); // Set the rating data for the modal
+      setIsModalVisible(true); // Show the modal
+      // alert(`Bus Factor: ${data.rating["BusFactor"]}\nNet Score: ${data.rating["NetScore"]}`);
+
+      title = "Package Rating"
+      message = `Bus Factor: ${data.rating["BusFactor"]} <br />
+      Bus Factor Latency: ${data.rating["BusFactorLatency"]} <br />
+      Correctness: ${data.rating["Correctness"]} <br />
+      Correctness Latency: ${data.rating["CorrectnessLatency"]} <br />
+      Ramp Up: ${data.rating["RampUp"]} <br />
+      Ramp Up Latency: ${data.rating["RampUpLatency"]} <br />
+      Responsive Maintainer: ${data.rating["ResponsiveMaintainer"]} <br />
+      Responsive Maintainer Latency: ${data.rating["ResponsiveMaintainerLatency"]} <br />
+      License Score: ${data.rating["LicenseScore"]} <br />
+      License Score Latency: ${data.rating["LicenseScoreLatency"]} <br />
+      Good Pinning Practice: ${data.rating["GoodPinningPractice"]} <br />
+      Good Pinning Practice Latency: ${data.rating["GoodPinningPracticeLatency"]} <br />
+      Pull Request: ${data.rating["PullRequest"]} <br />
+      Pull Request Latency: ${data.rating["PullRequestLatency"]} <br />
+      Net Score: ${data.rating["NetScore"]} <br />
+      Net Score Latency: ${data.rating["NetScoreLatency"]} <br />`
     })
   }
 
@@ -123,7 +170,7 @@ const App: React.FC = () => {
 
                   {/* Display rating */}
                   <span className="rating">
-                    {ratePackages[product.id] !== undefined ? `Rating: ${ratePackages[product.id]["NetScore"]}` : ''}
+                    {ratePackages[product.id] !== undefined ? `Rating: ${ratePackages[product.id]["NetScore"]}/1` : ''}
                   </span>
 
                   <div className="rightAligned">
@@ -157,6 +204,8 @@ const App: React.FC = () => {
             ))}
           </ul>
         </section>
+        {/* Pop Up */}
+        <Modal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} ratingData={currentRating} />
       </main>
     </div>
   );
