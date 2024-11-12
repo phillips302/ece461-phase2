@@ -109,19 +109,37 @@ app.post('/package/:id', (req: Request, res: Response) => { //feel like this isn
   if(!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
-
-  if((!req.body.data.Content && !req.body.data.URL) || (req.body.data.Content && req.body.data.URL)) { //make sure exactly one of these fields is defined
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
-  }
-
+  
   const pkg = packageDatabase.find(p => p.metadata.ID == req.params.id);
 
-  if (!pkg || req.body.metadata.Version !== pkg.metadata.Version || req.body.metadata.Name !== pkg.metadata.Name) {
+  if (!pkg) {
     return res.status(404).send("Package does not exist.");
   }
 
-  pkg.data = req.body.data;
-  res.status(200).json(pkg);
+  if ((!req.body.data.Content && !req.body.data.URL) || (req.body.data.Content && req.body.data.URL)) { //make sure exactly one of these fields is defined
+    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  }
+
+  if ((pkg.metadata.Name != req.body.metadata.Name)) { //make sure name matches
+    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  }
+
+  //check version
+  if (req.body.metadata.Version == pkg.metadata.Version) {
+    return res.status(409).send("Package version already exists.");
+  }
+
+  let parts = (req.body.metadata.Version).split('.');
+  const newPatchNumber = parts[2]; // Get the third number in the version string
+  parts = (pkg.metadata.Version).split('.');
+  const currPatchNumber = parts[2]; // Get the third number in the version string
+
+  if (req.body.data.Content && newPatchNumber < currPatchNumber) {
+    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  }
+
+  packageDatabase.push(req.body.data);
+  res.status(200).send("Version is updated.");
 });
 
 app.post('/package', async (req: Request, res: Response) => {
@@ -161,11 +179,14 @@ app.post('/package', async (req: Request, res: Response) => {
   if (!owner || !repo) {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
-  const versionHistory = await fetchVersionHistory(owner, repo);
   
+  let versionHistory = await fetchVersionHistory(owner, repo);
+  if (versionHistory == 'No version history') {
+    versionHistory = '1.0.0';
+  }
+
   const pkg = packageDatabase.find(p => p.metadata.Name == repo);
-  const ver = packageDatabase.find(p => p.metadata.Version == versionHistory);
-  if (pkg && ver) { 
+  if (pkg) {
     return res.status(409).send("Package exists already.");
   }
 
