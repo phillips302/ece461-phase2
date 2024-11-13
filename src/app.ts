@@ -17,21 +17,22 @@ const port = 8081;
 let packageDatabase: Package[] = [];
 
 // Example package to initialize the packageDatabase
-const examplePackage: Package = {
-  metadata: {
-    Name: "example-package",
-    ID: '12345',
-    Version: "1.0.0"
-  },
-  data: {
-    debloat: false,
-    JSProgram: "console.log('Hello, world!');",
-    Content: "console.log('Hello, world!');",
-    URL: "https://www.npmjs.com/package/browserify"
-  }
-};
-
-packageDatabase.push(examplePackage);
+for (let i = 0; i < 10; i++) {
+  let examplePackage: Package = {
+    metadata: {
+      Name: `example-package-${i}`,
+      ID: `1234${i}`,
+      Version: "1.0.0"
+    },
+    data: {
+      debloat: false,
+      JSProgram: "console.log('Hello, world!');",
+      Content: "console.log('Hello, world!');",
+      URL: "https://www.npmjs.com/package/browserify"
+    }
+  };
+  packageDatabase.push(examplePackage);
+}
 
 app.use(express.json());
 
@@ -44,6 +45,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.post('/packages', (req: Request, res: Response) => {
+  //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
 
   for (const q of pkgqry) {
@@ -51,7 +53,7 @@ app.post('/packages', (req: Request, res: Response) => {
       return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
     }
   }
-  const offset = req.params.offset ? parseInt(req.params.offset) : 1; //set offset to 1 if its undefined
+  const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
   
   let results: PackageMetadata[] = [];
   let counter = 0;
