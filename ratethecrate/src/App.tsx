@@ -34,7 +34,7 @@ const Modal: React.FC<{ isVisible: boolean, onClose: () => void, title: string, 
 //main app
 const App: React.FC = () => {
   //variables to hold
-  const [packages, setPackages] = useState<types.PackageMetadata[]>([ { ID: "12345", Name: 'Browserify', Version: "1.0.0" } ]);
+  const [packages, setPackages] = useState<types.PackageMetadata[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [isSearchSinking, setIsSearchSinking] = useState(false);
   const [isUploadSinking, setIsUploadSinking] = useState(false);
@@ -92,7 +92,7 @@ const App: React.FC = () => {
     }, 200);
 
     if (searchValue === "" ) {
-      getAllPackages()
+      getAllPackages("*", undefined)
       .then((data) => {
         setPackages(data)
         })
@@ -184,6 +184,7 @@ const App: React.FC = () => {
   }
 
   const handleCostClick = ( id : string ) => { 
+
     getPackageCost(id) //call function to get that package cost
     .then((data) => {
       setCostPackages((prevState) => ({ //set the cost of the package
@@ -191,8 +192,14 @@ const App: React.FC = () => {
         [id]: data.cost,
       }));
       setTitle("Package Cost")
-      setMessage(`Standalone Cost: ${data.cost.standaloneCost} <br />
-        Total Cost: ${data.cost.totalCost}`); // Set the cost data for the modal
+      if (data.cost?.id?.standaloneCost !== undefined) { //dependency determines if standlone cost is not undefined
+        setMessage(`Standalone Cost: ${data.cost[id].standaloneCost} <br />
+          Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
+      }
+      else{
+        setMessage(`Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
+      }
+
       setIsModalVisible(true); // Show the modal
     })
    }

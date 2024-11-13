@@ -2,16 +2,33 @@ import * as types from '../../src/apis/types.js';
 
 const URL = 'http://localhost:8081/'
 
-export const getAllPackages = async (): Promise<types.PackageMetadata[]> => {
-  const response = await fetch(`${URL}packages`);
+export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[]> => {
+  try {
+    const PackageQuery:types.PackageQuery = {
+      Version: version,
+      Name: name
+    };
+  
+    const response = await fetch(`${URL}packages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([ PackageQuery ])
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch packages: ${response.statusText}`);
+    if (!response.ok) {
+      alert(`Failed to fetch packages: ${response.statusText}`);
+    }
+  
+    const data = await response.json();
+  
+    return data;
   }
-
-  const data = await response.json();
-
-  return data;
+  catch (error) {
+    alert(`Error fetching packages: ${error}`);
+    return []
+  }  
 };
 
 export const deletePackages = async (): Promise<{ message : string }> => {
@@ -75,6 +92,9 @@ export const getPackageRate = async (id: string): Promise<{ rating: types.Packag
 };
 
 export const getPackageCost = async (id: string): Promise<{ cost: types.PackageCost }> => {
+  // const owner, const string } = getOwnerRepo()
+  // dependency = fetchDependencies(owner, string)
+
   const response = await fetch(`${URL}package/${id}/cost`);
 
   if (!response.ok) {
