@@ -94,14 +94,26 @@ const App: React.FC = () => {
       setIsSearchSinking(false);
     }, 200);
 
-    if (nameValue === "" ) {
-      getAllPackages("*", undefined)
+    if (nameValue !== "" && versionValue === ""){
+      getAllPackages(nameValue, undefined)
+      .then((data) => {
+        setPackages(data)
+        })
+    }
+    else if (nameValue === "" && versionValue !== ""){
+      getAllPackages("string", versionValue) //change name?
+      .then((data) => {
+        setPackages(data)
+        })
+    }
+    else if (regexValue !== ""){
+      getCertainPackages(regexValue)
       .then((data) => {
         setPackages(data)
         })
     }
     else {
-      getCertainPackages(nameValue)
+      getAllPackages("*", undefined)
       .then((data) => {
         setPackages(data)
         })
@@ -209,6 +221,9 @@ const App: React.FC = () => {
 
    const handleToggleChange = () => {
     setShowTwoSearchBars(prevState => !prevState); // Toggle between two search bars or one
+    setNameValue("");
+    setVersionValue("");
+    setRegexValue("");
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
