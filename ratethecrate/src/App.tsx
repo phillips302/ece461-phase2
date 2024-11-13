@@ -35,7 +35,9 @@ const Modal: React.FC<{ isVisible: boolean, onClose: () => void, title: string, 
 const App: React.FC = () => {
   //variables to hold
   const [packages, setPackages] = useState<types.PackageMetadata[]>([]);
-  const [searchValue, setSearchValue] = useState('');
+  const [nameValue, setNameValue] = useState('');
+  const [versionValue, setVersionValue] = useState('');
+  const [regexValue, setRegexValue] = useState('');
   const [isSearchSinking, setIsSearchSinking] = useState(false);
   const [isUploadSinking, setIsUploadSinking] = useState(false);
   const [isDeleteSinking, setIsDeleteSinking] = useState(false);
@@ -43,6 +45,7 @@ const App: React.FC = () => {
   const [currPackage, setCurrPackage] = useState<{ [key: string]: types.Package }>({});
   const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
   const [costPackages, setCostPackages] = useState<{ [key: string]: types.PackageCost }>({});
+  const [showTwoSearchBars, setShowTwoSearchBars] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState(''); // Message state
@@ -91,14 +94,14 @@ const App: React.FC = () => {
       setIsSearchSinking(false);
     }, 200);
 
-    if (searchValue === "" ) {
+    if (nameValue === "" ) {
       getAllPackages("*", undefined)
       .then((data) => {
         setPackages(data)
         })
     }
     else {
-      getCertainPackages(searchValue)
+      getCertainPackages(nameValue)
       .then((data) => {
         setPackages(data)
         })
@@ -128,7 +131,7 @@ const App: React.FC = () => {
   };
 
   const handlePackageClick = ( id:string ) => { 
-    if (searchValue === "" ) {
+    if (nameValue === "" ) {
       getPackage(id)
       .then((data) => {
         setCurrPackage((prevState) => ({ //set the rate of the package
@@ -204,8 +207,20 @@ const App: React.FC = () => {
     })
    }
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value);
+   const handleToggleChange = () => {
+    setShowTwoSearchBars(prevState => !prevState); // Toggle between two search bars or one
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNameValue(event.target.value);
+  };
+
+  const handleVersionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setVersionValue(event.target.value);
+  };
+
+  const handleRegexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRegexValue(event.target.value);
   };
 
   return (
@@ -214,24 +229,68 @@ const App: React.FC = () => {
         <h1>Rate the Crate</h1>
       </header>
       <main>
-        <label htmlFor="searchBar" className="visually-hidden"></label>
-        <input
-          id="searchBar"
-          className="searchBar"
-          type="text"
-          value={searchValue}
-          onChange={handleChange}
-          placeholder="Search Packages..."
-          aria-label="Search Bar"
-        />
-        <button
-          title="Search"
-          aria-label="Search"
-          className={`searchButton ${isSearchSinking ? 'sunk' : ''}`}
-          onClick={handleSearchClick}
-        >
-          <i className="fas fa-search" aria-hidden="true"></i>
-        </button>
+
+        <label className="switch">
+          <input 
+            type="checkbox" 
+            checked={showTwoSearchBars} 
+            onChange={handleToggleChange}
+          />
+          <span className="slider"></span>
+        </label>
+
+        {!showTwoSearchBars && (
+          <React.Fragment>
+            <input
+              id="searchBar"
+              className="searchBar"
+              type="text"
+              value={regexValue}
+              onChange={handleRegexChange}
+              placeholder="Search by Regular Expression..."
+              aria-label="Search Bar"
+            />
+            <button
+              title="Search"
+              aria-label="Search"
+              className={`searchButton ${isSearchSinking ? 'sunk' : ''}`}
+              onClick={handleSearchClick}
+            >
+              <i className="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </React.Fragment>
+        )}
+
+        {showTwoSearchBars && (
+          <React.Fragment>
+            <input
+              id="searchBar"
+              className="searchBar2"
+              type="text"
+              value={nameValue}
+              onChange={handleNameChange}
+              placeholder="Search by Name..."
+              aria-label="Search Bar"
+            />
+            <input
+              id="searchBar2"
+              className="searchBar2"
+              type="text"
+              value={versionValue}
+              onChange={handleVersionChange}
+              placeholder="Search by Version..."
+              aria-label="Search Bar 2"
+            />
+            <button
+              title="Search"
+              aria-label="Search"
+              className={`searchButton ${isSearchSinking ? 'sunk' : ''}`}
+              onClick={handleSearchClick}
+            >
+              <i className="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </React.Fragment>
+        )}
 
         <button
           title="Upload"
