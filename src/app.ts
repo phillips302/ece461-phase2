@@ -51,7 +51,7 @@ app.post('/packages', (req: Request, res: Response) => {
       return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
     }
   }
-  const offset = req.params.offset ? parseInt(req.params.offset) : 1; //set pffset to 1 if its undefined
+  const offset = req.params.offset ? parseInt(req.params.offset) : 1; //set offset to 1 if its undefined
   
   let results: PackageMetadata[] = [];
   let counter = 0;
@@ -104,7 +104,7 @@ app.get('/package/:id', (req: Request, res: Response) => { //works
   res.status(200).json(pkg);
 });
 
-app.post('/package/:id', (req: Request, res: Response) => { //feel like this isn't totally right
+app.post('/package/:id', (req: Request, res: Response) => { //update this to populate content
   //assumes all IDs are unique
   if(!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
@@ -143,7 +143,6 @@ app.post('/package/:id', (req: Request, res: Response) => { //feel like this isn
 });
 
 app.post('/package', async (req: Request, res: Response) => {
-  //revisit description in schema for other cases that are not upload
   if(!req.body) {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
