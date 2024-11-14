@@ -1,4 +1,4 @@
-import * as types from '../../src/apis/types.js';
+import * as types from '../../../src/apis/types.js';
 
 const URL = 'http://localhost:8081/'
 

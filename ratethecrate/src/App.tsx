@@ -1,36 +1,12 @@
 import React, { useState } from 'react';
-import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage } from './api';
+import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage } from './api/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
+import PopUp from './PopUp';
 import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
-
-//pop up
-const Modal: React.FC<{ isVisible: boolean, onClose: () => void, title: string, message: string }> = ({ isVisible, onClose, title, message }) => {
-  const handleClose = () => {
-    onClose(); // Close the modal
-  };
-
-  if (!isVisible) return null;
-
-  return (
-    <div className="modalOverlay">
-      <div className="modalContent">
-        <button className="closeButton" onClick={handleClose}>&times;</button>
-        <h2>{title}</h2>
-        {message ? (
-          <div>
-            <p dangerouslySetInnerHTML={{ __html: message }} />
-          </div>
-        ) : (
-          <p>Loading...</p>
-        )}
-      </div>
-    </div>
-  );
-};
 
 //main app
 const App: React.FC = () => {
@@ -45,14 +21,14 @@ const App: React.FC = () => {
   const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
   const [costPackages, setCostPackages] = useState<{ [key: string]: types.PackageCost }>({});
   const [showTwoSearchBars, setShowTwoSearchBars] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState(''); // Message state
 
-  // getAllPackages()
-  //   .then((data) => {
-  //     setPackages(data)
-  //     })
+  getAllPackages("*", undefined)
+  .then((data) => {
+    setPackages(data)
+    })
 
   //helper functions
   const handleSinkingClick = async (id: string, action: string) => {
@@ -84,7 +60,7 @@ const App: React.FC = () => {
       console.error("Error handling action:", error);
       setTitle("Error");
       setMessage("An error occurred while processing your request.");
-      setIsModalVisible(true);
+      setPopUpVisible(true);
     }
   };
 
@@ -134,7 +110,7 @@ const App: React.FC = () => {
     .then((data) => {
       setTitle("");
       setMessage(data.message);
-      setIsModalVisible(true);
+      setPopUpVisible(true);
       setPackages([]);
     })
     .finally(() => {
@@ -153,7 +129,7 @@ const App: React.FC = () => {
       setMessage(`Id: ${data.metadata.ID} <br />
         Version: ${data.metadata.Version} <br />
         URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
-      setIsModalVisible(true) // Show the modal
+      setPopUpVisible(true) // Show the modal
     })
     .finally(() => {
       setIsLoading(false)
@@ -201,7 +177,7 @@ const App: React.FC = () => {
         Good Pinning Practice Latency: ${data.rating["GoodPinningPracticeLatency"]} <br />
         Pull Request Latency: ${data.rating["PullRequestLatency"]} <br />
         Net Score Latency: ${data.rating["NetScoreLatency"]}`)
-      setIsModalVisible(true); // Show the modal
+      setPopUpVisible(true); // Show the modal
     })
     .finally(() => {
       setIsLoading(false)
@@ -224,7 +200,7 @@ const App: React.FC = () => {
       else{
         setMessage(`Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
       }
-      setIsModalVisible(true); // Show the modal
+      setPopUpVisible(true); // Show the modal
     })
     .finally(() => {
       setIsLoading(false)
@@ -384,10 +360,9 @@ const App: React.FC = () => {
             ))}
           </ul>
         </section>
-        {/* Pop Up */}
-        <Modal
-          isVisible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
+        <PopUp
+          isVisible={isPopUpVisible}
+          onClose={() => setPopUpVisible(false)}
           title={title}
           message={message}
         />
