@@ -3,6 +3,8 @@
 # Check if the argument is 'install'
 if [ "$1" == "install" ]; then
   echo "Installing.."
+  # rm -rf node_modules
+  # rm package-lock.json
   npm install
   npm run build
   if [ $? -eq 0 ]; then
@@ -12,42 +14,16 @@ if [ "$1" == "install" ]; then
     echo "Install failed"
     exit 1
   fi
+#check if argument is test
+elif [ "$1" == "test" ]; then
+  node dist/testOutput.js "$1"
+#check if argument is start
+elif [ "$1" == "start" ]; then
+  node dist/app.js
+#check if argument is reset
+elif [ "$1" == "reset" ]; then
+  node dist/reset.js "$1"
+#any other argument send to index.js
+else
+  node dist/index.js "$@"
 fi
-
-if [ "$1" == "test" ]; then
-  # Run the tests and generate a coverage report, directing stderr to /dev/null
-  OUTPUT=$(npx vitest run --coverage 2>/dev/null)
-  VITEST_EXIT_CODE=$?
-
-  # If Vitest fails, still display the number of passed tests
-  if [ $VITEST_EXIT_CODE -ne 0 ]; then
-    # Extract the number of failed tests and total tests
-    TESTS_FAILED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $2}')
-    TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $5}' | sed 's/[()]//g')
-
-    # Calculate the number of passed tests
-    TESTS_PASSED=$((TOTAL_TESTS - TESTS_FAILED))
-
-    # Output the results in the specified format
-    echo "$TESTS_PASSED/$TOTAL_TESTS test cases passed. ??% line coverage achieved."
-    exit 1
-  fi
-
-  # Extract the number of tests passed and total tests
-  TESTS_PASSED=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $2}')
-  TOTAL_TESTS=$(echo "$OUTPUT" | grep 'Tests' | awk '{print $4}' | sed 's/[()]//g')
-  
-  # Extract line coverage percentage
-  COVERAGE_PERCENT=$(echo "$OUTPUT" | grep 'All files' | awk '{print $10}')
-
-  # Round the coverage percentage to the nearest whole number
-  COVERAGE_ROUNDED=$(printf "%.0f" "$COVERAGE_PERCENT")
-
-  # Output the results in the specified format
-  echo "$TESTS_PASSED/$TOTAL_TESTS test cases passed. $COVERAGE_ROUNDED% line coverage achieved."
-
-  exit 0
-fi
-
-# Handle other cases
-node dist/index.js "$1"

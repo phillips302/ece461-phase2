@@ -69,3 +69,5 @@ dist/
 /node_modules
 **/*.txt
 **/*.log
+ingestedPackages/
+packageCost/
