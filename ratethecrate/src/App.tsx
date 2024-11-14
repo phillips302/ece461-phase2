@@ -55,19 +55,8 @@ const App: React.FC = () => {
   //     })
 
   //helper functions
-  const LoadingOverlay: React.FC = () => {
-    return (
-      <div className="loadingOverlay">
-        <div className="spinner">
-          <i className="fas fa-spinner fa-spin"></i>
-        </div>
-      </div>
-    );
-  };
-
-  const handleSinkingClick = (id: string, action: string) => {
+  const handleSinkingClick = async (id: string, action: string) => {
     const key = `${id}-${action}`;
-
     setSinkingButtons((prevState) => ({
       ...prevState,
       [key]: true,
@@ -80,37 +69,23 @@ const App: React.FC = () => {
       }));
     }, 200);
 
-    setIsLoading(true); // Show loading overlay
+    setTimeout(() => setIsLoading(true), 1);
 
-    if (action === "search") {
-      handleSearchClick()
+    try {
+      if (action === "search") await handleSearchClick();
+      else if (action === "upload") await handleUploadClick();
+      else if (action === "delete") await handleDeleteClick();
+      else if (action === "package") await handlePackageClick(id);
+      else if (action === "download") await handleDownloadClick();
+      else if (action === "update") await handleUpdateClick(id);
+      else if (action === "rate") await handleRateClick(id);
+      else if (action === "cost") await handleCostClick(id);
+    } catch (error) {
+      console.error("Error handling action:", error);
+      setTitle("Error");
+      setMessage("An error occurred while processing your request.");
+      setIsModalVisible(true);
     }
-    else if (action === "upload") {
-      handleUploadClick()
-    }
-    else if (action === "delete") {
-      handleDeleteClick()
-    }
-    else if (action === "package") {
-      handlePackageClick(id)
-    }
-    else if (action === "package") {
-      handlePackageClick(id)
-    }
-    else if (action === "download") {
-      handleDownloadClick()
-    }
-    else if (action === "update") {
-      handleUpdateClick(id)
-    }
-    else if (action === "rate") {
-      handleRateClick(id)
-    }
-    else if (action === "cost") {
-      handleCostClick(id)
-    }
-
-    setIsLoading(false);
   };
 
   const handleSearchClick = () => {
@@ -118,29 +93,41 @@ const App: React.FC = () => {
       getAllPackages(nameValue, undefined)
       .then((data) => {
         setPackages(data)
-        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
     }
     else if (nameValue === "" && versionValue !== ""){
       getAllPackages("string", versionValue) //change name?
       .then((data) => {
         setPackages(data)
-        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
     }
     else if (regexValue !== ""){
       getCertainPackages(regexValue)
       .then((data) => {
         setPackages(data)
-        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
     }
     else {
       getAllPackages("*", undefined)
       .then((data) => {
         setPackages(data)
         })
+      .finally(() => {
+        setIsLoading(false)
+      })
     }
   };
 
-  const handleUploadClick = () => { };
+  const handleUploadClick = () => { setIsLoading(false) };
 
   const handleDeleteClick = () => {
     deletePackages() //call function to delete all packages
@@ -149,6 +136,9 @@ const App: React.FC = () => {
       setMessage(data.message);
       setIsModalVisible(true);
       setPackages([]);
+    })
+    .finally(() => {
+      setIsLoading(false)
     })
   };
 
@@ -165,17 +155,25 @@ const App: React.FC = () => {
         URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
       setIsModalVisible(true) // Show the modal
     })
+    .finally(() => {
+      setIsLoading(false)
+    })
   }
 
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
-  const handleUpdateClick = ( id:string ) => { alert(
+  const handleUpdateClick = ( id:string ) => { 
+    setIsLoading(false) 
+    alert(
     updatePackage(id)
       .then((data) => {
         setCurrPackage((prevState) => ({ //set the rate of the package
           ...prevState,
           [id]: data,
         }));
+      })
+      .finally(() => {
+        setIsLoading(false)
       })
   )}
 
@@ -205,6 +203,9 @@ const App: React.FC = () => {
         Net Score Latency: ${data.rating["NetScoreLatency"]}`)
       setIsModalVisible(true); // Show the modal
     })
+    .finally(() => {
+      setIsLoading(false)
+    })
   }
 
   const handleCostClick = ( id : string ) => { 
@@ -223,8 +224,10 @@ const App: React.FC = () => {
       else{
         setMessage(`Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
       }
-
       setIsModalVisible(true); // Show the modal
+    })
+    .finally(() => {
+      setIsLoading(false)
     })
    }
 
@@ -249,6 +252,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
+      {isLoading && <LoadingOverlay />}
       <header>
         <h1>Rate the Crate</h1>
       </header>

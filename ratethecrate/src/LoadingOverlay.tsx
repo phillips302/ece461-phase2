@@ -1,14 +1,10 @@
 import React from 'react';
-import './LoadingOverlay.css'; // Add a separate CSS file for styling
+import './LoadingOverlay.css';
 
-const LoadingOverlay: React.FC = () => {
-  return (
-    <div className="loadingOverlay">
-      <div className="spinner">
-        <i className="fas fa-spinner fa-spin"></i>
-      </div>
-    </div>
-  );
-};
+const LoadingOverlay: React.FC = () => (
+  <div className="loadingOverlay">
+    <div className="spinner" />
+  </div>
+);
 
 export default LoadingOverlay;
