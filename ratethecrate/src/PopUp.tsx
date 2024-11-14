@@ -1,5 +1,5 @@
 import React from 'react';
-import './PopUp.css';
+import './styles/PopUp.css';
 
 const PopUp: React.FC<{ isVisible: boolean, onClose: () => void, title: string, message: string }> = ({ isVisible, onClose, title, message }) => {
     const handleClose = () => {

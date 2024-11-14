@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage } from './api/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import './App.css';
+import './styles/App.css';
 import PopUp from './PopUp';
 import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
@@ -12,23 +12,21 @@ import * as types from '../../src/apis/types.js';
 const App: React.FC = () => {
   //variables to hold
   const [isLoading, setIsLoading] = useState(false);
-  const [packages, setPackages] = useState<types.PackageMetadata[]>([]);
-  const [nameValue, setNameValue] = useState('');
-  const [versionValue, setVersionValue] = useState('');
-  const [regexValue, setRegexValue] = useState('');
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
-  const [currPackage, setCurrPackage] = useState<{ [key: string]: types.Package }>({});
-  const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
-  const [costPackages, setCostPackages] = useState<{ [key: string]: types.PackageCost }>({});
   const [showTwoSearchBars, setShowTwoSearchBars] = useState(false);
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState(''); // Message state
 
-  getAllPackages("*", undefined)
-  .then((data) => {
-    setPackages(data)
-    })
+  
+  const [nameValue, setNameValue] = useState('');
+  const [versionValue, setVersionValue] = useState('');
+  const [regexValue, setRegexValue] = useState('');
+  
+  const [packages, setPackages] = useState<types.PackageMetadata[]>([]);
+  const [currPackage, setCurrPackage] = useState<{ [key: string]: types.Package }>({});
+  const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
+  const [costPackages, setCostPackages] = useState<{ [key: string]: types.PackageCost }>({});
 
   //helper functions
   const handleSinkingClick = async (id: string, action: string) => {
@@ -185,7 +183,6 @@ const App: React.FC = () => {
   }
 
   const handleCostClick = ( id : string ) => { 
-
     getPackageCost(id) //call function to get that package cost
     .then((data) => {
       setCostPackages((prevState) => ({ //set the cost of the package
