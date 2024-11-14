@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage } from './api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
+import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
@@ -34,13 +35,11 @@ const Modal: React.FC<{ isVisible: boolean, onClose: () => void, title: string, 
 //main app
 const App: React.FC = () => {
   //variables to hold
+  const [isLoading, setIsLoading] = useState(false);
   const [packages, setPackages] = useState<types.PackageMetadata[]>([]);
   const [nameValue, setNameValue] = useState('');
   const [versionValue, setVersionValue] = useState('');
   const [regexValue, setRegexValue] = useState('');
-  const [isSearchSinking, setIsSearchSinking] = useState(false);
-  const [isUploadSinking, setIsUploadSinking] = useState(false);
-  const [isDeleteSinking, setIsDeleteSinking] = useState(false);
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
   const [currPackage, setCurrPackage] = useState<{ [key: string]: types.Package }>({});
   const [ratePackages, setRatePackages] = useState<{ [key: string]: types.PackageRating }>({});
@@ -56,6 +55,16 @@ const App: React.FC = () => {
   //     })
 
   //helper functions
+  const LoadingOverlay: React.FC = () => {
+    return (
+      <div className="loadingOverlay">
+        <div className="spinner">
+          <i className="fas fa-spinner fa-spin"></i>
+        </div>
+      </div>
+    );
+  };
+
   const handleSinkingClick = (id: string, action: string) => {
     const key = `${id}-${action}`;
 
@@ -71,7 +80,21 @@ const App: React.FC = () => {
       }));
     }, 200);
 
-    if (action === "package") {
+    setIsLoading(true); // Show loading overlay
+
+    if (action === "search") {
+      handleSearchClick()
+    }
+    else if (action === "upload") {
+      handleUploadClick()
+    }
+    else if (action === "delete") {
+      handleDeleteClick()
+    }
+    else if (action === "package") {
+      handlePackageClick(id)
+    }
+    else if (action === "package") {
       handlePackageClick(id)
     }
     else if (action === "download") {
@@ -86,14 +109,11 @@ const App: React.FC = () => {
     else if (action === "cost") {
       handleCostClick(id)
     }
+
+    setIsLoading(false);
   };
 
   const handleSearchClick = () => {
-    setIsSearchSinking(true);
-    setTimeout(() => {
-      setIsSearchSinking(false);
-    }, 200);
-
     if (nameValue !== "" && versionValue === ""){
       getAllPackages(nameValue, undefined)
       .then((data) => {
@@ -120,19 +140,9 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUploadClick = () => {
-    setIsUploadSinking(true);
-    setTimeout(() => {
-      setIsUploadSinking(false);
-    }, 200);
-  };
+  const handleUploadClick = () => { };
 
   const handleDeleteClick = () => {
-    setIsDeleteSinking(true);
-    setTimeout(() => {
-      setIsDeleteSinking(false);
-    }, 200);
-
     deletePackages() //call function to delete all packages
     .then((data) => {
       setTitle("");
@@ -143,7 +153,6 @@ const App: React.FC = () => {
   };
 
   const handlePackageClick = ( id:string ) => { 
-    if (nameValue === "" ) {
       getPackage(id)
       .then((data) => {
         setCurrPackage((prevState) => ({ //set the rate of the package
@@ -156,7 +165,7 @@ const App: React.FC = () => {
         URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
       setIsModalVisible(true) // Show the modal
     })
-  }}
+  }
 
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
@@ -254,7 +263,7 @@ const App: React.FC = () => {
           <span className="slider"></span>
         </label>
 
-        {!showTwoSearchBars && (
+        {showTwoSearchBars && (
           <React.Fragment>
             <input
               id="searchBar"
@@ -265,18 +274,10 @@ const App: React.FC = () => {
               placeholder="Search by Regular Expression..."
               aria-label="Search Bar"
             />
-            <button
-              title="Search"
-              aria-label="Search"
-              className={`searchButton ${isSearchSinking ? 'sunk' : ''}`}
-              onClick={handleSearchClick}
-            >
-              <i className="fas fa-search" aria-hidden="true"></i>
-            </button>
           </React.Fragment>
         )}
 
-        {showTwoSearchBars && (
+        {!showTwoSearchBars && (
           <React.Fragment>
             <input
               id="searchBar"
@@ -296,22 +297,22 @@ const App: React.FC = () => {
               placeholder="Search by Version..."
               aria-label="Search Bar 2"
             />
-            <button
-              title="Search"
-              aria-label="Search"
-              className={`searchButton ${isSearchSinking ? 'sunk' : ''}`}
-              onClick={handleSearchClick}
-            >
-              <i className="fas fa-search" aria-hidden="true"></i>
-            </button>
           </React.Fragment>
         )}
+        <button
+              title="Search"
+              aria-label="Search"
+              className={`searchButton ${sinkingButtons[`-search`] ? 'sunk' : ''}`}
+              onClick={() => handleSinkingClick("", 'search')}
+            >
+              <i className="fas fa-search" aria-hidden="true"></i>
+        </button>
 
         <button
           title="Upload"
           aria-label="Upload Package"
-          className={`uploadButton ${isUploadSinking ? 'sunk' : ''}`}
-          onClick={handleUploadClick}
+          className={`uploadButton ${sinkingButtons[`-upload`] ? 'sunk' : ''}`}
+          onClick={() => handleSinkingClick("", 'upload')}
         >
           <i className="fas fa-upload" aria-hidden="true"></i>
         </button>
@@ -319,8 +320,8 @@ const App: React.FC = () => {
         <button
           title="Reset"
           aria-label="Reset All Packages"
-          className={`uploadButton ${isDeleteSinking ? 'sunk' : ''}`}
-          onClick={handleDeleteClick}
+          className={`uploadButton ${sinkingButtons[`-delete`] ? 'sunk' : ''}`}
+          onClick={() => handleSinkingClick("", 'delete')}
         >
           <i className="fas fa-trash" aria-hidden="true"></i>
         </button>
