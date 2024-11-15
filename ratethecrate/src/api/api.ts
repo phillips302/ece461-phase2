@@ -18,7 +18,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
     });
 
     if (!response.ok) {
-      alert(`Failed to fetch packages: ${response.statusText}`);
+      throw new Error(`Failed to fetch packages: ${response.statusText}`);
     }
   
     const data = await response.json();
@@ -26,8 +26,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
     return data;
   }
   catch (error) {
-    alert(`Error fetching packages: ${error}`);
-    return []
+    throw new Error(`Error fetching packages: ${error}`);
   }  
 };
 
@@ -107,13 +106,28 @@ export const getPackageCost = async (id: string): Promise<{ cost: types.PackageC
 };
 
 export const getCertainPackages = async ( reg: string): Promise<types.PackageMetadata[]> => {
-  const response = await fetch(`${URL}package/byRegEx`);
+  try {
+    const PackageByRegEx:types.PackageByRegEx = {
+      RegEx: reg
+    };
+  
+    const response = await fetch(`${URL}package/byRegEx`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([ PackageByRegEx ])
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch packages: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch packages: ${response.statusText}`);
+    }
+  
+    const data = await response.json();
+  
+    return data;
   }
-
-  const data = await response.json();
-
-  return data;
+  catch (error) {
+    throw new Error(`Error fetching packages: ${error}`);
+  }  
 };
