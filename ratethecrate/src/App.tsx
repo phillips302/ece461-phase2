@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage } from './api/api';
+import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage, uploadPackage } from './api/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/App.css';
 import PopUp from './PopUp';
@@ -73,7 +73,16 @@ const App: React.FC = () => {
       })
     }
     else if (nameValue === "" && versionValue !== ""){
-      getAllPackages("string", versionValue) //change name?
+      getAllPackages("*", versionValue)
+      .then((data) => {
+        setPackages(data)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+    }
+    else if (nameValue !== "" && versionValue !== ""){
+      getAllPackages(nameValue, versionValue)
       .then((data) => {
         setPackages(data)
       })
@@ -101,7 +110,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUploadClick = () => { setIsLoading(false) };
+  const handleUploadClick = () => { 
+    uploadPackage()
+    .then((data) => {
+      setPackages([data.metadata])
+      })
+    .finally(() => {
+      setIsLoading(false)
+    })
+   };
 
   const handleDeleteClick = () => {
     deletePackages() //call function to delete all packages
@@ -140,12 +157,6 @@ const App: React.FC = () => {
     setIsLoading(false) 
     alert(
     updatePackage(id)
-      .then((data) => {
-        setCurrPackage((prevState) => ({ //set the rate of the package
-          ...prevState,
-          [id]: data,
-        }));
-      })
       .finally(() => {
         setIsLoading(false)
       })
