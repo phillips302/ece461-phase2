@@ -124,5 +124,6 @@
   "url": 18322,
   "util": 9981,
   "vm-browserify": 4931,
-  "xtend": 2529
+  "xtend": 2529,
+  "test": 0
 }
