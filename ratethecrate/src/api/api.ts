@@ -2,7 +2,7 @@ import * as types from '../../../src/apis/types.js';
 
 const URL = 'http://localhost:8081/'
 
-export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[]> => { //works
+export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[] | { message : string }> => { //works
   try {
     const PackageQuery:types.PackageQuery = {
       Version: version,
@@ -18,7 +18,8 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch packages: ${response.statusText}`);
+      const message_text = await response.text();
+      return { message: message_text };
     }
   
     const data = await response.json();
@@ -26,7 +27,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
     return data;
   }
   catch (error) {
-    throw new Error(`Error fetching packages: ${error}`);
+    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
 
@@ -34,7 +35,8 @@ export const deletePackages = async (): Promise<{ message : string }> => { //wor
   const response = await fetch(`${URL}reset`, { method: 'DELETE' });
 
   if (!response.ok) {
-    throw new Error(`Failed to delete packages: ${response.statusText}`);
+    const message_text = await response.text();
+    return { message: message_text };
   }
 
   const message_text = await response.text();
@@ -42,11 +44,12 @@ export const deletePackages = async (): Promise<{ message : string }> => { //wor
   return { message: message_text };
 };
 
-export const getPackage = async (id: string): Promise<types.Package> => { //works
+export const getPackage = async (id: string): Promise<types.Package | { message:string }> => { //works
   const response = await fetch(`${URL}package/${id}`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch package: ${response.statusText}`);
+    const message_text = await response.text();
+    return { message: message_text };
   }
 
   const data = await response.json();
@@ -54,48 +57,31 @@ export const getPackage = async (id: string): Promise<types.Package> => { //work
   return data;
 };
 
-export const updatePackage = async (id: string): Promise<void> => { //not working
-  const foundPackage = await getPackage(id)
+export const updatePackage = async (id: string): Promise<{ message: string }> => { //not working
   try {
-    const PackageMetadata:types.PackageMetadata = {
-      Name: foundPackage.metadata.Name,
-      ID: foundPackage.metadata.ID,
-      Version: foundPackage.metadata.Version
-    }
-
-    const PackageData:types.PackageData = {
-      Name: foundPackage.data?.Name ?? undefined,
-      Content: foundPackage.data?.Content ?? undefined,
-      URL: foundPackage.data?.URL ?? undefined,
-      debloat: foundPackage.data?.debloat ?? undefined,
-      JSProgram: foundPackage.data?.JSProgram ?? undefined
-    }
-
-    const thisPackage:types.Package = {
-      metadata: PackageMetadata,
-      data: PackageData
-    };
-  
     const response = await fetch(`${URL}package/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([ thisPackage ])
+      body: JSON.stringify([ id ])
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to update package: ${response.statusText}`);
+      const message_text = await response.text();
+      return { message: message_text };
     }
+
+    const message_text = await response.text();
   
-    return;
+    return { message: message_text };
   }
   catch (error) {
-    throw new Error(`Error updating packages: ${error}`);
+    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
 
-export const uploadPackage = async (): Promise<types.Package> => { //need to implement which package to upload also download included?
+export const uploadPackage = async (): Promise<types.Package | { message:string }> => { //need to implement which package to upload (json object upload)
   try {
     const packageData:types.PackageData = {
       Name: "",
@@ -114,7 +100,8 @@ export const uploadPackage = async (): Promise<types.Package> => { //need to imp
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to upload packages: ${response.statusText}`);
+      const message_text = await response.text();
+      return { message: message_text };
     }
   
     const data = await response.json();
@@ -122,15 +109,16 @@ export const uploadPackage = async (): Promise<types.Package> => { //need to imp
     return data;
   }
   catch (error) {
-    throw new Error(`Error fetching packages: ${error}`);
+    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
 
-export const getPackageRate = async (id: string): Promise<{ rating: types.PackageRating }> => { //works
+export const getPackageRate = async (id: string): Promise<{ rating: types.PackageRating}  | { message : string } > => { //works
   const response = await fetch(`${URL}package/${id}/rate`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch rate: ${response.statusText}`);
+    const message_text = await response.text();
+    return { message: message_text };
   }
 
   const data = await response.json();
@@ -138,14 +126,15 @@ export const getPackageRate = async (id: string): Promise<{ rating: types.Packag
   return { rating: data }; //Return the rating in the expected format
 };
 
-export const getPackageCost = async (id: string): Promise<{ cost: types.PackageCost }> => { //fix dependency
+export const getPackageCost = async (id: string): Promise<{ cost: types.PackageCost } | { message : string }> => { //fix dependency
   // const owner, const string } = getOwnerRepo()
   // dependency = fetchDependencies(owner, string)
 
   const response = await fetch(`${URL}package/${id}/cost`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch cost: ${response.statusText}`);
+    const message_text = await response.text();
+    return { message: message_text };
   }
 
   const data = await response.json();
@@ -153,7 +142,7 @@ export const getPackageCost = async (id: string): Promise<{ cost: types.PackageC
   return { cost: data }; //Return the rating in the expected format
 };
 
-export const getCertainPackages = async ( reg: string): Promise<types.PackageMetadata[]> => { //not working
+export const getCertainPackages = async ( reg: string): Promise<types.PackageMetadata[] | {message:string}> => { //cant test fully but handles errors
   try {
     const PackageByRegEx:types.PackageByRegEx = {
       RegEx: reg
@@ -168,14 +157,16 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch packages: ${response.statusText}`);
+      const message_text = await response.text();
+      return { message: message_text };
     }
   
-    const data = await response.json();
-  
+    const data: types.PackageMetadata[] = await response.json();
     return data;
   }
   catch (error) {
-    throw new Error(`Error fetching packages: ${error}`);
+    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
+
+//implement download once Ethan implements download

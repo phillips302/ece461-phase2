@@ -66,7 +66,13 @@ const App: React.FC = () => {
     if (nameValue !== "" && versionValue === ""){
       getAllPackages(nameValue, undefined)
       .then((data) => {
-        setPackages(data)
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setPackages(data)
+        }
       })
       .finally(() => {
         setIsLoading(false)
@@ -75,7 +81,13 @@ const App: React.FC = () => {
     else if (nameValue === "" && versionValue !== ""){
       getAllPackages("*", versionValue)
       .then((data) => {
-        setPackages(data)
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setPackages(data)
+        }
       })
       .finally(() => {
         setIsLoading(false)
@@ -84,7 +96,13 @@ const App: React.FC = () => {
     else if (nameValue !== "" && versionValue !== ""){
       getAllPackages(nameValue, versionValue)
       .then((data) => {
-        setPackages(data)
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setPackages(data)
+        }
       })
       .finally(() => {
         setIsLoading(false)
@@ -93,7 +111,13 @@ const App: React.FC = () => {
     else if (regexValue !== ""){
       getCertainPackages(regexValue)
       .then((data) => {
-        setPackages(data)
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setPackages(data)
+        }
       })
       .finally(() => {
         setIsLoading(false)
@@ -102,7 +126,13 @@ const App: React.FC = () => {
     else {
       getAllPackages("*", undefined)
       .then((data) => {
-        setPackages(data)
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setPackages(data)
+        }
         })
       .finally(() => {
         setIsLoading(false)
@@ -113,7 +143,13 @@ const App: React.FC = () => {
   const handleUploadClick = () => { 
     uploadPackage()
     .then((data) => {
-      setPackages([data.metadata])
+      if ('message' in data) {
+        setTitle("");
+        setMessage(data.message);
+        setPopUpVisible(true);
+      } else {
+        setPackages([data.metadata])
+      }
       })
     .finally(() => {
       setIsLoading(false)
@@ -136,15 +172,21 @@ const App: React.FC = () => {
   const handlePackageClick = ( id:string ) => { 
       getPackage(id)
       .then((data) => {
-        setCurrPackage((prevState) => ({ //set the rate of the package
-          ...prevState,
-          [id]: data,
-        }));
-      setTitle(data.metadata.Name)
-      setMessage(`Id: ${data.metadata.ID} <br />
-        Version: ${data.metadata.Version} <br />
-        URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
-      setPopUpVisible(true) // Show the modal
+        if ('message' in data) {
+          setTitle("");
+          setMessage(data.message);
+          setPopUpVisible(true);
+        } else {
+          setCurrPackage((prevState) => ({ //set the rate of the package
+            ...prevState,
+            [id]: data,
+          }));
+        setTitle(data.metadata.Name)
+        setMessage(`Id: ${data.metadata.ID} <br />
+          Version: ${data.metadata.Version} <br />
+          URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
+        setPopUpVisible(true) // Show the modal
+        }
     })
     .finally(() => {
       setIsLoading(false)
@@ -155,38 +197,48 @@ const App: React.FC = () => {
 
   const handleUpdateClick = ( id:string ) => { 
     setIsLoading(false) 
-    alert(
     updatePackage(id)
-      .finally(() => {
-        setIsLoading(false)
-      })
-  )}
+    .then((data) => {
+      setTitle("");
+      setMessage(data.message);
+      setPopUpVisible(true);
+    })
+    .finally(() => {
+      setIsLoading(false)
+    })
+  }
 
   const handleRateClick = ( id: string ) => { 
     getPackageRate(id) //call function to get that package rate
     .then((data) => {
-      setRatePackages((prevState) => ({ //set the rate of the package
-        ...prevState,
-        [id]: data.rating,
-      }));
-      setTitle("Package Rating")
-      setMessage(`Bus Factor: ${data.rating["BusFactor"]} <br />
-        Correctness: ${data.rating["Correctness"]} <br />
-        Ramp Up: ${data.rating["RampUp"]} <br />
-        Responsive Maintainer: ${data.rating["ResponsiveMaintainer"]} <br />
-        License Score: ${data.rating["LicenseScore"]} <br />
-        Good Pinning Practice: ${data.rating["GoodPinningPractice"]} <br />
-        Pull Request: ${data.rating["PullRequest"]} <br />
-        Net Score: ${data.rating["NetScore"]} <br /> <br />
-        Bus Factor Latency: ${data.rating["BusFactorLatency"]} <br />
-        Correctness Latency: ${data.rating["CorrectnessLatency"]} <br />
-        Ramp Up Latency: ${data.rating["RampUpLatency"]} <br />
-        Responsive Maintainer Latency: ${data.rating["ResponsiveMaintainerLatency"]} <br />
-        License Score Latency: ${data.rating["LicenseScoreLatency"]} <br />
-        Good Pinning Practice Latency: ${data.rating["GoodPinningPracticeLatency"]} <br />
-        Pull Request Latency: ${data.rating["PullRequestLatency"]} <br />
-        Net Score Latency: ${data.rating["NetScoreLatency"]}`)
-      setPopUpVisible(true); // Show the modal
+      if ('message' in data) {
+        setTitle("");
+        setMessage(data.message);
+        setPopUpVisible(true);
+      } else {
+        setRatePackages((prevState) => ({ //set the rate of the package
+          ...prevState,
+          [id]: data.rating,
+        }));
+        setTitle("Package Rating")
+        setMessage(`Bus Factor: ${data.rating["BusFactor"]} <br />
+          Correctness: ${data.rating["Correctness"]} <br />
+          Ramp Up: ${data.rating["RampUp"]} <br />
+          Responsive Maintainer: ${data.rating["ResponsiveMaintainer"]} <br />
+          License Score: ${data.rating["LicenseScore"]} <br />
+          Good Pinning Practice: ${data.rating["GoodPinningPractice"]} <br />
+          Pull Request: ${data.rating["PullRequest"]} <br />
+          Net Score: ${data.rating["NetScore"]} <br /> <br />
+          Bus Factor Latency: ${data.rating["BusFactorLatency"]} <br />
+          Correctness Latency: ${data.rating["CorrectnessLatency"]} <br />
+          Ramp Up Latency: ${data.rating["RampUpLatency"]} <br />
+          Responsive Maintainer Latency: ${data.rating["ResponsiveMaintainerLatency"]} <br />
+          License Score Latency: ${data.rating["LicenseScoreLatency"]} <br />
+          Good Pinning Practice Latency: ${data.rating["GoodPinningPracticeLatency"]} <br />
+          Pull Request Latency: ${data.rating["PullRequestLatency"]} <br />
+          Net Score Latency: ${data.rating["NetScoreLatency"]}`)
+        setPopUpVisible(true); // Show the modal
+      }
     })
     .finally(() => {
       setIsLoading(false)
@@ -196,19 +248,25 @@ const App: React.FC = () => {
   const handleCostClick = ( id : string ) => { 
     getPackageCost(id) //call function to get that package cost
     .then((data) => {
-      setCostPackages((prevState) => ({ //set the cost of the package
-        ...prevState,
-        [id]: data.cost,
-      }));
-      setTitle("Package Cost")
-      if (data.cost?.id?.standaloneCost !== undefined) { //dependency determines if standlone cost is not undefined
-        setMessage(`Standalone Cost: ${data.cost[id].standaloneCost} <br />
-          Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
+      if ('message' in data) {
+        setTitle("");
+        setMessage(data.message);
+        setPopUpVisible(true);
+      } else {
+        setCostPackages((prevState) => ({ //set the cost of the package
+          ...prevState,
+          [id]: data.cost,
+        }));
+        setTitle("Package Cost")
+        if (data.cost?.id?.standaloneCost !== undefined) { //dependency determines if standlone cost is not undefined
+          setMessage(`Standalone Cost: ${data.cost[id].standaloneCost} <br />
+            Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
+        }
+        else{
+          setMessage(`Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
+        }
+        setPopUpVisible(true); // Show the modal
       }
-      else{
-        setMessage(`Total Cost: ${data.cost[id].totalCost}`); // Set the cost data for the modal
-      }
-      setPopUpVisible(true); // Show the modal
     })
     .finally(() => {
       setIsLoading(false)
