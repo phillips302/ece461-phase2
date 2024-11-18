@@ -50,6 +50,7 @@ export async function searchPackages(regex_string: string): Promise<{ Version: s
                         }
                     } catch (err){
                         logMessage('DEBUG', `README not found for package: ${packageName}`);
+                        return matchedPackages
                     }
                 }
 
@@ -65,12 +66,14 @@ export async function searchPackages(regex_string: string): Promise<{ Version: s
                         logMessage('INFO', `Copied matched package: ${packageName}, Version: ${packageVersion}`);
                     } catch (err) {
                         logMessage('DEBUG', `package.json not found or invalid for package: ${packageName}`);
+                        return matchedPackages
                     }
                 }
             }
         }
     } catch (err) {
         logMessage('ERROR', `Error during package search: ${err}`);
+        return matchedPackages
     }
     logMessage('INFO', JSON.stringify(matchedPackages, null, 2))
     return matchedPackages
