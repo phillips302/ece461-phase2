@@ -10,6 +10,7 @@ import { getCumulativeSize } from './tools/dependencyCost.js';
 import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
+import { contentToURL, urlToContent } from './apis/helpers.js';
 
 const app: Application = express();
 const port = 8081;
@@ -17,21 +18,22 @@ const port = 8081;
 let packageDatabase: Package[] = [];
 
 // Example package to initialize the packageDatabase
-const examplePackage: Package = {
-  metadata: {
-    Name: "example-package",
-    ID: '12345',
-    Version: "1.0.0"
-  },
-  data: {
-    debloat: false,
-    JSProgram: "console.log('Hello, world!');",
-    Content: "console.log('Hello, world!');",
-    URL: "https://www.npmjs.com/package/browserify"
-  }
-};
-
-packageDatabase.push(examplePackage);
+for (let i = 0; i < 10; i++) {
+  let examplePackage: Package = {
+    metadata: {
+      Name: `example-package-${i}`,
+      ID: `1234${i}`,
+      Version: "1.0.0"
+    },
+    data: {
+      debloat: false,
+      JSProgram: "console.log('Hello, world!');",
+      Content: "console.log('Hello, world!');",
+      URL: "https://www.npmjs.com/package/browserify"
+    }
+  };
+  packageDatabase.push(examplePackage);
+}
 
 app.use(express.json());
 
@@ -43,7 +45,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
 });
 
-app.post('/packages', (req: Request, res: Response) => {
+app.post('/packages', (req: Request, res: Response) => { //works
+  //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
 
   for (const q of pkgqry) {
@@ -51,21 +54,21 @@ app.post('/packages', (req: Request, res: Response) => {
       return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
     }
   }
-  const offset = req.params.offset ? parseInt(req.params.offset) : 1; //set offset to 1 if its undefined
+  const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
   
   let results: PackageMetadata[] = [];
   let counter = 0;
 
   if (pkgqry.length == 1 && pkgqry[0].Name == '*') { //get all packages, if version is null or defined
     for (let i = 0; i < offset; i++) {
-      if(!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
+      if (!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
         results.push(packageDatabase[i].metadata);
       }
     }
   }
 
   for (const q of pkgqry) {
-    if(!q.Version) { //get specific packages, no version
+    if (!q.Version) { //get specific packages, no version
       for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
         if (packageDatabase[i].metadata.Name == q.Name) {
           results.push(packageDatabase[i].metadata);
@@ -85,13 +88,13 @@ app.post('/packages', (req: Request, res: Response) => {
   res.status(200).send(results);
 });
 
-app.delete('/reset', (req: Request, res: Response) => { 
+app.delete('/reset', (req: Request, res: Response) => { //works
   packageDatabase = [];
   res.status(200).send("The package database has been reset.");
 });
 
-app.get('/package/:id', (req: Request, res: Response) => { //works
-  if(!req.params.id) {
+app.get('/package/:id', async (req: Request, res: Response) => {
+  if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
@@ -101,12 +104,28 @@ app.get('/package/:id', (req: Request, res: Response) => { //works
     return res.status(404).send("Package does not exist.");
   }
 
+  if (!pkg.data.Content) {
+    if (!pkg.data.URL) {
+      return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+    }
+
+    try {
+      const content = await urlToContent(pkg.data.URL);
+      if (content === 'Failed to get the zip file') {
+        return res.status(500).send("Failed to retrieve content.");
+      } else {
+        pkg.data.Content = content;
+      }
+    } catch (error) {
+      return res.status(500).send("An error occurred while retrieving content.");
+    }
+  }
   res.status(200).json(pkg);
 });
 
 app.post('/package/:id', (req: Request, res: Response) => { //update this to populate content
   //assumes all IDs are unique
-  if(!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
+  if (!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
   
@@ -138,43 +157,31 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  packageDatabase.push(req.body.data);
+  let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: pkg.metadata.Version }, data: req.body.data };
+
+  packageDatabase.push(newPackage);
   res.status(200).send("Version is updated.");
 });
 
 app.post('/package', async (req: Request, res: Response) => {
-  if(!req.body) {
+  if (!req.body) {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
 
-  if((!req.body.Content && !req.body.URL) || (req.body.Content && req.body.URL)) { //should i be concerned about URL being dark blue
+  if ( (!req.body.Content && !req.body.URL) || (req.body.Content && req.body.URL) ) { //should i be concerned about URL being dark blue
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  if(req.body.Content) {
-    const buffer = Buffer.from(req.body.Content, 'base64');
-
-    // Load the zip content
-    const zip = await JSZip.loadAsync(buffer);
-
-    // Locate and read package.json
-    const packageJsonFile = zip.file('package.json');
-    if (packageJsonFile) {
-      const packageJsonContent = await packageJsonFile.async('string');
-      const packageData = JSON.parse(packageJsonContent);
-
-      // Access the homepage URL
-      if (packageData.homepage) {
-        req.body.URL = packageData.homepage;
-      } else {
-        return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
-      }
+  if (req.body.Content) {
+    const url = await contentToURL(req.body.Content);
+    if (url == 'Failed to get the url') {
+      return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
     } else {
-      return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
+      req.body.URL = url;
     }
   }
 
-  const { owner, repo } = await getOwnerRepo(req.body.data.URL);
+  const { owner, repo } = await getOwnerRepo(req.body.URL);
   if (!owner || !repo) {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
@@ -189,9 +196,9 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(409).send("Package exists already.");
   }
 
-  let newPackage: Package = { metadata: { Name: repo, ID: uuidv4(), Version: versionHistory }, data: req.body.data };
+  let newPackage: Package = { metadata: { Name: repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
 
-  let scores = await getScores(owner, repo, req.body.data.URL);
+  let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
     .filter(([key]) => 
         !key.includes('_Latency') && 
@@ -210,7 +217,7 @@ app.post('/package', async (req: Request, res: Response) => {
 });
 
 app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
-  if(!req.params.id) {
+  if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
@@ -244,7 +251,7 @@ app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
 });
 
 app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
-  if(!req.params.id) {
+  if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
@@ -277,11 +284,11 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   res.status(200).json(pkgCost);
 });
 
-app.post('/package/byRegEx', async (req: Request, res: Response) => {
+app.post('/package/byRegEx', async (req: Request, res: Response) => { //connection works
   if (!req.body.RegEx) {
     return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
   }
-  const packages = await searchPackages(req.body.RegEx as string);
+  const packages = await searchPackages(req.body.RegEx);
 
   if (!packages || packages.length == 0) {
     return res.status(404).send("No package found under this regex.");
@@ -309,7 +316,7 @@ app.get('/tracks', (req: Request, res: Response) => {
 
 //non-baseline apis
 app.delete('/package/:id', (req: Request, res: Response) => { 
-  if(!req.params.id) {
+  if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
