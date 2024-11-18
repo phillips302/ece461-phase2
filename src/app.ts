@@ -11,6 +11,7 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
+import cors from 'cors';
 
 const app: Application = express();
 const port = 8081;
@@ -62,7 +63,7 @@ app.post('/packages', (req: Request, res: Response) => { //works
   let counter = 0;
 
   if (pkgqry.length == 1 && pkgqry[0].Name == '*') { //get all packages, if version is null or defined
-    for (let i = 0; i < offset; i++) {
+    for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
       if (!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
         results.push(packageDatabase[i].metadata);
       }
@@ -106,22 +107,22 @@ app.get('/package/:id', async (req: Request, res: Response) => {
     return res.status(404).send("Package does not exist.");
   }
 
-  if (!pkg.data.Content) {
-    if (!pkg.data.URL) {
-      return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
-    }
+  // if (!pkg.data.Content) {
+  //   if (!pkg.data.URL) {
+  //     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  //   }
 
-    try {
-      const content = await urlToContent(pkg.data.URL);
-      if (content === 'Failed to get the zip file') {
-        return res.status(500).send("Failed to retrieve content.");
-      } else {
-        pkg.data.Content = content;
-      }
-    } catch (error) {
-      return res.status(500).send("An error occurred while retrieving content.");
-    }
-  }
+  //   try {
+  //     const content = await urlToContent(pkg.data.URL);
+  //     if (content === 'Failed to get the zip file') {
+  //       return res.status(500).send("Failed to retrieve content.");
+  //     } else {
+  //       pkg.data.Content = content;
+  //     }
+  //   } catch (error) {
+  //     return res.status(500).send("An error occurred while retrieving content.");
+  //   }
+  // }
   res.status(200).json(pkg);
 });
 
@@ -159,7 +160,7 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: pkg.metadata.Version }, data: req.body.data };
+  let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
   packageDatabase.push(newPackage);
   res.status(200).send("Version is updated.");
@@ -174,14 +175,14 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  if (req.body.Content) {
-    const url = await contentToURL(req.body.Content);
-    if (url == 'Failed to get the url') {
-      return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
-    } else {
-      req.body.URL = url;
-    }
-  }
+  // if (req.body.Content) {
+  //   const url = await contentToURL(req.body.Content);
+  //   if (url == 'Failed to get the url') {
+  //     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
+  //   } else {
+  //     req.body.URL = url;
+  //   }
+  // }
 
   const { owner, repo } = await getOwnerRepo(req.body.URL);
   if (!owner || !repo) {
