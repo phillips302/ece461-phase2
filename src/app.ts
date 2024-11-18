@@ -66,6 +66,7 @@ app.post('/packages', (req: Request, res: Response) => { //works
     for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
       if (!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
         results.push(packageDatabase[i].metadata);
+        counter++;
       }
     }
   }
