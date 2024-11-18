@@ -57,14 +57,33 @@ export const getPackage = async (id: string): Promise<types.Package | { message:
   return data;
 };
 
-export const updatePackage = async (id: string): Promise<{ message: string }> => { //not working
+export const updatePackage = async (id: string): Promise<{ message: string }> => { //add a screen for user to input new info and working
+  const packageMetadata:types.PackageMetadata = {
+    Name: `example-package-0`,
+    ID: id,
+    Version: "1.0.1"
+  }
+  
+  const packageData:types.PackageData = {
+    Name: `example-package-0`,
+    debloat: false,
+    JSProgram: "console.log('Hello, world!');",
+    Content: undefined,
+    URL: "https://www.npmjs.com/package/browserify"
+  };
+  
+  const foundPackage:types.Package = {
+    metadata: packageMetadata,
+    data: packageData
+  };
+
   try {
     const response = await fetch(`${URL}package/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([ id ])
+      body: JSON.stringify(foundPackage)
     });
 
     if (!response.ok) {
@@ -87,7 +106,7 @@ export const uploadPackage = async ( name?:any, content?:string, URL?:string, de
       Name: name,
       Content: content,
       URL: URL,
-      debloat: debloat,
+      debloat: false,
       JSProgram: jsprogram
     };
   
@@ -96,7 +115,7 @@ export const uploadPackage = async ( name?:any, content?:string, URL?:string, de
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([ packageData ])
+      body: JSON.stringify(packageData)
     });
 
     if (!response.ok) {
@@ -153,7 +172,7 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([ PackageByRegEx ])
+      body: JSON.stringify(PackageByRegEx)
     });
 
     if (!response.ok) {
