@@ -77,18 +77,18 @@ export const updatePackage = async (id: string): Promise<{ message: string }> =>
     return { message: message_text };
   }
   catch (error) {
-    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
+    return { message: `Error updating packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
 
-export const uploadPackage = async (): Promise<types.Package | { message:string }> => { //need to implement which package to upload (json object upload)
+export const uploadPackage = async ( name?:any, content?:string, URL?:string, debloat?:boolean, jsprogram?:string ): Promise<types.Package | { message:string }> => { //need to implement which package to upload (json object upload)
   try {
     const packageData:types.PackageData = {
-      Name: "",
-      Content: "",
-      URL: "",
-      debloat: false,
-      JSProgram: ""
+      Name: name,
+      Content: content,
+      URL: URL,
+      debloat: debloat,
+      JSProgram: jsprogram
     };
   
     const response = await fetch(`${URL}package`, {
@@ -109,7 +109,7 @@ export const uploadPackage = async (): Promise<types.Package | { message:string 
     return data;
   }
   catch (error) {
-    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}` };
+    return { message: `Error uploading packages: ${error instanceof Error ? error.message : String(error)}` };
   }  
 };
 

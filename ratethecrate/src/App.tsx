@@ -141,7 +141,7 @@ const App: React.FC = () => {
   };
 
   const handleUploadClick = () => { 
-    uploadPackage()
+    uploadPackage({ jsprogram: "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}", content: "https://github.com/jashkenas/underscore" })
     .then((data) => {
       if ('message' in data) {
         setTitle("");
