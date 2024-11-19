@@ -1,6 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import JSZip from 'jszip';
-import { Buffer } from 'buffer';
 import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
 import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -137,8 +135,12 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(404).send("Package does not exist.");
   }
 
-  if ((!req.body.data.Content && !req.body.data.URL) || (req.body.data.Content && req.body.data.URL)) { //make sure exactly one of these fields is defined
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  if ( (!req.body.Content && !req.body.URL)) { 
+    return res.status(400).send("Both Content or URL are undefined.");
+  }
+
+  if ( (req.body.Content && req.body.URL) ) { 
+    return res.status(400).send("Both Content or URL are defined.");
   }
 
   if ((pkg.metadata.Name != req.body.metadata.Name)) { //make sure name matches
