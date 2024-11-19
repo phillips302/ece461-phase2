@@ -57,7 +57,7 @@ export const getPackage = async (id: string): Promise<types.Package | { message:
   return data;
 };
 
-export const updatePackage = async (updatedPackage:types.Package): Promise<{ message: string }> => { //add a screen for user to input new info and working
+export const updatePackage = async (updatedPackage:types.Package): Promise<{ message: string }> => { //works
   try {
     const response = await fetch(`${URL}package/${updatedPackage.metadata.ID}`, {
       method: 'POST',
@@ -81,7 +81,7 @@ export const updatePackage = async (updatedPackage:types.Package): Promise<{ mes
   }  
 };
 
-export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //need to implement which package to upload (json object upload)
+export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //giving errors
   try {
     const response = await fetch(`${URL}package`, {
       method: 'POST',

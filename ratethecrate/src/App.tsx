@@ -19,7 +19,6 @@ const App: React.FC = () => {
       Content: '',
       URL: '',
       debloat: false,
-      JSProgram: ''
     },
     metadata: {
       Name: '',

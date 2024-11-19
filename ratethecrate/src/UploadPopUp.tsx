@@ -19,7 +19,6 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   const [content, setContent] = useState('');
   const [url, setUrl] = useState('');
   const [debloat, setDebloat] = useState(false);
-  const [jsprogram, setJsProgram] = useState('');
 
   const handleClose = () => {
     onClose();
@@ -32,7 +31,6 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
         Content: content,
         URL: url,
         debloat: debloat,
-        JSProgram: jsprogram,
       };
       onSubmit(uploadedPackageData);
     }
@@ -94,16 +92,6 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
               }}
               className="PopUpInput"
               />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="jsprogram">JSProgram:</label>
-            <input
-              id="jsprogram"
-              type="text"
-              value={jsprogram}
-              onChange={(e) => setJsProgram(e.target.value)}
-              className="PopUpInput"
-            />
           </div>
         </div>
         {/* Submit button */}

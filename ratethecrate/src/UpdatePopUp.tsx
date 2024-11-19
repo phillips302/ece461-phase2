@@ -24,7 +24,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   const [content, setContent] = useState(currPackage.data.Content ?? '');
   const [url, setUrl] = useState(currPackage.data.URL ?? '');
   const [debloat, setDebloat] = useState(currPackage.data.debloat ?? false);
-  const [jsprogram, setJsProgram] = useState(currPackage.data.JSProgram ?? '');
 
   // Sync state with currPackage when it changes
   useEffect(() => {
@@ -34,7 +33,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
     setContent(currPackage?.data?.Content ?? '');
     setUrl(currPackage?.data?.URL ?? '');
     setDebloat(currPackage?.data?.debloat ?? false);
-    setJsProgram(currPackage?.data?.JSProgram ?? '');
   }, [currPackage]);
 
   const handleClose = () => {
@@ -50,7 +48,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
           Content: content,
           URL: url,
           debloat: debloat,
-          JSProgram: jsprogram,
         },
         metadata: {
           Name: name,
@@ -138,16 +135,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
               }}
               className="PopUpInput"
               />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="jsprogram">JSProgram:</label>
-            <input
-              id="jsprogram"
-              type="text"
-              value={jsprogram}
-              onChange={(e) => setJsProgram(e.target.value)}
-              className="PopUpInput"
-            />
           </div>
         </div>
         {/* Submit button */}
