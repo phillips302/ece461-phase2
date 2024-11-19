@@ -107,22 +107,21 @@ app.get('/package/:id', async (req: Request, res: Response) => {
     return res.status(404).send("Package does not exist.");
   }
 
-  // if (!pkg.data.Content) {
-  //   if (!pkg.data.URL) {
-  //     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
-  //   }
+  if (!pkg.data.Content) {
+    if (!pkg.data.URL) {
+      return res.status(400).send("Content and URL are both undefined");
+    }
 
-  //   try {
-  //     const content = await urlToContent(pkg.data.URL);
-  //     if (content === 'Failed to get the zip file') {
-  //       return res.status(500).send("Failed to retrieve content.");
-  //     } else {
-  //       pkg.data.Content = content;
-  //     }
-  //   } catch (error) {
-  //     return res.status(500).send("An error occurred while retrieving content.");
-  //   }
-  // }
+    try {
+      const content = await urlToContent(pkg.data.URL);
+      if (content === 'Failed to get the zip file') {
+        return res.status(500).send("Failed to retrieve content.");
+      }
+      pkg.data.Content = content;
+    } catch (error) {
+      return res.status(500).send("An error occurred while retrieving content.");
+    }
+  }
   res.status(200).json(pkg);
 });
 

@@ -60,16 +60,21 @@ export async function urlToContent(url: string): Promise<string> {
     const { owner, repo } = await getOwnerRepo(url);
 
     try {
-        let response = await axios.get(`https://github.com/${owner}/${repo}`);
-        const mainBranch = response.data.default_branch;
+        // Step 1: Fetch the repository metadata to get the default branch
+        const repoResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}`);
+        const mainBranch = repoResponse.data.default_branch;
 
-        response = await axios.get((`https://github.com/${owner}/${repo}/archive/refs/heads/${mainBranch}.zip`), {
-            responseType: 'arraybuffer'
-        });
-      
-        const zipAsString = Buffer.from(response.data).toString('base64');
+        // Step 2: Fetch the ZIP file for the default branch
+        const zipResponse = await axios.get(`https://github.com/${owner}/${repo}/archive/refs/heads/${mainBranch}.zip`,
+            { responseType: 'arraybuffer' }
+        );
+
+        // Step 3: Convert the ZIP file's data into a Base64 string
+        const zipAsString = Buffer.from(zipResponse.data).toString('base64');
         return zipAsString;
     } catch (error) {
         return 'Failed to get the zip file';
     }
 }
+
+//console.log(await urlToContent('https://www.npmjs.com/package/browserify'));
