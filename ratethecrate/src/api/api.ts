@@ -81,7 +81,7 @@ export const updatePackage = async (updatedPackage:types.Package): Promise<{ mes
   }  
 };
 
-export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //giving errors
+export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //does not work with content
   try {
     const response = await fetch(`${URL}package`, {
       method: 'POST',

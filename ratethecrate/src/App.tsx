@@ -127,6 +127,7 @@ const App: React.FC = () => {
   };
 
   const handleUploadClick = (uploadedPackageData:types.PackageData) => { 
+    setTimeout(() => setIsLoading(true), 1);
     uploadPackage(uploadedPackageData)
     .then((data) => {
       if ('message' in data) {
@@ -135,6 +136,9 @@ const App: React.FC = () => {
         setPopUpVisible(true);
       } else {
         setPackages([data.metadata])
+        setTitle("");
+        setMessage("Package is uploaded.");
+        setPopUpVisible(true);
       }
       })
     .finally(() => {
@@ -182,6 +186,7 @@ const App: React.FC = () => {
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
   const handleUpdateClick = (updatedPackage:types.Package) => { 
+    setTimeout(() => setIsLoading(true), 1);
     updatePackage(updatedPackage)
     .then((data) => {
       setTitle("");
@@ -329,8 +334,6 @@ const App: React.FC = () => {
     setVersionValue("");
     setRegexValue("");
   };
-
-  const handleUploadPopUpSubmit = (input1: string, input2: string) => {  }
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameValue(event.target.value);

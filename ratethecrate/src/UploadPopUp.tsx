@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -15,10 +15,10 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   title,
   onSubmit,
 }) => {
-  const [name, setName] = useState('');
   const [content, setContent] = useState('');
   const [url, setUrl] = useState('');
   const [debloat, setDebloat] = useState(false);
+  const [inputMode, setInputMode] = useState(true);
 
   const handleClose = () => {
     onClose();
@@ -27,9 +27,8 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   const handleSubmit = () => {
     if (onSubmit) {
       const uploadedPackageData: types.PackageData = {
-        Name: name,
-        Content: content,
-        URL: url,
+        Content: !inputMode ? content : undefined,
+        URL: inputMode ? url : undefined,
         debloat: debloat,
       };
       onSubmit(uploadedPackageData);
@@ -47,35 +46,43 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
         </button>
         <h2>{title}</h2>
         <div className="PopUpInputs">
-          <div className="InputRow">
-            <label htmlFor="name">Name:</label>
+          <div className="CombineRow">
+          <label className="switch">
             <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="PopUpInput"
+              type="checkbox"
+              checked={inputMode}
+              onChange={() => {
+                setInputMode(!inputMode); // Toggle between Content and URL
+                setContent(''); // Reset content
+                setUrl(''); // Reset URL
+              }} // Toggle between Content and URL
             />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="content">Content:</label>
-            <input
-              id="content"
-              type="text"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="PopUpInput"
-            />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="url">URL:</label>
-            <input
-              id="url"
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="PopUpInput"
-            />
+            <span className="slider"></span>
+          </label>
+          {!inputMode && (
+            <div className="InputRowContent">
+              <label className='InputRow2Label' htmlFor="content">Content:</label>
+              <input
+                id="content"
+                type="text"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="PopUpInput"
+              />
+            </div>
+          )}
+          {inputMode && (
+            <div className="InputRowUrl">
+            <label className='InputRow2Label' htmlFor="url">URL:</label>
+              <input
+                id="url"
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="PopUpInput"
+              />
+            </div>
+          )}
           </div>
           <div className="InputRow">
               <label htmlFor="debloat">Debloat:</label>
