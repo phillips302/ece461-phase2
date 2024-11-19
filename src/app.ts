@@ -30,7 +30,6 @@ for (let i = 0; i < 10; i++) {
     },
     data: {
       debloat: false,
-      JSProgram: "console.log('Hello, world!');",
       Content: "console.log('Hello, world!');",
       URL: "https://www.npmjs.com/package/browserify"
     }
@@ -172,18 +171,25 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
 
-  if ( (!req.body.Content && !req.body.URL) || (req.body.Content && req.body.URL) ) { //should i be concerned about URL being dark blue
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  if ( (!req.body.Content && !req.body.URL)) { 
+    return res.status(400).send("Both Content or URL are undefined.");
   }
 
-  // if (req.body.Content) {
-  //   const url = await contentToURL(req.body.Content);
-  //   if (url == 'Failed to get the url') {
-  //     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
-  //   } else {
-  //     req.body.URL = url;
-  //   }
-  // }
+  if ( (req.body.Content && req.body.URL) ) { 
+    return res.status(400).send("Both Content or URL are defined.");
+  }
+
+  if ( (req.body.Content && !req.body.Name) ) { 
+    return res.status(400).send("If Content is defined Name also must be provided.");
+  }
+
+  if (req.body.Content) {
+    const url = await contentToURL(req.body.Content, req.body.Name);
+    if (url == 'Failed to get the url') {
+      return res.status(500).send("Failed to retrieve data from Content.");
+    }
+    req.body.URL = url;
+  }
 
   const { owner, repo } = await getOwnerRepo(req.body.URL);
   if (!owner || !repo) {
@@ -195,12 +201,11 @@ app.post('/package', async (req: Request, res: Response) => {
     versionHistory = '1.0.0';
   }
 
-  const pkg = packageDatabase.find(p => p.metadata.Name == repo);
-  if (pkg) {
+  if ( packageDatabase.find(p => p.metadata.Name == repo) || packageDatabase.find(p => p.metadata.Name == req.body.Name) ) {
     return res.status(409).send("Package exists already.");
   }
 
-  let newPackage: Package = { metadata: { Name: repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
+  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
