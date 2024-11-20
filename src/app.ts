@@ -1,6 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import JSZip from 'jszip';
-import { Buffer } from 'buffer';
 import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
 import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,7 +28,6 @@ for (let i = 0; i < 10; i++) {
     },
     data: {
       debloat: false,
-      JSProgram: "console.log('Hello, world!');",
       Content: "console.log('Hello, world!');",
       URL: "https://www.npmjs.com/package/browserify"
     }
@@ -66,6 +63,7 @@ app.post('/packages', (req: Request, res: Response) => { //works
     for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
       if (!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
         results.push(packageDatabase[i].metadata);
+        counter++;
       }
     }
   }
@@ -107,22 +105,21 @@ app.get('/package/:id', async (req: Request, res: Response) => {
     return res.status(404).send("Package does not exist.");
   }
 
-  // if (!pkg.data.Content) {
-  //   if (!pkg.data.URL) {
-  //     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
-  //   }
+  if (!pkg.data.Content) {
+    if (!pkg.data.URL) {
+      return res.status(400).send("Content and URL are both undefined");
+    }
 
-  //   try {
-  //     const content = await urlToContent(pkg.data.URL);
-  //     if (content === 'Failed to get the zip file') {
-  //       return res.status(500).send("Failed to retrieve content.");
-  //     } else {
-  //       pkg.data.Content = content;
-  //     }
-  //   } catch (error) {
-  //     return res.status(500).send("An error occurred while retrieving content.");
-  //   }
-  // }
+    try {
+      const content = await urlToContent(pkg.data.URL);
+      if (content === 'Failed to get the zip file') {
+        return res.status(500).send("Failed to retrieve content.");
+      }
+      pkg.data.Content = content;
+    } catch (error) {
+      return res.status(500).send("An error occurred while retrieving content.");
+    }
+  }
   res.status(200).json(pkg);
 });
 
@@ -138,8 +135,12 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(404).send("Package does not exist.");
   }
 
-  if ((!req.body.data.Content && !req.body.data.URL) || (req.body.data.Content && req.body.data.URL)) { //make sure exactly one of these fields is defined
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  if ( (!req.body.Content && !req.body.URL)) { 
+    return res.status(400).send("Both Content or URL are undefined.");
+  }
+
+  if ( (req.body.Content && req.body.URL) ) { 
+    return res.status(400).send("Both Content or URL are defined.");
   }
 
   if ((pkg.metadata.Name != req.body.metadata.Name)) { //make sure name matches
@@ -171,18 +172,25 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
 
-  if ( (!req.body.Content && !req.body.URL) || (req.body.Content && req.body.URL) ) { //should i be concerned about URL being dark blue
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  if ( (!req.body.Content && !req.body.URL)) { 
+    return res.status(400).send("Both Content or URL are undefined.");
   }
 
-  // if (req.body.Content) {
-  //   const url = await contentToURL(req.body.Content);
-  //   if (url == 'Failed to get the url') {
-  //     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
-  //   } else {
-  //     req.body.URL = url;
-  //   }
-  // }
+  if ( (req.body.Content && req.body.URL) ) { 
+    return res.status(400).send("Both Content or URL are defined.");
+  }
+
+  if ( (req.body.Content && !req.body.Name) ) { 
+    return res.status(400).send("If Content is defined Name also must be provided.");
+  }
+
+  if (req.body.Content) {
+    const url = await contentToURL(req.body.Content, req.body.Name);
+    if (url == 'Failed to get the url') {
+      return res.status(500).send("Failed to retrieve data from Content.");
+    }
+    req.body.URL = url;
+  }
 
   const { owner, repo } = await getOwnerRepo(req.body.URL);
   if (!owner || !repo) {
@@ -194,12 +202,11 @@ app.post('/package', async (req: Request, res: Response) => {
     versionHistory = '1.0.0';
   }
 
-  const pkg = packageDatabase.find(p => p.metadata.Name == repo);
-  if (pkg) {
+  if ( packageDatabase.find(p => p.metadata.Name == repo) || packageDatabase.find(p => p.metadata.Name == req.body.Name) ) {
     return res.status(409).send("Package exists already.");
   }
 
-  let newPackage: Package = { metadata: { Name: repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
+  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
@@ -335,5 +342,5 @@ app.delete('/package/:id', (req: Request, res: Response) => {
 
 app.listen(port, () => {
   //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
-  console.log(`Express is listening at http://localhost:${port}`);
+  //console.log(`Express is listening at http://localhost:${port}`);
 });
