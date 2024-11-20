@@ -9,6 +9,7 @@ import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
+//test
 
 //main app
 const App: React.FC = () => {
