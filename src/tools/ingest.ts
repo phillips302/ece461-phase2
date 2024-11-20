@@ -48,11 +48,11 @@ export async function ingestPackageHelper(repo: string | null, version: string):
     const dir = `./ingestedPackages/${repo}-${version}.tgz`;
     const url = `https://registry.npmjs.org/${repo}/-/${repo}-${version}.tgz`;
     await downloadFile(url, dir);
-    uploadToS3(`${repo}-${version}`, fs.createReadStream(dir));
+    //uploadToS3(`${repo}-${version}`, fs.createReadStream(dir));
     await removeDirectory(dir);
 }
 
-async function downloadFile(url: string, outputPath: string): Promise<void> {
+export async function downloadFile(url: string, outputPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(outputPath);
 
