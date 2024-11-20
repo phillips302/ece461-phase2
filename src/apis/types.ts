@@ -15,7 +15,6 @@
     Content?: string;
     URL?: string;
     debloat?: boolean;
-    JSProgram?: string;
   }
 
   export interface User {
