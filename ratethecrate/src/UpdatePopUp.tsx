@@ -19,8 +19,8 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
 }) => {
   // State variables initialized with currPackage
   const [version, setVersion] = useState(currPackage.metadata.Version ?? '');
-  const [content, setContent] = useState(currPackage.data.Content ?? undefined);
-  const [url, setUrl] = useState(currPackage.data.URL ?? undefined);
+  const [content, setContent] = useState('');
+  const [url, setUrl] = useState('');
   const [debloat, setDebloat] = useState(currPackage.data.debloat ?? false);
 
   // States for toggling input mode and managing file name
@@ -30,8 +30,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   // Sync state with currPackage when it changes
   useEffect(() => {
     setVersion(currPackage?.metadata?.Version ?? '');
-    setContent(currPackage?.data?.Content ?? undefined);
-    setUrl(currPackage?.data?.URL ?? undefined);
     setDebloat(currPackage?.data?.debloat ?? false);
   }, [currPackage]);
 
