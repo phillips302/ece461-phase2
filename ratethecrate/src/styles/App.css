@@ -8,10 +8,19 @@ body {
 
 .searchBar {
   padding: 10px;
-  width: 500px;
+  width: 542px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.searchBar2 {
+  padding: 10px;
+  width: 250px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-left: 10px;
 }
 
 .searchBar::placeholder {
@@ -118,6 +127,62 @@ body {
 .packageButtons.sunk {
   transform: translateY(4px) scale(0.95); /* Move down and shrink */
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3); /* Reduce shadow for a sunk effect */
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.switch {
+  margin-right: 10px;
+  position: relative;
+  display: inline-block;
+  width: 42.5px; /* Increased by a quarter from 34px */
+  height: 25px;  /* Increased by a quarter from 20px */
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #193861;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 15px; /* Increased by a quarter from 12px */
+  width: 15px;  /* Increased by a quarter from 12px */
+  border-radius: 50%;
+  left: 5px;  /* Increased by a quarter from 4px */
+  bottom: 5px; /* Increased by a quarter from 4px */
+  background-color: white;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #193861;
+}
+
+input:checked + .slider:before {
+  transform: translateX(17.5px); /* Increased by a quarter from 14px */
 }
 
 .App {
