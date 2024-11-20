@@ -1,5 +1,5 @@
 import * as types from './types';
-import { ALB_BASE_URL } from '../constants.js';
+import { ALB_BASE_URL } from '../constants';
 
 const URL = ALB_BASE_URL || 'http://localhost:8081/';
 
