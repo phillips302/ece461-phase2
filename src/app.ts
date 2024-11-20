@@ -15,7 +15,7 @@ import bodyParser from 'body-parser';
 const app: Application = express();
 const port = 8081;
 app.use(cors());
-// app.use(cors({ origin: 'http://localhost:3000' }));
+// app.use(cors({ origin: 'http://localhost:3000/' }));
 
 // Set a higher limit for the request body size
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed

@@ -58,33 +58,14 @@ export const getPackage = async (id: string): Promise<types.Package | { message:
   return data;
 };
 
-export const updatePackage = async (id: string): Promise<{ message: string }> => { //add a screen for user to input new info and working
-  const packageMetadata:types.PackageMetadata = {
-    Name: `example-package-0`,
-    ID: id,
-    Version: "1.0.1"
-  }
-  
-  const packageData:types.PackageData = {
-    Name: `example-package-0`,
-    debloat: false,
-    JSProgram: "console.log('Hello, world!');",
-    Content: undefined,
-    URL: "https://www.npmjs.com/package/browserify"
-  };
-  
-  const foundPackage:types.Package = {
-    metadata: packageMetadata,
-    data: packageData
-  };
-
+export const updatePackage = async (updatedPackage:types.Package): Promise<{ message: string }> => { //works
   try {
-    const response = await fetch(`${URL}package/${id}`, {
+    const response = await fetch(`${URL}package/${updatedPackage.metadata.ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(foundPackage)
+      body: JSON.stringify(updatedPackage)
     });
 
     if (!response.ok) {
@@ -101,22 +82,14 @@ export const updatePackage = async (id: string): Promise<{ message: string }> =>
   }  
 };
 
-export const uploadPackage = async ( name?:any, content?:string, URL?:string, debloat?:boolean, jsprogram?:string ): Promise<types.Package | { message:string }> => { //need to implement which package to upload (json object upload)
+export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //does not work with content
   try {
-    const packageData:types.PackageData = {
-      Name: name,
-      Content: content,
-      URL: URL,
-      debloat: false,
-      JSProgram: jsprogram
-    };
-  
     const response = await fetch(`${URL}package`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(packageData)
+      body: JSON.stringify(uploadedPackageData)
     });
 
     if (!response.ok) {
