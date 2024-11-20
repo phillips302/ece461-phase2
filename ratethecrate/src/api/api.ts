@@ -1,6 +1,7 @@
-import * as types from '../../../src/apis/types.js';
+import * as types from './types';
+import { ALB_BASE_URL } from '../constants.js';
 
-const URL = 'http://localhost:8081/'
+const URL = ALB_BASE_URL || 'http://localhost:8081/';
 
 export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[] | { message : string }> => { //works
   try {
