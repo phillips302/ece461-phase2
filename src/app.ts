@@ -10,11 +10,16 @@ import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const app: Application = express();
 const port = 8081;
 app.use(cors());
 // app.use(cors({ origin: 'http://localhost:3000' }));
+
+// Set a higher limit for the request body size
+app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 let packageDatabase: Package[] = [];
 
@@ -185,7 +190,7 @@ app.post('/package', async (req: Request, res: Response) => {
   }
 
   if (req.body.Content) {
-    const url = await contentToURL(req.body.Content, req.body.Name);
+    const url = await contentToURL(req.body.Content);
     if (url == 'Failed to get the url') {
       return res.status(500).send("Failed to retrieve data from Content.");
     }
