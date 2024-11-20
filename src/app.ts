@@ -13,7 +13,11 @@ import cors from 'cors';
 
 const app: Application = express();
 const port = 8081;
-app.use(cors());
+const corsOptions = {
+  origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com/',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 // app.use(cors({ origin: 'http://localhost:3000' }));
 
 let packageDatabase: Package[] = [];
@@ -342,5 +346,5 @@ app.delete('/package/:id', (req: Request, res: Response) => {
 
 app.listen(port, () => {
   //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
-  //console.log(`Express is listening at http://localhost:${port}`);
+  console.log(`Express is listening at http://localhost:${port}`);
 });

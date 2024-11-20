@@ -71,3 +71,4 @@ dist/
 **/*.log
 ingestedPackages/
 packageCost/
+.npm
