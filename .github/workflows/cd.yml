@@ -22,7 +22,7 @@ jobs:
       run: docker pull phillips302/ece461-phase2:latest
     
     - name: Delete old docker container
-      run: docker rm -f ece461-phase2-container || true
+      run: docker image prune
     
     - name: Run new docker container
       run: |
@@ -46,7 +46,7 @@ jobs:
       run: docker pull phillips302/ece461-phase2:latest
     
     - name: Delete old docker container
-      run: docker rm -f ece461-phase2-container || true
+      run: docker image prune
     
     - name: Run new docker container
       run: |
