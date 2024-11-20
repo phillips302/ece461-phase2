@@ -140,12 +140,12 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(404).send("Package does not exist.");
   }
 
-  if (!req.body.Content && !req.body.URL) { 
-    return res.status(400).send("Both Content or URL are undefined.");
+  if (!req.body.data.Content && !req.body.data.URL) { 
+    return res.status(400).send("Both Content and URL are undefined.");
   }
 
-  if (req.body.Content && req.body.URL) { 
-    return res.status(400).send("Both Content or URL are defined.");
+  if (req.body.data.Content && req.body.data.URL) { 
+    return res.status(400).send("Both Content and URL are defined.");
   }
 
   if (pkg.metadata.Name != req.body.metadata.Name) { //make sure name matches
@@ -178,11 +178,11 @@ app.post('/package', async (req: Request, res: Response) => {
   }
 
   if (!req.body.Content && !req.body.URL) { 
-    return res.status(400).send("Both Content or URL are undefined.");
+    return res.status(400).send("Both Content and URL are undefined.");
   }
 
   if (req.body.Content && req.body.URL) { 
-    return res.status(400).send("Both Content or URL are defined.");
+    return res.status(400).send("Both Content and URL are defined.");
   }
 
   if (req.body.Content && !req.body.Name) { 
