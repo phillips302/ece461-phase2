@@ -10,11 +10,16 @@ import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const app: Application = express();
 const port = 8081;
 app.use(cors());
-// app.use(cors({ origin: 'http://localhost:3000' }));
+// app.use(cors({ origin: 'http://localhost:3000/' }));
+
+// Set a higher limit for the request body size
+app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 let packageDatabase: Package[] = [];
 
@@ -135,11 +140,11 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(404).send("Package does not exist.");
   }
 
-  if ( (!req.body.Content && !req.body.URL)) { 
+  if ( (!req.body.data.Content && !req.body.data.URL)) { 
     return res.status(400).send("Both Content or URL are undefined.");
   }
 
-  if ( (req.body.Content && req.body.URL) ) { 
+  if ( (req.body.data.Content && req.body.data.URL) ) { 
     return res.status(400).send("Both Content or URL are defined.");
   }
 

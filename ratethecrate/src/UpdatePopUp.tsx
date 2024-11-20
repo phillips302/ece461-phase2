@@ -18,20 +18,20 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   onSubmit,
 }) => {
   // State variables initialized with currPackage
-  const [name, setName] = useState(currPackage?.data?.Name ?? '');
   const [version, setVersion] = useState(currPackage.metadata.Version ?? '');
-  const [id, setId] = useState(currPackage.metadata.ID ?? '');
-  const [content, setContent] = useState(currPackage.data.Content ?? '');
-  const [url, setUrl] = useState(currPackage.data.URL ?? '');
+  const [content, setContent] = useState(currPackage.data.Content ?? undefined);
+  const [url, setUrl] = useState(currPackage.data.URL ?? undefined);
   const [debloat, setDebloat] = useState(currPackage.data.debloat ?? false);
+
+  // States for toggling input mode and managing file name
+  const [inputMode, setInputMode] = useState(false); // False means upload file mode
+  const [fileName, setFileName] = useState<string>(currPackage.data.Content ?? '');
 
   // Sync state with currPackage when it changes
   useEffect(() => {
-    setName(currPackage?.metadata?.Name ?? '');
     setVersion(currPackage?.metadata?.Version ?? '');
-    setId(currPackage?.metadata?.ID ?? '');
-    setContent(currPackage?.data?.Content ?? '');
-    setUrl(currPackage?.data?.URL ?? '');
+    setContent(currPackage?.data?.Content ?? undefined);
+    setUrl(currPackage?.data?.URL ?? undefined);
     setDebloat(currPackage?.data?.debloat ?? false);
   }, [currPackage]);
 
@@ -44,21 +44,66 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
       // Construct the updatedPackage dynamically
       const updatedPackage: types.Package = {
         data: {
-          Name: name,
           Content: content,
           URL: url,
           debloat: debloat,
         },
         metadata: {
-          Name: name,
+          Name: currPackage.metadata.Name,
           Version: version,
-          ID: id,
+          ID: currPackage.metadata.ID,
         },
       };
       onSubmit(updatedPackage);
     }
     onClose(); // Close the popup
   };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.zip')) {
+      return { message: "Invalid file type. Please upload a ZIP file."}
+    }
+
+    setFileName(file.name);
+  
+    const result = await processZipFile(file);
+    if (typeof result === 'string') {
+      setContent(result); // Set the Base64 string
+    } else {
+      return { message: result.message}; // Log the error message
+    }
+  };
+
+  const processZipFile = async (file: File): Promise<string | { message: string }> => {
+    let binary = '';
+    try {
+      // Read the file as an ArrayBuffer
+      const fileContent = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as ArrayBuffer);
+        reader.onerror = () => reject(new Error("Failed to read the file"));
+        reader.readAsArrayBuffer(file);
+      });
+  
+      // Convert the ArrayBuffer to a Base64 string
+      const bytes = new Uint8Array(fileContent);
+      const length = bytes.byteLength;
+
+      for (let i = 0; i < length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+
+      const base64String = btoa(binary);
+
+      return base64String; // Return the Base64-encoded string
+    } catch (error) {
+      return { message: `Error processing ZIP file: ${error instanceof Error ? error.message : String(error)}` };
+    }
+  };
+
 
   if (!isVisible) return null;
 
@@ -71,16 +116,6 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
         <h2>{title}</h2>
         <div className="PopUpInputs">
           <div className="InputRow">
-            <label htmlFor="name">Name:</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="PopUpInput"
-            />
-          </div>
-          <div className="InputRow">
             <label htmlFor="version">Version:</label>
             <input
               id="version"
@@ -90,35 +125,53 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
               className="PopUpInput"
             />
           </div>
-          <div className="InputRow">
-            <label htmlFor="id">ID:</label>
+          <div className="CombineRow">
+          <label className="switch">
             <input
-              id="id"
-              type="text"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              className="PopUpInput"
+              type="checkbox"
+              checked={inputMode}
+              onChange={() => {
+                setInputMode(!inputMode); // Toggle between Content and URL
+              }} // Toggle between Content and URL
             />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="content">Content:</label>
-            <input
-              id="content"
-              type="text"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="PopUpInput"
-            />
-          </div>
-          <div className="InputRow">
-            <label htmlFor="url">URL:</label>
-            <input
-              id="url"
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="PopUpInput"
-            />
+            <span className="slider"></span>
+          </label>
+          {!inputMode && (
+            <div className="InputRowContent">
+              <label className='InputRow2Label' htmlFor="content">Content:</label>
+              {/* Upload Button */}
+              <div className="file-upload">
+                <input
+                  id="fileUpload"
+                  type="file"
+                  accept=".zip"
+                  style={{ display: "none" }} // Hide default input
+                  onChange={handleFileUpload}
+                />
+                <button
+                  onClick={() => document.getElementById("fileUpload")?.click()} // Trigger file input
+                  className="uploadButton"
+                >
+                  <i className="fas fa-file-upload"></i>
+                  {fileName && (
+                    <p className="file-name">{fileName}</p>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+          {inputMode && (
+            <div className="InputRowUrl">
+            <label className='InputRow2Label' htmlFor="url">URL:</label>
+              <input
+                id="url"
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="PopUpInput"
+              />
+            </div>
+          )}
           </div>
           <div className="InputRow">
               <label htmlFor="debloat">Debloat:</label>

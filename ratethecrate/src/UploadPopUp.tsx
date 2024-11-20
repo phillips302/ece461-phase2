@@ -15,10 +15,12 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   title,
   onSubmit,
 }) => {
+  const [name, setName] = useState('');
   const [content, setContent] = useState('');
   const [url, setUrl] = useState('');
   const [debloat, setDebloat] = useState(false);
   const [inputMode, setInputMode] = useState(true);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   const handleClose = () => {
     onClose();
@@ -27,6 +29,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   const handleSubmit = () => {
     if (onSubmit) {
       const uploadedPackageData: types.PackageData = {
+        Name: name,
         Content: !inputMode ? content : undefined,
         URL: inputMode ? url : undefined,
         debloat: debloat,
@@ -34,6 +37,52 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
       onSubmit(uploadedPackageData);
     }
     onClose(); // Close the popup
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.zip')) {
+      return { message: "Invalid file type. Please upload a ZIP file."}
+    }
+
+    setFileName(file.name);
+    setName(file.name.slice(0, -4))
+  
+    const result = await processZipFile(file);
+    if (typeof result === 'string') {
+      setContent(result); // Set the Base64 string
+    } else {
+      return { message: result.message}; // Log the error message
+    }
+  };
+
+  const processZipFile = async (file: File): Promise<string | { message: string }> => {
+    let binary = '';
+    try {
+      // Read the file as an ArrayBuffer
+      const fileContent = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as ArrayBuffer);
+        reader.onerror = () => reject(new Error("Failed to read the file"));
+        reader.readAsArrayBuffer(file);
+      });
+  
+      // Convert the ArrayBuffer to a Base64 string
+      const bytes = new Uint8Array(fileContent);
+      const length = bytes.byteLength;
+
+      for (let i = 0; i < length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+
+      const base64String = btoa(binary);
+
+      return base64String; // Return the Base64-encoded string
+    } catch (error) {
+      return { message: `Error processing ZIP file: ${error instanceof Error ? error.message : String(error)}` };
+    }
   };
 
   if (!isVisible) return null;
@@ -45,6 +94,16 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
           &times;
         </button>
         <h2>{title}</h2>
+        <div className="InputRow">
+            <label htmlFor="name">Name:</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="PopUpInput"
+            />
+        </div>
         <div className="PopUpInputs">
           <div className="CombineRow">
           <label className="switch">
@@ -62,13 +121,25 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
           {!inputMode && (
             <div className="InputRowContent">
               <label className='InputRow2Label' htmlFor="content">Content:</label>
-              <input
-                id="content"
-                type="text"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="PopUpInput"
-              />
+              {/* Upload Button */}
+              <div className="file-upload">
+                <input
+                  id="fileUpload"
+                  type="file"
+                  accept=".zip"
+                  style={{ display: "none" }} // Hide default input
+                  onChange={handleFileUpload}
+                />
+                <button
+                  onClick={() => document.getElementById("fileUpload")?.click()} // Trigger file input
+                  className="uploadButton"
+                >
+                  <i className="fas fa-file-upload"></i>
+                  {fileName && (
+                    <p className="file-name">{fileName}</p>
+                  )}
+                </button>
+              </div>
             </div>
           )}
           {inputMode && (
