@@ -33,7 +33,6 @@ for (let i = 0; i < 10; i++) {
     },
     data: {
       debloat: false,
-      Content: "console.log('Hello, world!');",
       URL: "https://www.npmjs.com/package/browserify"
     }
   };
