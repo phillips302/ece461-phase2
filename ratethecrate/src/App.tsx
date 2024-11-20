@@ -3,20 +3,40 @@ import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageR
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/App.css';
 import PopUp from './PopUp';
+import UpdatePopUp from './UpdatePopUp';
+import UploadPopUp from './UploadPopUp';
 import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
 //run app by cding into ratethecrate then running npm start
+//test
 
 //main app
 const App: React.FC = () => {
   //variables to hold
+  const defaultPackage: types.Package = {
+    data: {
+      Name: '',
+      Content: '',
+      URL: '',
+      debloat: false,
+    },
+    metadata: {
+      Name: '',
+      Version: '',
+      ID: ''
+    }
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [sinkingButtons, setSinkingButtons] = useState<{ [key: string]: boolean }>({});
   const [showTwoSearchBars, setShowTwoSearchBars] = useState(false);
   const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [isUpdatePopUpVisible, setUpdatePopUpVisible] = useState(false);
+  const [isUploadPopUpVisible, setUploadPopUpVisible] = useState(false);
   const [title, setTitle] = useState('');
-  const [message, setMessage] = useState(''); // Message state
+  const [message, setMessage] = useState('');
+  const [selectedPackage, setSelectedPackage] = useState<types.Package>(defaultPackage);
 
   
   const [nameValue, setNameValue] = useState('');
@@ -29,40 +49,7 @@ const App: React.FC = () => {
   const [costPackages, setCostPackages] = useState<{ [key: string]: types.PackageCost }>({});
 
   //helper functions
-  const handleSinkingClick = async (id: string, action: string) => {
-    const key = `${id}-${action}`;
-    setSinkingButtons((prevState) => ({
-      ...prevState,
-      [key]: true,
-    }));
-
-    setTimeout(() => {
-      setSinkingButtons((prevState) => ({
-        ...prevState,
-        [key]: false,
-      }));
-    }, 200);
-
-    setTimeout(() => setIsLoading(true), 1);
-
-    try {
-      if (action === "search") await handleSearchClick();
-      else if (action === "upload") await handleUploadClick();
-      else if (action === "delete") await handleDeleteClick();
-      else if (action === "package") await handlePackageClick(id);
-      else if (action === "download") await handleDownloadClick();
-      else if (action === "update") await handleUpdateClick(id);
-      else if (action === "rate") await handleRateClick(id);
-      else if (action === "cost") await handleCostClick(id);
-    } catch (error) {
-      console.error("Error handling action:", error);
-      setTitle("Error");
-      setMessage("An error occurred while processing your request.");
-      setPopUpVisible(true);
-    }
-  };
-
-  const handleSearchClick = () => {
+    const handleSearchClick = () => {
     if (nameValue !== "" && versionValue === ""){
       getAllPackages(nameValue, undefined)
       .then((data) => {
@@ -140,8 +127,9 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUploadClick = () => { 
-    uploadPackage({ jsprogram: "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}", content: "https://github.com/jashkenas/underscore" })
+  const handleUploadClick = (uploadedPackageData:types.PackageData) => { 
+    setTimeout(() => setIsLoading(true), 1);
+    uploadPackage(uploadedPackageData)
     .then((data) => {
       if ('message' in data) {
         setTitle("");
@@ -149,6 +137,9 @@ const App: React.FC = () => {
         setPopUpVisible(true);
       } else {
         setPackages([data.metadata])
+        setTitle("");
+        setMessage("Package is uploaded.");
+        setPopUpVisible(true);
       }
       })
     .finally(() => {
@@ -177,7 +168,7 @@ const App: React.FC = () => {
           setMessage(data.message);
           setPopUpVisible(true);
         } else {
-          setCurrPackage((prevState) => ({ //set the rate of the package
+          setCurrPackage((prevState) => ({
             ...prevState,
             [id]: data,
           }));
@@ -185,7 +176,7 @@ const App: React.FC = () => {
         setMessage(`Id: ${data.metadata.ID} <br />
           Version: ${data.metadata.Version} <br />
           URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
-        setPopUpVisible(true) // Show the modal
+        setPopUpVisible(true)
         }
     })
     .finally(() => {
@@ -195,12 +186,12 @@ const App: React.FC = () => {
 
   const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
-  const handleUpdateClick = ( id:string ) => { 
-    setIsLoading(false) 
-    updatePackage(id)
+  const handleUpdateClick = (updatedPackage:types.Package) => { 
+    setTimeout(() => setIsLoading(true), 1);
+    updatePackage(updatedPackage)
     .then((data) => {
       setTitle("");
-      setMessage(data.message);
+      setMessage(data.message)
       setPopUpVisible(true);
     })
     .finally(() => {
@@ -272,6 +263,71 @@ const App: React.FC = () => {
       setIsLoading(false)
     })
    }
+
+   const handleSinkingClick = async (id: string, action: string) => {
+    const key = `${id}-${action}`;
+    setSinkingButtons((prevState) => ({
+      ...prevState,
+      [key]: true,
+    }));
+
+    setTimeout(() => {
+      setSinkingButtons((prevState) => ({
+        ...prevState,
+        [key]: false,
+      }));
+    }, 200);
+
+    setTimeout(() => setIsLoading(true), 1);
+
+    try {
+      switch (action) {
+        case "search":
+          handleSearchClick();
+          break;
+        case "upload":
+          setUploadPopUpVisible(true);
+          break;
+        case "delete":
+          handleDeleteClick();
+          break;
+        case "package":
+          handlePackageClick(id);
+          break;
+        case "download":
+          handleDownloadClick();
+          break;
+        case "update":
+          getPackage(id)
+          .then((data) => {
+            if ('message' in data) {
+            } else {
+              setSelectedPackage(data)
+            }
+          })
+          setUpdatePopUpVisible(true);
+          break;
+        case "rate":
+          handleRateClick(id);
+          break;
+        case "cost":
+          handleCostClick(id);
+          break;
+        default:
+          console.warn(`Unhandled action: ${action}`);
+          setTitle("Error");
+          setMessage(`The action "${action}" is not recognized.`);
+          setPopUpVisible(true);
+      }
+    } catch (error) {
+      console.error(`Error handling action "${action}":`, error);
+      setTitle("Error");
+      setMessage("An error occurred while processing your request.");
+      setPopUpVisible(true);
+      setIsLoading(false)
+    } 
+    setIsLoading(false)   
+  };
 
    const handleToggleChange = () => {
     setShowTwoSearchBars(prevState => !prevState); // Toggle between two search bars or one
@@ -431,6 +487,25 @@ const App: React.FC = () => {
           onClose={() => setPopUpVisible(false)}
           title={title}
           message={message}
+        />
+        <UpdatePopUp
+          isVisible={isUpdatePopUpVisible}
+          onClose={() => {
+            setUpdatePopUpVisible(false);
+            setIsLoading(false);
+          }}
+          title="Update Package Information"
+          currPackage = {selectedPackage}
+          onSubmit={handleUpdateClick}
+        />
+        <UploadPopUp
+          isVisible={isUploadPopUpVisible}
+          onClose={() => {
+            setUploadPopUpVisible(false);
+            setIsLoading(false);
+          }}
+          title="Upload Package Information"
+          onSubmit={handleUploadClick}
         />
       </main>
     </div>
