@@ -7,7 +7,7 @@ import * as path from 'path';
 import AdmZip from 'adm-zip';
 import process from 'process';
 
-export async function contentToURL(Content: string, Name: string): Promise<string> {
+export async function contentToURL(Content: string): Promise<string> {
     type PackageJson = {
     repository?: { url?: string };
     homepage?: string;
@@ -27,8 +27,8 @@ export async function contentToURL(Content: string, Name: string): Promise<strin
         zip.extractAllTo(extractPath, true);
 
         // Step 4: Read the package.json file
-        const packageJsonPath = path.join(extractPath, `/${Name}/package.json`);
-        if (fs.existsSync(packageJsonPath)) {
+        const packageJsonPath = findPackageJson(extractPath);
+        if (packageJsonPath) {
             const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf-8');
             const packageJson: PackageJson = JSON.parse(packageJsonContent);
 
@@ -52,9 +52,10 @@ export async function contentToURL(Content: string, Name: string): Promise<strin
     }
 }
 
-// const zipFileBuffer = fs.readFileSync('../browserify-master.zip');
+// const zipFileBuffer = fs.readFileSync('../lodash-main.zip');
 // const base64String = zipFileBuffer.toString('base64');
-// console.log(await contentToURL(base64String, 'browserify-master'));
+// //console.log(base64String);
+// console.log(await contentToURL(base64String));
 
 export async function urlToContent(url: string): Promise<string> {
     const { owner, repo } = await getOwnerRepo(url);
@@ -78,3 +79,18 @@ export async function urlToContent(url: string): Promise<string> {
 }
 
 //console.log(await urlToContent('https://www.npmjs.com/package/browserify'));
+
+
+function findPackageJson(directory: string): string | null {
+    const files = fs.readdirSync(directory);
+    for (const file of files) {
+        const fullPath = path.join(directory, file);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            const result = findPackageJson(fullPath);
+            if (result) return result;
+        } else if (file === 'package.json') {
+            return fullPath;
+        }
+    }
+    return null;
+}

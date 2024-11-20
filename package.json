@@ -5,6 +5,10 @@
   "type": "module",
   "main": "dist/index.ts",
   "bin": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phillips302/ece461-phase2.git"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc",
