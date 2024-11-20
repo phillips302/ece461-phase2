@@ -140,15 +140,15 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
     return res.status(404).send("Package does not exist.");
   }
 
-  if ( (!req.body.Content && !req.body.URL)) { 
+  if (!req.body.Content && !req.body.URL) { 
     return res.status(400).send("Both Content or URL are undefined.");
   }
 
-  if ( (req.body.Content && req.body.URL) ) { 
+  if (req.body.Content && req.body.URL) { 
     return res.status(400).send("Both Content or URL are defined.");
   }
 
-  if ((pkg.metadata.Name != req.body.metadata.Name)) { //make sure name matches
+  if (pkg.metadata.Name != req.body.metadata.Name) { //make sure name matches
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
@@ -177,15 +177,15 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
 
-  if ( (!req.body.Content && !req.body.URL)) { 
+  if (!req.body.Content && !req.body.URL) { 
     return res.status(400).send("Both Content or URL are undefined.");
   }
 
-  if ( (req.body.Content && req.body.URL) ) { 
+  if (req.body.Content && req.body.URL) { 
     return res.status(400).send("Both Content or URL are defined.");
   }
 
-  if ( (req.body.Content && !req.body.Name) ) { 
+  if (req.body.Content && !req.body.Name) { 
     return res.status(400).send("If Content is defined Name also must be provided.");
   }
 
