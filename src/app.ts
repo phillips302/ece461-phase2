@@ -17,7 +17,7 @@ const port = 8081;
 
 const corsOptions = {
   origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
-  optionsSuccessStatus: 430
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 
