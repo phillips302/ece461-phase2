@@ -29,7 +29,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
     return data;
   }
   catch (error) {
-    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}\n${error instanceof Error ? error.stack : String(error)}}`;
+    return { message: `Error fetching packages: ${error instanceof Error ? error.message : String(error)}}\n${error instanceof Error ? error.stack : String(error)}}`};
   }  
 };
 
