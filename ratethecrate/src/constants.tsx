@@ -1,1 +1,1 @@
-export const ALB_BASE_URL = 'ece461-phase2-alb-800185711.us-east-2.elb.amazonaws.com/';
+export const ALB_BASE_URL = 'http://ece461-phase2-alb-800185711.us-east-2.elb.amazonaws.com/';
