@@ -1,8 +1,4 @@
 import * as types from './types';
-import { ALB_BASE_URL } from '../constants';
-
-const URL = ALB_BASE_URL || 'http://localhost:8081/';
-//const URL = 'http://localhost:8081/';
 
 export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[] | { message : string }> => { //works
   try {
@@ -11,7 +7,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
       Name: name
     };
   
-    const response = await fetch(`${URL}packages`, {
+    const response = await fetch(`api/packages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -34,7 +30,7 @@ export const getAllPackages = async ( name:string, version:string | undefined ):
 };
 
 export const deletePackages = async (): Promise<{ message : string }> => { //works
-  const response = await fetch(`${URL}reset`, { method: 'DELETE' });
+  const response = await fetch(`api/reset`, { method: 'DELETE' });
 
   if (!response.ok) {
     const message_text = await response.text();
@@ -47,7 +43,7 @@ export const deletePackages = async (): Promise<{ message : string }> => { //wor
 };
 
 export const getPackage = async (id: string): Promise<types.Package | { message:string }> => { //works
-  const response = await fetch(`${URL}package/${id}`);
+  const response = await fetch(`api/package/${id}`);
 
   if (!response.ok) {
     const message_text = await response.text();
@@ -61,7 +57,7 @@ export const getPackage = async (id: string): Promise<types.Package | { message:
 
 export const updatePackage = async (updatedPackage:types.Package): Promise<{ message: string }> => { //works
   try {
-    const response = await fetch(`${URL}package/${updatedPackage.metadata.ID}`, {
+    const response = await fetch(`api/package/${updatedPackage.metadata.ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -85,7 +81,7 @@ export const updatePackage = async (updatedPackage:types.Package): Promise<{ mes
 
 export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Promise<types.Package | { message:string }> => { //does not work with content
   try {
-    const response = await fetch(`${URL}package`, {
+    const response = await fetch(`api/package`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -108,7 +104,7 @@ export const uploadPackage = async ( uploadedPackageData:types.PackageData ): Pr
 };
 
 export const getPackageRate = async (id: string): Promise<{ rating: types.PackageRating}  | { message : string } > => { //works
-  const response = await fetch(`${URL}package/${id}/rate`);
+  const response = await fetch(`api/package/${id}/rate`);
 
   if (!response.ok) {
     const message_text = await response.text();
@@ -124,7 +120,7 @@ export const getPackageCost = async (id: string): Promise<{ cost: types.PackageC
   // const owner, const string } = getOwnerRepo()
   // dependency = fetchDependencies(owner, string)
 
-  const response = await fetch(`${URL}package/${id}/cost`);
+  const response = await fetch(`api/package/${id}/cost`);
 
   if (!response.ok) {
     const message_text = await response.text();
@@ -142,7 +138,7 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
       RegEx: reg
     };
   
-    const response = await fetch(`${URL}package/byRegEx`, {
+    const response = await fetch(`api/package/byRegEx`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
