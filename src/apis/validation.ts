@@ -9,7 +9,7 @@ export const validatePackageQuerySchema = (obj: Partial<PackageQuery>): number =
 export const validatePackageSchema = (obj: Partial<Package>): number => {
     let numMissingFields = 0;
   
-    const requiredFields: (keyof Package)[] = ['metadata', 'data'];
+    const requiredFields: (keyof Package)[] = ['metadata'];
     const missingFields = requiredFields.filter((field) => obj[field] === undefined);
     numMissingFields += missingFields.length;
   

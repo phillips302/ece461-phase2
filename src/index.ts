@@ -63,8 +63,11 @@ if (fs.existsSync(input) && fs.lstatSync(input).isFile()) {
 if (dependCostMode) {
   logMessage("INFO", "Finding Dependency Cost...");
   try {
-    const dependencySize: number = await getCumulativeSize(urlArray);
-    console.log("The total cumulative size is: ", dependencySize.toFixed(2), " MB.");
+    let packageSize: number = 0;
+    let totalSize: number = 0;
+    [packageSize, totalSize] = await getCumulativeSize(urlArray[0], false);
+    console.log("The stand-alone package size is: ", packageSize.toFixed(2), " MB.");
+    console.log("The total cumulative size is:    ", totalSize.toFixed(2), " MB.");
   } catch (error) {
     logMessage("ERROR", "Failed to find Dependency Cost");
     exit(1);

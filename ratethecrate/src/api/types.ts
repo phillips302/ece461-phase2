@@ -1,5 +1,5 @@
 
-  export interface Package {
+export interface Package {
     metadata: PackageMetadata;
     data: PackageData;
   }
@@ -15,6 +15,7 @@
     Content?: string;
     URL?: string;
     debloat?: boolean;
+    JSProgram?: string;
   }
 
   export interface User {
