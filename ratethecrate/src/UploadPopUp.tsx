@@ -88,97 +88,134 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="UploadPopUpOverlay">
+    <div
+      className="UploadPopUpOverlay"
+      role="dialog"
+      aria-labelledby="upload-popup-title"
+      aria-modal="true"
+      tabIndex={-1} // Make the dialog focusable
+    >
       <div className="UploadPopUpContent">
-        <button className="closeButton" onClick={handleClose}>
+        {/* Close Button */}
+        <button
+          className="closeButton"
+          onClick={handleClose}
+          aria-label="Close upload popup"
+        >
           &times;
         </button>
-        <h2>{title}</h2>
+  
+        {/* Title */}
+        <h2 id="upload-popup-title">{title}</h2>
+  
+        {/* Name Input */}
         <div className="InputRow">
-            <label htmlFor="name">Name:</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="PopUpInput"
-            />
+          <label htmlFor="name">Name:</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="PopUpInput"
+            aria-required="true"
+          />
         </div>
+  
+        {/* Inputs Section */}
         <div className="PopUpInputs">
           <div className="CombineRow">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={inputMode}
-              onChange={() => {
-                setInputMode(!inputMode); // Toggle between Content and URL
-                setContent(''); // Reset content
-                setUrl(''); // Reset URL
-              }} // Toggle between Content and URL
-            />
-            <span className="slider"></span>
-          </label>
-          {!inputMode && (
-            <div className="InputRowContent">
-              <label className='InputRow2Label' htmlFor="content">Content:</label>
-              {/* Upload Button */}
-              <div className="file-upload">
-                <input
-                  id="fileUpload"
-                  type="file"
-                  accept=".zip"
-                  style={{ display: "none" }} // Hide default input
-                  onChange={handleFileUpload}
-                />
-                <button
-                  onClick={() => document.getElementById("fileUpload")?.click()} // Trigger file input
-                  className="uploadButton"
-                >
-                  <i className="fas fa-file-upload"></i>
-                  {fileName && (
-                    <p className="file-name">{fileName}</p>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-          {inputMode && (
-            <div className="InputRowUrl">
-            <label className='InputRow2Label' htmlFor="url">URL:</label>
+            {/* Toggle Switch */}
+            <label htmlFor="content-or-url-toggle" className="switch">
               <input
-                id="url"
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="PopUpInput"
+                id="content-or-url-toggle"
+                type="checkbox"
+                checked={inputMode}
+                onChange={() => {
+                  setInputMode(!inputMode);
+                  setContent('');
+                  setUrl('');
+                }}
+                aria-checked={inputMode}
+                aria-label="Switch between content upload and URL input"
               />
-            </div>
-          )}
+              <span className="slider"></span>
+            </label>
+  
+            {/* Content Upload */}
+            {!inputMode && (
+              <div className="InputRowContent">
+                <label className="InputRow2Label" htmlFor="fileUpload">
+                  Content:
+                </label>
+                <div className="file-upload">
+                  <input
+                    id="fileUpload"
+                    type="file"
+                    accept=".zip"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                    aria-label="Upload a ZIP file"
+                  />
+                  <button
+                    onClick={() => document.getElementById('fileUpload')?.click()}
+                    className="uploadButton"
+                  >
+                    <i className="fas fa-file-upload" aria-hidden="true"></i>
+                    {fileName && <p className="file-name">{fileName}</p>}
+                  </button>
+                </div>
+              </div>
+            )}
+  
+            {/* URL Input */}
+            {inputMode && (
+              <div className="InputRowUrl">
+                <label className="InputRow2Label" htmlFor="url">
+                  URL:
+                </label>
+                <input
+                  id="url"
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="PopUpInput"
+                  aria-required="true"
+                />
+              </div>
+            )}
           </div>
+  
+          {/* Debloat Input */}
           <div className="InputRow">
-              <label htmlFor="debloat">Debloat:</label>
-              <input
+            <label htmlFor="debloat">Debloat:</label>
+            <input
               id="debloat"
               type="text"
               value={String(debloat)}
               onChange={(e) => {
-                if (e.target.value === "true") {
+                if (e.target.value === 'true') {
                   setDebloat(true);
-                } else if (e.target.value === "false") {
+                } else if (e.target.value === 'false') {
                   setDebloat(false);
                 }
               }}
               className="PopUpInput"
-              />
+              aria-required="true"
+            />
           </div>
         </div>
-        {/* Submit button */}
-        <button className="SubmitButton" onClick={handleSubmit}>
+  
+        {/* Submit Button */}
+        <button
+          className="SubmitButton"
+          onClick={handleSubmit}
+          aria-label="Submit the form"
+        >
           Submit
         </button>
       </div>
     </div>
-  );
-};
+  ); 
+}; 
 
 export default UploadPopUp;

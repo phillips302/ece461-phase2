@@ -350,102 +350,107 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      {isLoading && <LoadingOverlay />}
+      {isLoading && <LoadingOverlay aria-live="assertive" aria-label="Loading, please wait..." />}
       <header>
         <h1>Rate the Crate</h1>
       </header>
       <main>
-
-        <label className="switch">
-          <input 
-            type="checkbox" 
-            checked={showTwoSearchBars} 
+        {/* Toggle Switch */}
+        <label className="switch" htmlFor="toggleSearchBars">
+          <input
+            id="toggleSearchBars"
+            type="checkbox"
+            checked={showTwoSearchBars}
             onChange={handleToggleChange}
+            aria-checked={showTwoSearchBars}
+            aria-label="Switch between searching by Regular Expression and Name/Version"
           />
           <span className="slider"></span>
         </label>
-
+  
+        {/* Search Bars */}
         {showTwoSearchBars && (
           <React.Fragment>
             <input
-              id="searchBar"
+              id="regexSearchBar"
               className="searchBar"
               type="text"
               value={regexValue}
               onChange={handleRegexChange}
               placeholder="Search by Regular Expression..."
-              aria-label="Search Bar"
+              aria-label="Search using a regular expression"
             />
           </React.Fragment>
         )}
-
         {!showTwoSearchBars && (
           <React.Fragment>
             <input
-              id="searchBar"
+              id="nameSearchBar"
               className="searchBar2"
               type="text"
               value={nameValue}
               onChange={handleNameChange}
               placeholder="Search by Name..."
-              aria-label="Search Bar"
+              aria-label="Search by package name"
             />
             <input
-              id="searchBar2"
+              id="versionSearchBar"
               className="searchBar2"
               type="text"
               value={versionValue}
               onChange={handleVersionChange}
               placeholder="Search by Version..."
-              aria-label="Search Bar 2"
+              aria-label="Search by package version"
             />
           </React.Fragment>
         )}
+  
+        {/* Action Buttons */}
         <button
-              title="Search"
-              aria-label="Search"
-              className={`searchButton ${sinkingButtons[`-search`] ? 'sunk' : ''}`}
-              onClick={() => handleSinkingClick("", 'search')}
-            >
-              <i className="fas fa-search" aria-hidden="true"></i>
+          title="Search"
+          aria-label="Search packages"
+          className={`searchButton ${sinkingButtons['-search'] ? 'sunk' : ''}`}
+          onClick={() => handleSinkingClick("", 'search')}
+        >
+          <i className="fas fa-search" aria-hidden="true"></i>
         </button>
-
+  
         <button
           title="Upload"
-          aria-label="Upload Package"
-          className={`uploadButton ${sinkingButtons[`-upload`] ? 'sunk' : ''}`}
+          aria-label="Upload a package"
+          className={`uploadButton ${sinkingButtons['-upload'] ? 'sunk' : ''}`}
           onClick={() => handleSinkingClick("", 'upload')}
         >
           <i className="fas fa-upload" aria-hidden="true"></i>
         </button>
-
+  
         <button
           title="Reset"
-          aria-label="Reset All Packages"
-          className={`uploadButton ${sinkingButtons[`-delete`] ? 'sunk' : ''}`}
+          aria-label="Reset all packages"
+          className={`uploadButton ${sinkingButtons['-delete'] ? 'sunk' : ''}`}
           onClick={() => handleSinkingClick("", 'delete')}
         >
           <i className="fas fa-trash" aria-hidden="true"></i>
         </button>
-
-        <section className="darkBlueBox">
+  
+        {/* Package List */}
+        <section className="darkBlueBox" aria-labelledby="package-list-title">
           <ul>
             {packages.map((product) => (
               <li key={product.ID}>
                 <div className="lightBlueBox">
                   <span>{product.Name}</span>
-
                   <div className="rightAligned">
                     <button
-                      title='Package'
-                      aria-label={`Link to ${product.Name}`}
+                      title="Package"
+                      aria-label={`View details for ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-package`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'package')}
                     >
                       <i className="fas fa-box-open" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Download'
+                      title="Download"
                       aria-label={`Download ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-download`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'download')}
@@ -453,7 +458,7 @@ const App: React.FC = () => {
                       <i className="fas fa-download" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Update'
+                      title="Update"
                       aria-label={`Update ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-update`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'update')}
@@ -461,7 +466,7 @@ const App: React.FC = () => {
                       <i className="fas fa-sync" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Rate'
+                      title="Rate"
                       aria-label={`Rate ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-rate`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'rate')}
@@ -469,8 +474,8 @@ const App: React.FC = () => {
                       <i className="fas fa-star" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Cost'
-                      aria-label={`Cost of ${product.Name}`}
+                      title="Cost"
+                      aria-label={`View cost of ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-cost`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'cost')}
                     >
@@ -482,11 +487,14 @@ const App: React.FC = () => {
             ))}
           </ul>
         </section>
+  
+        {/* PopUps */}
         <PopUp
           isVisible={isPopUpVisible}
           onClose={() => setPopUpVisible(false)}
           title={title}
           message={message}
+          aria-live="polite"
         />
         <UpdatePopUp
           isVisible={isUpdatePopUpVisible}
@@ -495,7 +503,7 @@ const App: React.FC = () => {
             setIsLoading(false);
           }}
           title="Update Package Information"
-          currPackage = {selectedPackage}
+          currPackage={selectedPackage}
           onSubmit={handleUpdateClick}
         />
         <UploadPopUp
@@ -510,6 +518,6 @@ const App: React.FC = () => {
       </main>
     </div>
   );
-};
+};  
 
 export default App;
