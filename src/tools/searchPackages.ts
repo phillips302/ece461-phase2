@@ -1,6 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { logMessage } from "./utils.js";
+import axios from 'axios';
+import { getLinkType, logMessage, getOwnerRepo } from "./utils.js";
+import { readAllPackages } from '../rds/index.js';
 
 /**
  * Searches for packname or README content for a given regular expression.
@@ -77,4 +79,65 @@ export async function searchPackages(regex_string: string): Promise<{ Version: s
     }
     logMessage('INFO', JSON.stringify(matchedPackages, null, 2))
     return matchedPackages
+}
+
+export async function searchPackagesRDS(regex_string: string): Promise<{ ID: string }[]> {
+    let regex = new RegExp(regex_string);
+    let matchedPackages: { ID: string }[] = [];
+
+    try {
+        // Read the directories (packages) in the ingestedPackages folder
+        const packages = await readAllPackages();
+
+        if (packages === null) {
+            logMessage('INFO', 'No packages found in the database');
+            return matchedPackages;
+        }
+        
+        for (const pkg of packages) {
+            // Search in the package name
+            if (regex.test(pkg.metadata.Name)) {
+                logMessage('INFO', `Matched package name: ${pkg.metadata.Name}`);
+                matchedPackages.push({ ID: pkg.metadata.ID });
+            }
+
+            // Search in the README.md file (if it exists)
+            if(pkg.data.URL) {
+                let readmeContent = '';
+                if(getLinkType(pkg.data.URL) === 'GitHub'){
+                    try {
+                        const { owner, repo } = await getOwnerRepo(pkg.data.URL);
+                        const response = await axios.get(
+                          `https://api.github.com/repos/${owner}/${repo}/readme`,
+                          {
+                            headers: {
+                              Accept: 'application/vnd.github.v3.raw',
+                            },
+                          }
+                        );
+                        readmeContent = response.data;
+                    } catch (error) {
+                        logMessage('ERROR', 'Error fetching README from GitHub');
+                    }
+                } else {
+                    try {
+                        const response = await axios.get(`https://registry.npmjs.org/${pkg.metadata.Name}`);
+                        readmeContent = response.data.readme;
+                    } catch (error) {
+                        logMessage('ERROR', 'Error fetching README from NPM');
+                    }
+                }
+
+                if (regex.test(readmeContent)) {
+                    logMessage('INFO', `Matched README in package: ${pkg.metadata.Name}`);
+                    matchedPackages.push({ ID: pkg.metadata.ID });
+                }
+            }
+        }
+    } catch (err) {
+        logMessage('ERROR', `Error during package search: ${err}`);
+        return matchedPackages
+    }
+    logMessage('INFO', JSON.stringify(matchedPackages, null, 2))
+    return matchedPackages;
 }
