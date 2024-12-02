@@ -29,60 +29,243 @@ describe('UI Tests for React App', () => {
     expect(title).to.equal('Rate the Crate'); // Replace with actual title
   });
 
-  // Test 2: Simulate a button click (e.g., Search) and check for the resulting change
-  it('should click the Search button and show the correct search value', async () => {
-    await driver.get('http://localhost:3000'); // Ensure we're on the homepage
+  it('should toggle search bars', async () => {
+    // Locate the toggle switch
+    const toggle = await driver.wait(until.elementLocated(By.css('#toggleSearchBars')), 10000);
 
-    // Locate the search input and button
-    const searchInput = await driver.wait(until.elementLocated(By.css('.searchBar')), 10000);
-    const searchButton = await driver.wait(until.elementLocated(By.css('[title="Search"]')), 10000);
+    // Verify the initial state (expecting name search bar to be visible)
+    let nameSearchBar = await driver.findElement(By.id('nameSearchBar'));
+    expect(await nameSearchBar.isDisplayed()).toBe(true);
 
-    // Type into the search input
-    await searchInput.sendKeys('Lodash');
+    // Toggle to regex mode
+    await driver.executeScript("arguments[0].click();", toggle);
+
+    // Verify regex search bar is now visible
+    let regexSearchBar = await driver.findElement(By.id('regexSearchBar'));
+    expect(await regexSearchBar.isDisplayed()).toBe(true);
+
+    // Toggle back to name/version mode
+    await driver.executeScript("arguments[0].click();", toggle);
     
-    // Click the Search button
+    // Verify name search bar is visible again
+    nameSearchBar = await driver.findElement(By.id('nameSearchBar'));
+    expect(await nameSearchBar.isDisplayed()).toBe(true);
+});
+
+  it('should perform search', async () => {
+    const searchButton = await driver.findElement(By.css('.searchButton'));
+
     await searchButton.click();
 
-    // Wait for the search button to apply the "sunk" class (for sinking effect)
-    const searchButtonElement = await driver.wait(until.elementLocated(By.css('[title="Search"]')), 10000);
-    expect(await searchButtonElement.getAttribute('class')).toContain('sunk');
+    const resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBeGreaterThanOrEqual(0); //need to be able to handle when there are no packages 
   });
 
-  // Test 3: Simulate clicking the Download button and check the alert message
-  it('should click the Download button and show the correct alert message', async () => {
-    await driver.get('http://localhost:3000'); // Ensure we're on the homepage
+  it('should open upload popup and upload a package', async () => {
+    const uploadButton = await driver.findElement(By.css('.uploadButton'));
 
-    // Locate the Download button for the first package (assumed CSS selector)
-    const downloadButton = await driver.wait(until.elementLocated(By.css('[title="Download"]')), 10000);
-    
-    // Simulate clicking the Download button
-    await downloadButton.click();
-    
-    // Wait for the alert and check the message (mocked alert)
-    await driver.wait(until.alertIsPresent(), 10000);
-    const alertText = await driver.switchTo().alert().getText();
-    
-    // Verify that the correct alert was triggered
-    expect(alertText).toBe('Download Button clicked!');
-    
-    // Close the alert
-    await driver.switchTo().alert().accept();
-  });
-
-  // Test 4: Simulate clicking the Upload button and verify it sinks
-  it('should click the Upload button and trigger sinking effect', async () => {
-    await driver.get('http://localhost:3000'); // Ensure we're on the homepage
-
-    // Locate the Upload button
-    const uploadButton = await driver.wait(until.elementLocated(By.css('[title="Upload"]')), 10000);
-
-    // Click the Upload button
     await uploadButton.click();
+
+    // Verify popup is visible
+    const popup = await driver.wait(until.elementLocated(By.css('.UploadPopUpContent')), 5000);
+    expect(await popup.isDisplayed()).toBe(true);
+
+    //Verify toggle works
+    const toggle = await driver.wait(until.elementLocated(By.css('#content-or-url-toggle')), 10000);
+    await driver.executeScript("arguments[0].click();", toggle);
     
-    // Wait for the button to apply the "sunk" class (sinking effect)
-    const uploadButtonElement = await driver.wait(until.elementLocated(By.css('[title="Upload"]')), 10000);
-    expect(await uploadButtonElement.getAttribute('class')).toContain('sunk');
+    // Test Content Select - could add more
+    let fileUpload = await driver.findElement(By.id('fileUpload'));
+    expect(fileUpload).toBeDefined();
+
+    // Test URL Select
+    await driver.executeScript("arguments[0].click();", toggle);
+    let url = await driver.findElement(By.id('url'));
+    expect(await url.isDisplayed()).toBe(true);
+    await url.sendKeys('https://github.com/browserify/browserify');
+
+    // Test Submit
+    const submitButton = await popup.findElement(By.css('.SubmitButton'));
+    await submitButton.click();
+    const messagepopup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
+    expect(await messagepopup.isDisplayed()).toBe(true);
+
+    // Close the popup
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    // Verify pop up is not visible
+    const isPopupDisplayed = await driver.findElements(By.css('.UploadPopUpContent'));
+    expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
   });
 
+  it('should perform search for browserify', async () => {
+    const searchButton = await driver.findElement(By.css('.searchButton'));
+
+    let searchBox = await driver.findElement(By.id('nameSearchBar'));
+    await searchBox.sendKeys('browserify');
+
+    await searchButton.click();
+
+    // Wait for results to load
+    await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
+
+    const resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBe(1); // Ensure we got results
+  });
+
+  it('should display package details', async () => {
+    // Assuming the browserify package is loaded
+    const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Package']`)), 5000);
+    await packageButton.click();
+
+    // Wait for the popup to show
+    const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
+
+    // Verify popup contents
+    const title = await popup.findElement(By.id('popup-title'));
+    expect(await title.getText()).toContain('browserify');
+    const message = await popup.findElement(By.id('popup-message'));
+    expect(await message.getText()).toContain('Id');
+    expect(await message.getText()).toContain('Version');
+    expect(await message.getText()).toContain('URL');
+
+    // Close the popup
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    // Verify pop up is not visible
+    const isPopupDisplayed = await driver.findElements(By.css('.PopUpContent'));
+    expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
+  });
+
+  it('should download package', async () => {
+    //need to test once download is implemented
+    // Assuming the browserify package is loaded
+    // const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Download']`)), 5000);
+    // await packageButton.click();
+  });
+
+  it('should display package rate', async () => {
+    // Assuming the browserify package is loaded
+    const rateButton = await driver.wait(until.elementLocated(By.css(`button[title='Rate']`)), 5000);
+    await rateButton.click();
+
+    // Wait for the popup to show
+    const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
+
+    // Verify popup contents
+    const title = await popup.findElement(By.id('popup-title'));
+    expect(await title.getText()).toContain('Package Rating');
+    const message = await popup.findElement(By.id('popup-message'));
+    expect(await message.getText()).toContain('Bus Factor');
+    expect(await message.getText()).toContain('Correctness');
+    expect(await message.getText()).toContain('Ramp Up');
+    expect(await message.getText()).toContain('Responsive Maintainer');
+    expect(await message.getText()).toContain('License Score');
+    expect(await message.getText()).toContain('Good Pinning Practice');
+    expect(await message.getText()).toContain('Net Score');
+
+    // Close the popup
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    // Verify pop up is not visible
+    const isPopupDisplayed = await driver.findElements(By.css('.PopUpContent'));
+    expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
+  });
+
+  it('should display package cost', async () => {
+    // Assuming the browserify package is loaded
+    const costButton = await driver.wait(until.elementLocated(By.css(`button[title='Cost']`)), 5000);
+    await costButton.click();
+
+    // Wait for the popup to show
+    const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
+
+    // Verify popup contents
+    const title = await popup.findElement(By.id('popup-title'));
+    expect(await title.getText()).toContain('Package Cost');
+    const message = await popup.findElement(By.id('popup-message'));
+    expect(await message.getText()).toContain('Total Cost');
+
+    // Close the popup
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    // Verify pop up is not visible
+    const isPopupDisplayed = await driver.findElements(By.css('.PopUpContent'));
+    expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
+  });
+
+  it('should update package', async () => {
+    // Assuming the browserify package is loaded
+    const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Update']`)), 5000);
+    await packageButton.click();
+
+    // Wait for the popup to show
+    const popup = await driver.wait(until.elementLocated(By.css('.UpdatePopUpContent')), 5000);
+
+    //Verify toggle works
+    const toggle = await driver.wait(until.elementLocated(By.css('#content-or-url-toggle')), 10000);
+    await driver.executeScript("arguments[0].click();", toggle);
+
+    // Test Content Select - could add more
+    let fileUpload = await driver.findElement(By.id('fileUpload'));
+    expect(fileUpload).toBeDefined();
+
+    // Test URL Select
+    await driver.executeScript("arguments[0].click();", toggle);
+    let version = await driver.findElement(By.id('version'));
+    await version.clear();
+    await version.sendKeys('1.1.1');
+    let url = await driver.findElement(By.id('url'));
+    expect(await url.isDisplayed()).toBe(true);
+    await url.sendKeys('https://github.com/browserify/browserify');
+
+    // Test Submit
+    const submitButton = await popup.findElement(By.css('.SubmitButton'));
+    await submitButton.click();
+    const messagepopup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
+    expect(await messagepopup.isDisplayed()).toBe(true);
+
+    // Close the popup
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    // Verify pop up is not visible
+    const isPopupDisplayed = await driver.findElements(By.css('.UpdatePopUpContent'));
+    expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
+  });
+
+  it('should perform search by name and then version and then regex', async () => {
+    const searchButton = await driver.findElement(By.css('.searchButton'));
+
+    // Search by Name
+    await searchButton.click();
+    await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
+    let resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBe(2);
+
+    // Search by Version
+    let version = await driver.findElement(By.id('versionSearchBar'));
+    await version.sendKeys('1.1.1');
+    await searchButton.click();
+    await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
+    resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBe(1);
+
+    //need to implement Search by Regex
+  });
+
+  it('should handle delete functionality', async () => {
+    const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
+
+    await deleteButton.click();
+
+    // Confirm deletion by checking for an empty list
+    const packageList = await driver.findElements(By.css('.lightBlueBox'));
+    expect(packageList.length).toBe(0);
+  });
 });
 

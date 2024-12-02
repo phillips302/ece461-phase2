@@ -24,8 +24,8 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   const [debloat, setDebloat] = useState(currPackage.data.debloat ?? false);
 
   // States for toggling input mode and managing file name
-  const [inputMode, setInputMode] = useState(false); // False means upload file mode
-  const [fileName, setFileName] = useState<string>(currPackage.data.Content ?? '');
+  const [inputMode, setInputMode] = useState(currPackage.data.Content === undefined ? false : true); // False means upload file mode
+  const [fileName, setFileName] = useState<string>('');
 
   // Sync state with currPackage when it changes
   useEffect(() => {
