@@ -50,7 +50,7 @@ const App: React.FC = () => {
 
   //helper functions
     const handleSearchClick = () => {
-    if (nameValue !== "" && versionValue === ""){
+    if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
       getAllPackages(nameValue, undefined)
       .then((data) => {
         if ('message' in data) {
@@ -65,7 +65,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (nameValue === "" && versionValue !== ""){
+    else if (nameValue === "" && versionValue !== "" && !showTwoSearchBars){
       getAllPackages("*", versionValue)
       .then((data) => {
         if ('message' in data) {
@@ -80,7 +80,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (nameValue !== "" && versionValue !== ""){
+    else if (nameValue !== "" && versionValue !== "" && !showTwoSearchBars){
       getAllPackages(nameValue, versionValue)
       .then((data) => {
         if ('message' in data) {
@@ -95,7 +95,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (regexValue !== ""){
+    else if (regexValue !== "" && showTwoSearchBars){
       getCertainPackages(regexValue)
       .then((data) => {
         if ('message' in data) {
@@ -175,7 +175,7 @@ const App: React.FC = () => {
         setTitle(data.metadata.Name)
         setMessage(`Id: ${data.metadata.ID} <br />
           Version: ${data.metadata.Version} <br />
-          URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
+          URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer" style="color: white;">${data.data.URL}</a> `)
         setPopUpVisible(true)
         }
     })
@@ -331,9 +331,6 @@ const App: React.FC = () => {
 
    const handleToggleChange = () => {
     setShowTwoSearchBars(prevState => !prevState); // Toggle between two search bars or one
-    setNameValue("");
-    setVersionValue("");
-    setRegexValue("");
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -355,8 +352,9 @@ const App: React.FC = () => {
         <h1>Rate the Crate</h1>
       </header>
       <main>
+        <label htmlFor="Searching">
         {/* Toggle Switch */}
-        <label className="switch" htmlFor="toggleSearchBars">
+        <label htmlFor="toggleSearchBars" className="switch" >
           <input
             id="toggleSearchBars"
             type="checkbox"
@@ -364,6 +362,13 @@ const App: React.FC = () => {
             onChange={handleToggleChange}
             aria-checked={showTwoSearchBars}
             aria-label="Switch between searching by Regular Expression and Name/Version"
+            onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              // Toggle on Enter or Space
+              e.preventDefault(); // Prevent scrolling for space key
+              handleToggleChange();
+            }
+           }}
           />
           <span className="slider"></span>
         </label>
@@ -414,6 +419,7 @@ const App: React.FC = () => {
         >
           <i className="fas fa-search" aria-hidden="true"></i>
         </button>
+        </label>
   
         <button
           title="Upload"

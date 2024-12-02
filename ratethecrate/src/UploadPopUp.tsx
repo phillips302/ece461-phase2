@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -22,9 +22,40 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
   const [inputMode, setInputMode] = useState(true);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const handleClose = () => {
-    onClose();
-  };
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onClose();
+        }
+    };
+
+    const handleClose = () => {
+        onClose();
+    };
+
+    useEffect(() => {
+        if (isVisible) {
+            // Set focus to the close button when the modal opens
+            closeButtonRef.current?.focus();
+        }
+    }, [isVisible]);
+
+    useEffect(() => {
+      // Trap focus within the modal
+      const handleFocusTrap = (e: FocusEvent) => {
+          if (!modalRef.current?.contains(e.target as Node)) {
+              closeButtonRef.current?.focus();
+          }
+      };
+      if (isVisible) {
+          document.addEventListener('focus', handleFocusTrap, true);
+      }
+      return () => {
+          document.removeEventListener('focus', handleFocusTrap, true);
+      };
+  }, [isVisible]);
 
   const handleSubmit = () => {
     if (onSubmit) {
@@ -91,16 +122,17 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
     <div
       className="UploadPopUpOverlay"
       role="dialog"
-      aria-labelledby="upload-popup-title"
+      aria-labelledby="popup-title"
+      aria-describedby="popup-description"
       aria-modal="true"
-      tabIndex={-1} // Make the dialog focusable
+      onKeyDown={handleKeyDown}
     >
-      <div className="UploadPopUpContent">
-        {/* Close Button */}
+      <div className="UploadPopUpContent" ref={modalRef}>
         <button
           className="closeButton"
           onClick={handleClose}
-          aria-label="Close upload popup"
+          ref={closeButtonRef}
+          aria-label="Close popup"
         >
           &times;
         </button>
@@ -132,11 +164,17 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
                 checked={inputMode}
                 onChange={() => {
                   setInputMode(!inputMode);
-                  setContent('');
-                  setUrl('');
                 }}
                 aria-checked={inputMode}
                 aria-label="Switch between content upload and URL input"
+                onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setInputMode(!inputMode);
+                  setContent('');
+                  setUrl('');
+                }
+                }}
               />
               <span className="slider"></span>
             </label>
@@ -159,6 +197,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
                   <button
                     onClick={() => document.getElementById('fileUpload')?.click()}
                     className="uploadButton"
+                    aria-label="Upload"
                   >
                     <i className="fas fa-file-upload" aria-hidden="true"></i>
                     {fileName && <p className="file-name">{fileName}</p>}
@@ -209,7 +248,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
         <button
           className="SubmitButton"
           onClick={handleSubmit}
-          aria-label="Submit the form"
+          aria-label="Submit"
         >
           Submit
         </button>

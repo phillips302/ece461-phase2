@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -33,9 +33,40 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
     setDebloat(currPackage?.data?.debloat ?? false);
   }, [currPackage]);
 
-  const handleClose = () => {
-    onClose();
-  };
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onClose();
+        }
+    };
+
+    const handleClose = () => {
+        onClose();
+    };
+
+    useEffect(() => {
+        if (isVisible) {
+            // Set focus to the close button when the modal opens
+            closeButtonRef.current?.focus();
+        }
+    }, [isVisible]);
+
+    useEffect(() => {
+      // Trap focus within the modal
+      const handleFocusTrap = (e: FocusEvent) => {
+          if (!modalRef.current?.contains(e.target as Node)) {
+              closeButtonRef.current?.focus();
+          }
+      };
+      if (isVisible) {
+          document.addEventListener('focus', handleFocusTrap, true);
+      }
+      return () => {
+          document.removeEventListener('focus', handleFocusTrap, true);
+      };
+  }, [isVisible]);
 
   const handleSubmit = () => {
     if (onSubmit) {
@@ -112,12 +143,13 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
       aria-labelledby="popup-title"
       aria-describedby="popup-description"
       aria-modal="true"
-      tabIndex={-1} // Ensure the dialog itself is focusable
+      onKeyDown={handleKeyDown}
     >
-      <div className="UpdatePopUpContent">
+      <div className="UpdatePopUpContent" ref={modalRef}>
         <button
           className="closeButton"
           onClick={handleClose}
+          ref={closeButtonRef}
           aria-label="Close popup"
         >
           &times;
@@ -144,6 +176,12 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
                 onChange={() => setInputMode(!inputMode)}
                 aria-checked={inputMode}
                 aria-label="Switch between content upload and URL input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setInputMode(!inputMode);
+                  }
+                 }}
               />
               <span className="slider"></span>
             </label>
@@ -159,11 +197,11 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
                     accept=".zip"
                     style={{ display: 'none' }}
                     onChange={handleFileUpload}
-                    aria-label="Upload a ZIP file"
                   />
                   <button
                     onClick={() => document.getElementById('fileUpload')?.click()}
                     className="uploadButton"
+                    aria-label="Upload"
                   >
                     <i className="fas fa-file-upload"></i>
                     {fileName && <p className="file-name">{fileName}</p>}
@@ -199,7 +237,7 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
             />
           </div>
         </div>
-        <button className="SubmitButton" onClick={handleSubmit}>
+        <button className="SubmitButton" aria-label="Submit" onClick={handleSubmit}>
           Submit
         </button>
       </div>
