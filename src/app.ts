@@ -351,3 +351,5 @@ app.listen(port, () => {
   //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
   console.log(`Express is listening at https://api.ratethecratebackend.com/`);
 });
+
+export default app;
