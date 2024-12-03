@@ -59,10 +59,6 @@ app.get('/health', async (req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).send("OK");
-});
-
 app.post('/packages', (req: Request, res: Response) => { //works
   //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
