@@ -1,6 +1,5 @@
-import { expect, beforeAll, afterAll, afterEach, describe, it, vi, assert } from 'vitest';
+import { expect, beforeAll, afterAll, afterEach, describe, it, vi } from 'vitest';
 import path from 'path';
-import * as fs from 'fs';
 import { Builder, By, until, WebDriver } from 'selenium-webdriver';
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome';
 import 'chromedriver';
