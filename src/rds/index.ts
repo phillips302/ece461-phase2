@@ -2,6 +2,7 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 import { Package, PackageRating } from '../apis/types.js';
+import process from 'process';
 
 dotenv.config();
 
@@ -10,7 +11,6 @@ export const pool = new Pool({
   port: process.env.RDS_PORT ? parseInt(process.env.RDS_PORT, 10) : undefined, // Default PostgreSQL port
   user: process.env.RDS_USERNAME,
   password: process.env.RDS_PASSWORD,
-  database: process.env.RDS_DATABASE,
 });
 
 //reuired, name,id , version, make upload_date DEFAULT
