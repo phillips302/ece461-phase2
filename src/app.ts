@@ -49,7 +49,7 @@ app.post('/packages', async (req: Request, res: Response) => { //works
   }
   const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
   
-  const packageArray = await readAllPackages();
+  const packageArray = await readAllPackages(); //might need to change this for offset
   if (!packageArray) {
     return res.status(500).send("Failed to read packages from RDS.");
   }
