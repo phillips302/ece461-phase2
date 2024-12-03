@@ -10,6 +10,7 @@ dotenv.config();
 export const pool = new Pool({
   host: process.env.RDS_ENDPOINT,
   port: 5432, // Default PostgreSQL port
+  database: process.env.RDS_DATABASE,
   user: process.env.RDS_USERNAME,
   password: process.env.RDS_PASSWORD
 });
