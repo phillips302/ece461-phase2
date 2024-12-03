@@ -79,7 +79,7 @@ export async function readPackage(ID: string): Promise<Package | null> {
             data: {
                 Name: selectResult.rows[0].package_name,
                 URL: selectResult.rows[0].url,
-                debloat: selectResult.rows[0].deloat
+                debloat: selectResult.rows[0].debloat
             }
         }
 
