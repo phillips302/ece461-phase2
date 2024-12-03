@@ -58,8 +58,6 @@ export async function testPoolQuery(): Promise<string> {
         console.error('Error executing query:', err);
         return 'connection error';
     } finally {
-        // End the pool (optional for testing, not recommended for long-lived apps)
-        await pool.end();
         console.log('Disconnected from PostgreSQL RDS');
         return 'connection success';
     }
@@ -80,9 +78,26 @@ export async function testStoreQuery(newPackage: Package): Promise<string> {
         console.error('Error executing query:', err);
         return 'connection error';
     } finally {
-        // End the pool (optional for testing, not recommended for long-lived apps)
-        await pool.end();
         console.log('Disconnected from PostgreSQL RDS');
         return 'connection success';
+    }
+}
+
+export async function testReadAll(): Promise<string> {
+    try {
+        console.log('Testing pool connection to PostgreSQL RDS...');
+        
+        // Test the connection with a simple query
+        const selectResult = await pool.query('SELECT package_id, package_name, version, url, debloat FROM packages');
+        console.log('Successfully connected to PostgreSQL RDS');
+        console.log('Server time:', selectResult.rows[0].now);
+
+        return `${selectResult.rows[0].package_name}`;
+
+    } catch (err) {
+        console.error('Error executing query:', err);
+        return 'connection error';
+    } finally {
+        console.log('Disconnected from PostgreSQL RDS');
     }
 }

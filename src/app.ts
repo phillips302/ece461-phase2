@@ -9,7 +9,7 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { testClient, testPoolQuery, testStoreQuery } from './rds/testConnection.js';
+import { testClient, testPoolQuery, testStoreQuery, testReadAll } from './rds/testConnection.js';
 import { storePackage, readPackage } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -141,6 +141,16 @@ app.get('/test/readPackage', async (req: Request, res: Response) => {
   }
 
   return res.status(200).json(foundPackage);
+});
+
+app.get('/test/readAllPackages', async (req: Request, res: Response) => {
+
+  const allPackages = await testReadAll();
+  if (allPackages === "connection error") {
+    return res.status(500).send('Failed to connect to RDS');
+  }
+
+  return res.status(200).json(allPackages);
 });
 
 
