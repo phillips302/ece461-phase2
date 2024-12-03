@@ -9,7 +9,7 @@ dotenv.config();
 
 export const pool = new Pool({
   host: process.env.RDS_ENDPOINT,
-  port: process.env.RDS_PORT ? parseInt(process.env.RDS_PORT, 10) : undefined, // Default PostgreSQL port
+  port: 5432, // Default PostgreSQL port
   user: process.env.RDS_USERNAME,
   password: process.env.RDS_PASSWORD
 });
@@ -30,6 +30,8 @@ export async function storePackage(newPackage: Package, scores: PackageRating) {
         console.log('Disconnected from PostgreSQL RDS');
     }
 }
+
+storePackage(newPackage: Package) {
 
 // export async function storePackageRating(BusFactor: number, BusFactorLatency: number, Correctness: number, CorrectnessLatency: number, RampUp: number, RampUpLatency: number, ResponsiveMaintainer: number, ResponsiveMaintainerLatency: number, LicenseScore: number, LicenseScoreLatency: number, GoodPinningPractice: number, GoodPinningPracticeLatency: number, PullRequest: number, PullRequestLatency: number, NetScore: number, NetScoreLatency: number) {
 //     try {
@@ -92,6 +94,7 @@ export async function readAllPackages(): Promise<Package[] | null> {
         console.log('Queried:', selectResult.rows);
 
         if (selectResult.rows.length === 0) {
+            console.log('No packages found in the database');
             return null;
         }
 
