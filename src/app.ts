@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from 'express';
-import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
+import { Package, PackageQuery, PackageMetadata, PackageCost, PackageRating } from './apis/types.js';
 import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
@@ -7,10 +7,11 @@ import { getOwnerRepo } from './tools/utils.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
 import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
-import { searchPackages } from './tools/searchPackages.js';
+import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { storePackage, readAllPackages, readPackage, readPackageRating } from './rds/index.js';
 
 const app: Application = express();
 const port = 8081;
@@ -27,35 +28,17 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-let packageDatabase: Package[] = [];
-
-// Example package to initialize the packageDatabase
-for (let i = 0; i < 10; i++) {
-  let examplePackage: Package = {
-    metadata: {
-      Name: `example-package-${i}`,
-      ID: `1234${i}`,
-      Version: "1.0.0"
-    },
-    data: {
-      debloat: false,
-      URL: "https://www.npmjs.com/package/browserify"
-    }
-  };
-  packageDatabase.push(examplePackage);
-}
-
 app.use(express.json());
 
 // Use imported routes
 app.use('/', queryVersionRoutes);
 //app.use('/package', packageRoutes);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', async (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
 });
 
-app.post('/packages', (req: Request, res: Response) => { //works
+app.post('/packages', async (req: Request, res: Response) => { //works
   //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
 
@@ -66,13 +49,18 @@ app.post('/packages', (req: Request, res: Response) => { //works
   }
   const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
   
+  const packageArray = await readAllPackages();
+  if (!packageArray) {
+    return res.status(500).send("Failed to read packages from RDS.");
+  }
+
   let results: PackageMetadata[] = [];
   let counter = 0;
 
   if (pkgqry.length == 1 && pkgqry[0].Name == '*') { //get all packages, if version is null or defined
-    for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
-      if (!pkgqry[0].Version || pkgqry[0].Version == packageDatabase[i].metadata.Version) {
-        results.push(packageDatabase[i].metadata);
+    for (let i = 0; i < packageArray.length && counter < offset; i++) {
+      if (!pkgqry[0].Version || pkgqry[0].Version == packageArray[i].metadata.Version) {
+        results.push(packageArray[i].metadata);
         counter++;
       }
     }
@@ -80,16 +68,16 @@ app.post('/packages', (req: Request, res: Response) => { //works
 
   for (const q of pkgqry) {
     if (!q.Version) { //get specific packages, no version
-      for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
-        if (packageDatabase[i].metadata.Name == q.Name) {
-          results.push(packageDatabase[i].metadata);
+      for (let i = 0; i < packageArray.length && counter < offset; i++) {
+        if (packageArray[i].metadata.Name == q.Name) {
+          results.push(packageArray[i].metadata);
           counter++;
         }
       } 
     } else { //get specific packages, with version
-      for (let i = 0; i < packageDatabase.length && counter < offset; i++) {
-        if (packageDatabase[i].metadata.Name == q.Name && packageDatabase[i].metadata.Version == q.Version) { //check that this gets packages correctly with range
-          results.push(packageDatabase[i].metadata);
+      for (let i = 0; i < packageArray.length && counter < offset; i++) {
+        if (packageArray[i].metadata.Name == q.Name && packageArray[i].metadata.Version == q.Version) { //check that this gets packages correctly with range
+          results.push(packageArray[i].metadata);
           counter++;
         }
       } 
@@ -100,7 +88,9 @@ app.post('/packages', (req: Request, res: Response) => { //works
 });
 
 app.delete('/reset', (req: Request, res: Response) => { //works
-  packageDatabase = [];
+
+  //delete packages from rds
+
   res.status(200).send("The package database has been reset.");
 });
 
@@ -109,7 +99,7 @@ app.get('/package/:id', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
-  const pkg = packageDatabase.find(p => p.metadata.ID == req.params.id);
+  const pkg = await readPackage(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -133,13 +123,13 @@ app.get('/package/:id', async (req: Request, res: Response) => {
   res.status(200).json(pkg);
 });
 
-app.post('/package/:id', (req: Request, res: Response) => { //update this to populate content
+app.post('/package/:id', async (req: Request, res: Response) => { //update this to populate content
   //assumes all IDs are unique
   if (!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
   
-  const pkg = packageDatabase.find(p => p.metadata.ID == req.params.id);
+  const pkg = await readPackage(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -168,12 +158,32 @@ app.post('/package/:id', (req: Request, res: Response) => { //update this to pop
   const currPatchNumber = parts[2]; // Get the third number in the version string
 
   if (req.body.data.Content && newPatchNumber < currPatchNumber) {
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+    return res.status(400).send("Outdated Version.");
   }
+
+  //check rating before ingesting
+  const { owner, repo } = await getOwnerRepo(req.body.URL);
+  if (!owner || !repo) {
+    return res.status(500).send("Failed to retrieve owner and repo.");
+  }
+
+  let scores = await getScores(owner, repo, req.body.URL);
+  const filteredOutput = Object.entries(scores)
+    .filter(([key]) => 
+        !key.includes('_Latency') && 
+        key !== 'URL' && 
+        key !== 'NetScore'
+    );
+
+  filteredOutput.forEach(([key, value]) => {
+    if (typeof value === 'number' && value < 0.5) {
+      return res.status(424).send("Package is not updated due to the disqualified rating.");
+    }
+  });
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
-  packageDatabase.push(newPackage);
+  await storePackage(newPackage, JSON.parse(scores));
   res.status(200).send("Version is updated.");
 });
 
@@ -212,7 +222,9 @@ app.post('/package', async (req: Request, res: Response) => {
     versionHistory = '1.0.0';
   }
 
-  if ( packageDatabase.find(p => p.metadata.Name == repo) || packageDatabase.find(p => p.metadata.Name == req.body.Name) ) {
+  const packages = await readAllPackages();
+
+  if ( !packages || packages.find(p => p.metadata.Name == repo) || packages.find(p => p.metadata.Name == req.body.Name) ) {
     return res.status(409).send("Package exists already.");
   }
 
@@ -232,7 +244,7 @@ app.post('/package', async (req: Request, res: Response) => {
     }
   });
   
-  packageDatabase.push(newPackage);
+  await storePackage(newPackage, JSON.parse(scores));
   res.status(201).json(newPackage);
 });
 
@@ -241,7 +253,7 @@ app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
-  const pkg = packageDatabase.find(p => p.metadata.ID === req.params.id);
+  const pkg = await readPackage(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -251,23 +263,13 @@ app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
     return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
   }
 
-  const { owner, repo } = await getOwnerRepo(pkg.data.URL);
-  let scores;
-  if (owner && repo) {
-    scores = await getScores(owner, repo, pkg.data.URL);
-  }
+  const scores = await readPackageRating(pkg.metadata.ID);
+
   if (!scores) {
-    return res.status(500).send("Failed to retrieve scores.");
-  }
-  const obj = JSON.parse(scores);
-
-  for (const key in obj) {
-    if (obj[key] == -1) {
-      return res.status(500).send("The package rating system choked on at least one of the metrics.");
-    }
+    return res.status(500).send("Failed to read package rating.");
   }
 
-  res.status(200).json(obj);
+  res.status(200).json(scores);
 });
 
 app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
@@ -275,7 +277,7 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
 
-  const pkg = packageDatabase.find(p => p.metadata.ID === req.params.id);
+  const pkg = await readPackage(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -308,7 +310,7 @@ app.post('/package/byRegEx', async (req: Request, res: Response) => { //connecti
   if (!req.body.RegEx) {
     return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
   }
-  const packages = await searchPackages(req.body.RegEx);
+  const packages = await searchPackagesRDS(req.body.RegEx);
 
   if (!packages || packages.length == 0) {
     return res.status(404).send("No package found under this regex.");
@@ -317,7 +319,7 @@ app.post('/package/byRegEx', async (req: Request, res: Response) => { //connecti
   let foundPackages: PackageMetadata[] = [];
 
   for (const pkg of packages) {
-    const match = packageDatabase.find(p => p.metadata.Name === pkg.Name);
+    const match = await readPackage(pkg.ID)
     if (match) {
       foundPackages.push(match.metadata);
     }
@@ -332,22 +334,6 @@ app.get('/tracks', (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "The system encountered an error while retrieving the student's track information." });
   }
-});
-
-//non-baseline apis
-app.delete('/package/:id', (req: Request, res: Response) => { 
-  if (!req.params.id) {
-    return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
-  }
-
-  const pkg = packageDatabase.find(p => p.metadata.ID == req.params.id);
-
-  if (!pkg) {
-    return res.status(404).send("Package does not exist.");
-  }
-
-  packageDatabase = packageDatabase.filter(p => p.metadata.ID !== req.params.id);
-  res.status(200).send("The package has been deleted.");
 });
 
 app.listen(port, () => {
