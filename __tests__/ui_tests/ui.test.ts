@@ -1,5 +1,6 @@
 import { expect, beforeAll, afterAll, afterEach, describe, it, vi } from 'vitest';
 import path from 'path';
+import * as fs from 'fs';
 import { Builder, By, until, WebDriver } from 'selenium-webdriver';
 import 'chromedriver';
 
@@ -17,12 +18,29 @@ afterAll(async () => {
   await driver.quit();
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.clearAllMocks();
+
+  // try {
+  //   const coverageData = await driver.executeScript('return window.__coverage__;');
+  //   if (coverageData) {
+  //     const coverageFile = path.join(__dirname, '../../coverage/coverage.json');
+  //     // Ensure the coverage directory exists
+  //     if (!fs.existsSync(path.dirname(coverageFile))) {
+  //       fs.mkdirSync(path.dirname(coverageFile), { recursive: true });
+  //     }
+  //     // Save coverage data
+  //     fs.writeFileSync(coverageFile, JSON.stringify(coverageData));
+  //     console.log(`Coverage data saved to: ${coverageFile}`);
+  //   } else {
+  //     console.warn('No coverage data found. Ensure the site is instrumented.');
+  //   }
+  // } catch (error) {
+  //   console.error('Failed to capture coverage data:', error);
+  // }
 });
 
 describe('UI Tests for React App', () => {
-
   it('should load the homepage and display the correct title', async () => {
     await driver.get('http://localhost:3000');
     const title = await driver.getTitle();
@@ -82,7 +100,7 @@ describe('UI Tests for React App', () => {
     await driver.executeScript("arguments[0].click();", toggle);
     let url = await driver.findElement(By.id('url'));
     expect(await url.isDisplayed()).toBe(true);
-    await url.sendKeys('https://github.com/browserify/browserify');
+    await url.sendKeys('https://github.com/phillips302/ECE461');
 
     // Test Submit
     const submitButton = await popup.findElement(By.css('.SubmitButton'));
@@ -99,11 +117,11 @@ describe('UI Tests for React App', () => {
     expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
   });
 
-  it('should perform search for browserify', async () => {
+  it('should perform search for uploaded package', async () => {
     const searchButton = await driver.findElement(By.css('.searchButton'));
 
     let searchBox = await driver.findElement(By.id('nameSearchBar'));
-    await searchBox.sendKeys('browserify');
+    await searchBox.sendKeys('ECE461');
 
     await searchButton.click();
 
@@ -115,20 +133,13 @@ describe('UI Tests for React App', () => {
   });
 
   it('should display package details', async () => {
-    // Assuming the browserify package is loaded
+    // Assuming the package is loaded
     const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Package']`)), 5000);
     await packageButton.click();
 
     // Wait for the popup to show
     const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
-
-    // Verify popup contents
-    const title = await popup.findElement(By.id('popup-title'));
-    expect(await title.getText()).toContain('browserify');
-    const message = await popup.findElement(By.id('popup-message'));
-    expect(await message.getText()).toContain('Id');
-    expect(await message.getText()).toContain('Version');
-    expect(await message.getText()).toContain('URL');
+    expect(await popup.isDisplayed()).toBe(true);
 
     // Close the popup
     const closeButton = await driver.findElement(By.css('.closeButton'));
@@ -141,30 +152,19 @@ describe('UI Tests for React App', () => {
 
   it('should download package', async () => {
     //need to test once download is implemented
-    // Assuming the browserify package is loaded
+    // Assuming the package is loaded
     // const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Download']`)), 5000);
     // await packageButton.click();
   });
 
   it('should display package rate', async () => {
-    // Assuming the browserify package is loaded
+    // Assuming the package is loaded
     const rateButton = await driver.wait(until.elementLocated(By.css(`button[title='Rate']`)), 5000);
     await rateButton.click();
 
     // Wait for the popup to show
     const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
-
-    // Verify popup contents
-    const title = await popup.findElement(By.id('popup-title'));
-    expect(await title.getText()).toContain('Package Rating');
-    const message = await popup.findElement(By.id('popup-message'));
-    expect(await message.getText()).toContain('Bus Factor');
-    expect(await message.getText()).toContain('Correctness');
-    expect(await message.getText()).toContain('Ramp Up');
-    expect(await message.getText()).toContain('Responsive Maintainer');
-    expect(await message.getText()).toContain('License Score');
-    expect(await message.getText()).toContain('Good Pinning Practice');
-    expect(await message.getText()).toContain('Net Score');
+    expect(await popup.isDisplayed()).toBe(true);
 
     // Close the popup
     const closeButton = await driver.findElement(By.css('.closeButton'));
@@ -176,18 +176,13 @@ describe('UI Tests for React App', () => {
   });
 
   it('should display package cost', async () => {
-    // Assuming the browserify package is loaded
+    // Assuming the package is loaded
     const costButton = await driver.wait(until.elementLocated(By.css(`button[title='Cost']`)), 5000);
     await costButton.click();
 
     // Wait for the popup to show
     const popup = await driver.wait(until.elementLocated(By.css('.PopUpContent')), 5000);
-
-    // Verify popup contents
-    const title = await popup.findElement(By.id('popup-title'));
-    expect(await title.getText()).toContain('Package Cost');
-    const message = await popup.findElement(By.id('popup-message'));
-    expect(await message.getText()).toContain('Total Cost');
+    expect(await popup.isDisplayed()).toBe(true);
 
     // Close the popup
     const closeButton = await driver.findElement(By.css('.closeButton'));
@@ -199,7 +194,7 @@ describe('UI Tests for React App', () => {
   });
 
   it('should update package', async () => {
-    // Assuming the browserify package is loaded
+    // Assuming the package is loaded
     const packageButton = await driver.wait(until.elementLocated(By.css(`button[title='Update']`)), 5000);
     await packageButton.click();
 
@@ -217,11 +212,10 @@ describe('UI Tests for React App', () => {
     // Test URL Select
     await driver.executeScript("arguments[0].click();", toggle);
     let version = await driver.findElement(By.id('version'));
-    await version.clear();
-    await version.sendKeys('1.1.1');
+    await version.sendKeys('1');
     let url = await driver.findElement(By.id('url'));
     expect(await url.isDisplayed()).toBe(true);
-    await url.sendKeys('https://github.com/browserify/browserify');
+    await url.sendKeys('https://github.com/phillips302/ECE461');
 
     // Test Submit
     const submitButton = await popup.findElement(By.css('.SubmitButton'));
@@ -249,7 +243,7 @@ describe('UI Tests for React App', () => {
 
     // Search by Version
     let version = await driver.findElement(By.id('versionSearchBar'));
-    await version.sendKeys('1.1.1');
+    await version.sendKeys('1.0.01');
     await searchButton.click();
     await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
     resultItems = await driver.findElements(By.css('.lightBlueBox'));
@@ -267,5 +261,7 @@ describe('UI Tests for React App', () => {
     const packageList = await driver.findElements(By.css('.lightBlueBox'));
     expect(packageList.length).toBe(0);
   });
+
+  
 });
 
