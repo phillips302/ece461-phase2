@@ -34,6 +34,8 @@ export async function testClient(): Promise<string> {
         const res = await client.query('SELECT NOW()');
         console.log('Server Time:', res.rows[0]);
 
+        return 'connection success';
+
     } catch (err) {
         console.error('Connection error:', err);
         return 'connection error';
@@ -41,7 +43,6 @@ export async function testClient(): Promise<string> {
         // Always close the connection
         await client.end();
         console.log('Disconnected from RDS PostgreSQL');
-        return 'connection success';
     }
 }
 
@@ -54,12 +55,13 @@ export async function testPoolQuery(): Promise<string> {
         console.log('Successfully connected to PostgreSQL RDS');
         console.log('Server time:', result.rows[0].now);
 
+        return 'connection success';
+
     } catch (err) {
         console.error('Error executing query:', err);
         return 'connection error';
     } finally {
         console.log('Disconnected from PostgreSQL RDS');
-        return 'connection success';
     }
 }
 
