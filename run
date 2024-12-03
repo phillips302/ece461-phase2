@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "$1" == "rds" ]; then
+  node dist/rds/index.js
+  exit 1
+fi
 # Check if the argument is 'install'
 if [ "$1" == "install" ]; then
   echo "Installing.."

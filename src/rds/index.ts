@@ -175,3 +175,12 @@ export async function readPackageRating(ID: string): Promise<PackageRating | nul
         console.log('Disconnected from PostgreSQL RDS');
     }
 }
+
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('Error acquiring client', err.stack);
+    } else {
+        console.log('Database connected successfully');
+        release(); // Release the client back to the pool
+    }
+});

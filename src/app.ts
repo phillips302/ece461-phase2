@@ -13,6 +13,10 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { storePackage, readAllPackages, readPackage, readPackageRating } from './rds/index.js';
 
+import process from 'process';
+import dotenv from 'dotenv';
+dotenv.config();
+
 const app: Application = express();
 const port = 8081;
 /*
@@ -39,7 +43,7 @@ app.get('/', async (req: Request, res: Response) => {
 });
 
 app.get('/health', async (req: Request, res: Response) => {
-  res.status(200).send('OK');
+  res.status(200).send(`env vars: ${process.env.RDS_ENDPOINT} ${process.env.RDS_USERNAME} ${process.env.RDS_PASSWORD} ${process.env.RDS_DATABASE}`);
 });
 
 app.post('/packages', async (req: Request, res: Response) => { //works
