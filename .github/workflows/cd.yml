@@ -34,6 +34,7 @@ jobs:
         -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
         -e RDS_PORT=${{secrets.RDS_PORT}} \
         -e RDS_USERNAME=${{secrets.RDS_USERNAME}} \
+        -e RDS_DATABASE=${{secrets.RDS_DATABASE}} \
         -e AWS_REGION=${{secrets.AWS_REGION}} \
         -e LOG_LEVEL=2 \
         -e LOG_FILE=/var/log/app.log \
@@ -64,6 +65,7 @@ jobs:
         -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
         -e RDS_PORT=${{secrets.RDS_PORT}} \
         -e RDS_USERNAME=${{secrets.RDS_USERNAME}} \
+        -e RDS_DATABASE=${{secrets.RDS_DATABASE}} \
         -e AWS_REGION=${{secrets.AWS_REGION}} \
         -e LOG_LEVEL=2 \
         -e LOG_FILE=/var/log/app.log \
