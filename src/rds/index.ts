@@ -31,8 +31,6 @@ export async function storePackage(newPackage: Package, scores: PackageRating) {
     }
 }
 
-storePackage(newPackage: Package) {
-
 // export async function storePackageRating(BusFactor: number, BusFactorLatency: number, Correctness: number, CorrectnessLatency: number, RampUp: number, RampUpLatency: number, ResponsiveMaintainer: number, ResponsiveMaintainerLatency: number, LicenseScore: number, LicenseScoreLatency: number, GoodPinningPractice: number, GoodPinningPracticeLatency: number, PullRequest: number, PullRequestLatency: number, NetScore: number, NetScoreLatency: number) {
 //     try {
 //         console.log('Connected to PostgreSQL RDS');
