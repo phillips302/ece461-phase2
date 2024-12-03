@@ -2,6 +2,7 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 import { Package, PackageRating } from '../apis/types.js';
+import console from 'console';
 
 import process from 'process';
 

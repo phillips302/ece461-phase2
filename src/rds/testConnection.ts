@@ -3,6 +3,7 @@ const { Client } = pkg;
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 import { Package } from '../apis/types.js';
+import console from 'console';
 
 import process from 'process';
 
@@ -76,12 +77,14 @@ export async function testStoreQuery(newPackage: Package): Promise<string> {
         console.log('Successfully connected to PostgreSQL RDS');
         console.log('Server time:', insertResult.rows[0].now);
 
+        
+        return 'connection success';
+
     } catch (err) {
         console.error('Error executing query:', err);
         return 'connection error';
     } finally {
         console.log('Disconnected from PostgreSQL RDS');
-        return 'connection success';
     }
 }
 
