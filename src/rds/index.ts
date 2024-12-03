@@ -2,6 +2,7 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 import { Package, PackageRating } from '../apis/types.js';
+import { logMessage } from '../tools/utils.js';
 import process from 'process';
 
 dotenv.config();
@@ -17,16 +18,16 @@ export const pool = new Pool({
 
 export async function storePackage(newPackage: Package, scores: PackageRating) {
     try {
-        console.log('Connected to PostgreSQL RDS');
+        logMessage("INFO", 'Connected to PostgreSQL RDS');
         const insertText = 'INSERT INTO packages(package_id, package_name, version, url, debloat, bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, pull_request, pull_request_latency, net_score, net_score_latency) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *';
         const insertValues = [newPackage.metadata.ID, newPackage.metadata.Name, newPackage.metadata.Version, newPackage.data.URL, newPackage.data.debloat, scores.BusFactor, scores.BusFactorLatency, scores.Correctness, scores.CorrectnessLatency, scores.RampUp, scores.RampUpLatency, scores.ResponsiveMaintainer, scores.ResponsiveMaintainerLatency, scores.LicenseScore, scores.LicenseScoreLatency, scores.GoodPinningPractice, scores.GoodPinningPracticeLatency, scores.PullRequest, scores.PullRequestLatency, scores.NetScore, scores.NetScoreLatency];
         const insertResult = await pool.query(insertText, insertValues);
-        console.log('Inserted:', insertResult.rows[0]);
+        logMessage("INFO", `Inserted:' ${insertResult.rows[0]}`);
 
     } catch (err) {
-        console.error('Database operation failed:', err);
+        logMessage("ERROR", 'Database operation failed');
     } finally {
-        console.log('Disconnected from PostgreSQL RDS');
+        logMessage("INFO", 'Disconnected from PostgreSQL RDS');
     }
 }
 
@@ -48,12 +49,12 @@ export async function storePackage(newPackage: Package, scores: PackageRating) {
 
 export async function readPackage(ID: string): Promise<Package | null> {
     try {
-        console.log('Connected to PostgreSQL RDS');
+        logMessage("INFO", 'Connected to PostgreSQL RDS');
         // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages WHERE package_id = $1';
         const selectValues = [ID];
         const selectResult = await pool.query(selectText, selectValues);
-        console.log('Queried:', selectResult.rows);
+        logMessage("INFO", `Queried: ${selectResult.rows}`);
 
         if (selectResult.rows.length === 0) {
             return null;
@@ -75,20 +76,20 @@ export async function readPackage(ID: string): Promise<Package | null> {
         return data;
 
     } catch (err) {
-        console.error('Database operation failed:', err);
+        logMessage("ERROR", 'Database operation failed');
         return null;
     } finally {
-        console.log('Disconnected from PostgreSQL RDS');
+        logMessage("INFO", 'Disconnected from PostgreSQL RDS');
     }
 }
 
 export async function readAllPackages(): Promise<Package[] | null> {
     try {
-        console.log('Connected to PostgreSQL RDS');
+        logMessage("INFO", 'Connected to PostgreSQL RDS');
         // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages';
         const selectResult = await pool.query(selectText);
-        console.log('Queried:', selectResult.rows);
+        logMessage("INFO", `Queried:' ${selectResult.rows}`);
 
         if (selectResult.rows.length === 0) {
             return null;
@@ -115,21 +116,21 @@ export async function readAllPackages(): Promise<Package[] | null> {
         return data;
 
     } catch (err) {
-        console.error('Database operation failed:', err);
+        logMessage("ERROR", 'Database operation failed');
         return null;
     } finally {
-        console.log('Disconnected from PostgreSQL RDS');
+        logMessage("INFO", 'Disconnected from PostgreSQL RDS');
     }
 }
 
 export async function readPackageRating(ID: string): Promise<PackageRating | null> {
     try {
-        console.log('Connected to PostgreSQL RDS'); 
+        logMessage("INFO", 'Connected to PostgreSQL RDS'); 
         // **Read Data Example**
         const selectText = 'SELECT bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, pull_request, pull_request_latency, net_score, net_score_latency FROM packages WHERE package_id = $1';
         const selectValues = [ID];
         const selectResult = await pool.query(selectText, selectValues);
-        console.log('Queried:', selectResult.rows);
+        logMessage("INFO", `Queried: ${selectResult.rows}`);
 
         if (selectResult.rows.length === 0) {
             return null;
@@ -157,9 +158,9 @@ export async function readPackageRating(ID: string): Promise<PackageRating | nul
         return data;
     
     } catch (err) {
-        console.error('Database operation failed:', err);
+       logMessage("ERROR", 'Database operation failed');
         return null;
     } finally {
-        console.log('Disconnected from PostgreSQL RDS');
+        logMessage("INFO", 'Disconnected from PostgreSQL RDS');
     }
 }
