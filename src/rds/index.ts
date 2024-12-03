@@ -15,6 +15,15 @@ export const pool = new Pool({
   password: process.env.RDS_PASSWORD
 });
 
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.log('Connection successful:', res.rows[0]);
+    }
+    pool.end();
+});
+
 //reuired, name,id , version, make upload_date DEFAULT
 
 export async function storePackage(newPackage: Package, scores: PackageRating) {
