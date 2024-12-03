@@ -1,15 +1,13 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: './test/setupTests.js', // Setup testing library or global configurations
     coverage: {
-      provider: 'istanbul', 
-      reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{js,ts,jsx,tsx}'],
-      exclude: ['**/*.test.{js,ts}'],
-      all: true, 
+      reporter: ['text', 'json', 'html'], // Specify output formats
+      provider: 'istanbul', // Use Istanbul for coverage
     },
   },
 });

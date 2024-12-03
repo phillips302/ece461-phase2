@@ -1,7 +1,8 @@
-import { expect, beforeAll, afterAll, afterEach, describe, it, vi } from 'vitest';
+import { expect, beforeAll, afterAll, afterEach, describe, it, vi, assert } from 'vitest';
 import path from 'path';
 import * as fs from 'fs';
 import { Builder, By, until, WebDriver } from 'selenium-webdriver';
+import { Options as ChromeOptions } from 'selenium-webdriver/chrome';
 import 'chromedriver';
 
 let driver: WebDriver;
@@ -11,7 +12,17 @@ beforeAll(async () => {
 
   process.chdir(path.join(__dirname, '../../ratethecrate'));
 
-  driver = await new Builder().forBrowser('chrome').build();
+  // Create Chrome options for headless mode
+  const chromeOptions = new ChromeOptions();
+  chromeOptions.addArguments('--headless'); // comment out to view the browser openning
+  chromeOptions.addArguments('--no-sandbox');
+  chromeOptions.addArguments('--disable-dev-shm-usage');
+
+  // Initialize the WebDriver with headless Chrome
+  driver = await new Builder()
+    .forBrowser('chrome')
+    .setChromeOptions(chromeOptions)
+    .build();
 });
 
 afterAll(async () => {
@@ -20,24 +31,6 @@ afterAll(async () => {
 
 afterEach(async () => {
   vi.clearAllMocks();
-
-  // try {
-  //   const coverageData = await driver.executeScript('return window.__coverage__;');
-  //   if (coverageData) {
-  //     const coverageFile = path.join(__dirname, '../../coverage/coverage.json');
-  //     // Ensure the coverage directory exists
-  //     if (!fs.existsSync(path.dirname(coverageFile))) {
-  //       fs.mkdirSync(path.dirname(coverageFile), { recursive: true });
-  //     }
-  //     // Save coverage data
-  //     fs.writeFileSync(coverageFile, JSON.stringify(coverageData));
-  //     console.log(`Coverage data saved to: ${coverageFile}`);
-  //   } else {
-  //     console.warn('No coverage data found. Ensure the site is instrumented.');
-  //   }
-  // } catch (error) {
-  //   console.error('Failed to capture coverage data:', error);
-  // }
 });
 
 describe('UI Tests for React App', () => {
