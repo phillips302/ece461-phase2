@@ -10,8 +10,18 @@ dotenv.config();
 export const pool = new Pool({
   host: process.env.RDS_ENDPOINT,
   port: 5432, // Default PostgreSQL port
+  database: process.env.RDS_DATABASE,
   user: process.env.RDS_USERNAME,
   password: process.env.RDS_PASSWORD
+});
+
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.log('Connection successful:', res.rows[0]);
+    }
+    pool.end();
 });
 
 //reuired, name,id , version, make upload_date DEFAULT
