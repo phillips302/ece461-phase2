@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from 'express';
-import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
+import { Package, PackageQuery, PackageMetadata, PackageCost, PackageRating } from './apis/types.js';
 import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
@@ -9,7 +9,8 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { testClient, testPoolQuery } from './rds/testConnection.js';
+import { testClient, testPoolQuery, testStoreQuery, testReadAll } from './rds/testConnection.js';
+import { storePackage, readPackage } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
@@ -98,7 +99,59 @@ app.get('/rds/pool', async (req: Request, res: Response) => {
   return res.status(501).send('unknown error');
 });
 
+app.get('/test/dummystore', async (req: Request, res: Response) => {
+  const message = await testStoreQuery(packageDatabase[0]);
+  if(message === 'connection error') {
+    return res.status(500).send('Failed to connect to RDS');
+  }
+  if(message === 'connection success') {
+    return res.status(200).send('Connected to RDS');
+  }
+  return res.status(501).send('unknown error');
+});
 
+app.get('/test/storePackage', async (req: Request, res: Response) => {
+  const dummyPackageRating: PackageRating = {
+    BusFactor: 0.8,
+    BusFactorLatency: 50, // milliseconds
+    Correctness: 0.95,
+    CorrectnessLatency: 45, // milliseconds
+    RampUp: 0.85,
+    RampUpLatency: 60, // milliseconds
+    ResponsiveMaintainer: 0.9,
+    ResponsiveMaintainerLatency: 30, // milliseconds
+    LicenseScore: 0.92,
+    LicenseScoreLatency: 25, // milliseconds
+    GoodPinningPractice: 0.88,
+    GoodPinningPracticeLatency: 40, // milliseconds
+    PullRequest: 0.7,
+    PullRequestLatency: 35, // milliseconds
+    NetScore: 0.89,
+    NetScoreLatency: 20, // milliseconds
+  };
+
+  await storePackage(packageDatabase[0], dummyPackageRating);
+});
+
+app.get('/test/readPackage', async (req: Request, res: Response) => {
+
+  const foundPackage = await readPackage(packageDatabase[0].metadata.ID);
+  if (!foundPackage) {
+    return res.status(404).send('Package not found');
+  }
+
+  return res.status(200).json(foundPackage);
+});
+
+app.get('/test/readAllPackages', async (req: Request, res: Response) => {
+
+  const allPackages = await testReadAll();
+  if (allPackages === "connection error") {
+    return res.status(500).send('Failed to connect to RDS');
+  }
+
+  return res.status(200).json(allPackages);
+});
 
 
 app.post('/packages', (req: Request, res: Response) => { //works
