@@ -78,6 +78,18 @@ app.get('/envars', async (req: Request, res: Response) => {
   });
 });
 
+app.get('/envars/aws', async (req: Request, res: Response) => {
+  res.status(200).json({ 
+    host: process.env.POSTGREST_HOST,
+    port_hardcode: 5432,
+    port: process.env.POSTGRES_PORT,
+    user: process.env.POSTGRES_USER,
+    database: process.env.POSTGRES_DB,
+    password: process.env.POSTGRES_PASSWORD,
+    database_url: process.env.DATABASE_URL
+  });
+});
+
 app.get('/rds/client', async (req: Request, res: Response) => { 
   const message = await testClient();
   if(message === 'connection error') {
