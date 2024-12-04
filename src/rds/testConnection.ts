@@ -27,7 +27,7 @@ export async function testPoolQuery() {
         return 'connection success';
       } catch (err) {
         console.error('Database connection failed:', err);
-        return 'connection error';
+        return err;
     }
 }
 
@@ -53,6 +53,6 @@ export async function testClient() {
       return 'connection success';
     } catch (err) {
       console.error('Error connecting to the database:', err);
-      return 'connection error';
+      return err;
     }
 }
