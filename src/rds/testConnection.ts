@@ -10,19 +10,19 @@ import process from 'process';
 dotenv.config();
 
 const client = new Client({
-    host: process.env.RDS_ENDPOINT,
+    host: process.env.POSTGRES_HOST,
     port: 5432,
-    user: process.env.RDS_USERNAME,
-    password: process.env.RDS_PASSWORD,
-    database: process.env.RDS_DATABASE
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB
 });
 
 export const pool = new Pool({
-    host: process.env.RDS_ENDPOINT,
-    port: 5432, // Default PostgreSQL port
-    database: process.env.RDS_DATABASE,
-    user: process.env.RDS_USERNAME,
-    password: process.env.RDS_PASSWORD
+    host: process.env.POSTGRES_HOST,
+    port: 5432,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB
 });
 
 export async function testClient(): Promise<string> {
