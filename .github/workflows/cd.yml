@@ -30,6 +30,7 @@ jobs:
       run: |
         docker run -d --name ece461-phase2-container -p 8081:8081 \
         -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token" --with-decryption --query "Parameter.Value" --output text || { echo "Failed to retrieve token"; exit 1; }) \
+        export $(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text | jq -r '. as $secret | "POSTGRES_HOST=\($secret | .host)\nPOSTGRES_PORT=5432\nPOSTGRES_DB=\($secret | .dbname)\nPOSTGRES_USER=\($secret | .username)\nPOSTGRES_PASSWORD=\($secret | .password)\nDATABASE_URL=postgres://\($secret | .username):\($secret | .password)@\($secret | .host):5432/\($secret | .dbname)"') \
         -e RDS_ENDPOINT=${{secrets.RDS_ENDPOINT}} \
         -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
         -e RDS_PORT=${{secrets.RDS_PORT}} \
@@ -61,6 +62,7 @@ jobs:
       run: |
         docker run -d --name ece461-phase2-container -p 8081:8081 \
         -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token-riley" --with-decryption --query "Parameter.Value" --output text || { echo "Failed to retrieve token"; exit 1; }) \
+        export $(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text | jq -r '. as $secret | "POSTGRES_HOST=\($secret | .host)\nPOSTGRES_PORT=5432\nPOSTGRES_DB=\($secret | .dbname)\nPOSTGRES_USER=\($secret | .username)\nPOSTGRES_PASSWORD=\($secret | .password)\nDATABASE_URL=postgres://\($secret | .username):\($secret | .password)@\($secret | .host):5432/\($secret | .dbname)"') \
         -e RDS_ENDPOINT=${{secrets.RDS_ENDPOINT}} \
         -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
         -e RDS_PORT=${{secrets.RDS_PORT}} \
