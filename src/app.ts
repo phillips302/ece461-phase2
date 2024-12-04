@@ -73,7 +73,8 @@ app.get('/envars', async (req: Request, res: Response) => {
     port_hardcode: 5432,
     port: process.env.RDS_PORT,
     user: process.env.RDS_USERNAME,
-    database: process.env.RDS_DATABASE
+    database: process.env.RDS_DATABASE,
+    password: process.env.RDS_PASSWORD
   });
 });
 
