@@ -20,26 +20,63 @@ jobs:
     
     - name: Pull Docker image
       run: docker pull phillips302/ece461-phase2:latest
-    
-    - name: Stop and remove old Docker container
+
+    - name: Retrieve Secrets and Run Docker Container
+      shell: bash
       run: |
-        docker stop ece461-phase2-container || true
-        docker rm ece461-phase2-container || true
-    
-    - name: Run new docker container
-      run: |
+        set -e  # Exit immediately if a command exits with a non-zero status
+
+        # Retrieve GITHUB_TOKEN from AWS SSM Parameter Store
+        echo "Retrieving GITHUB_TOKEN from AWS SSM..."
+        GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token" --with-decryption --query "Parameter.Value" --output text)
+        if [ -z "$GITHUB_TOKEN" ]; then
+          echo "Failed to retrieve GITHUB_TOKEN"
+          exit 1
+        fi
+
+        # Retrieve database secrets from AWS Secrets Manager
+        echo "Retrieving database secrets from AWS Secrets Manager..."
+        SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text)
+        if [ -z "$SECRET_JSON" ]; then
+          echo "Failed to retrieve database secrets"
+          exit 1
+        fi
+
+        # Parse the secrets JSON using jq
+        echo "Parsing database secrets..."
+        POSTGRES_HOST=$(echo "$SECRET_JSON" | jq -r '.host')
+        POSTGRES_PORT=$(echo "$SECRET_JSON" | jq -r '.port')
+        POSTGRES_DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+        POSTGRES_USER=$(echo "$SECRET_JSON" | jq -r '.username')
+        POSTGRES_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.password')
+        DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+
+        # Set additional environment variables
+        AWS_REGION=us-east-2
+        LOG_LEVEL=2
+        LOG_FILE=/var/log/app.log
+
+        # Stop and remove existing container if it exists
+        if [ "$(docker ps -a -q -f name=ece461-phase2-container)" ]; then
+          echo "Stopping and removing existing Docker container..."
+          docker stop ece461-phase2-container
+          docker rm ece461-phase2-container
+        fi
+
+        # Run the Docker container with environment variables
+        echo "Running Docker container..."
         docker run -d --name ece461-phase2-container -p 8081:8081 \
-        -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token" --with-decryption --query "Parameter.Value" --output text || { echo "Failed to retrieve token"; exit 1; }) \
-        export $(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text | jq -r '. as $secret | "POSTGRES_HOST=\($secret | .host)\nPOSTGRES_PORT=5432\nPOSTGRES_DB=\($secret | .dbname)\nPOSTGRES_USER=\($secret | .username)\nPOSTGRES_PASSWORD=\($secret | .password)\nDATABASE_URL=postgres://\($secret | .username):\($secret | .password)@\($secret | .host):5432/\($secret | .dbname)"') \
-        -e RDS_ENDPOINT=${{secrets.RDS_ENDPOINT}} \
-        -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
-        -e RDS_PORT=${{secrets.RDS_PORT}} \
-        -e RDS_USERNAME=${{secrets.RDS_USERNAME}} \
-        -e RDS_DATABASE=${{secrets.RDS_DATABASE}} \
-        -e AWS_REGION=${{secrets.AWS_REGION}} \
-        -e LOG_LEVEL=2 \
-        -e LOG_FILE=/var/log/app.log \
-        phillips302/ece461-phase2:latest
+          -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+          -e POSTGRES_HOST="$POSTGRES_HOST" \
+          -e POSTGRES_PORT="$POSTGRES_PORT" \
+          -e POSTGRES_DB="$POSTGRES_DB" \
+          -e POSTGRES_USER="$POSTGRES_USER" \
+          -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+          -e DATABASE_URL="$DATABASE_URL" \
+          -e AWS_REGION="$AWS_REGION" \
+          -e LOG_LEVEL="$LOG_LEVEL" \
+          -e LOG_FILE="$LOG_FILE" \
+          phillips302/ece461-phase2:latest
   build-runner2:
     runs-on: [self-hosted, runner2]
 
@@ -53,22 +90,59 @@ jobs:
     - name: Pull Docker image
       run: docker pull phillips302/ece461-phase2:latest
     
-    - name: Stop and remove old Docker container
+    - name: Retrieve Secrets and Run Docker Container
+      shell: bash
       run: |
-        docker stop ece461-phase2-container || true
-        docker rm ece461-phase2-container || true
-    
-    - name: Run new docker container
-      run: |
+        set -e  # Exit immediately if a command exits with a non-zero status
+
+        # Retrieve GITHUB_TOKEN from AWS SSM Parameter Store
+        echo "Retrieving GITHUB_TOKEN from AWS SSM..."
+        GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token-riley" --with-decryption --query "Parameter.Value" --output text)
+        if [ -z "$GITHUB_TOKEN" ]; then
+          echo "Failed to retrieve GITHUB_TOKEN"
+          exit 1
+        fi
+
+        # Retrieve database secrets from AWS Secrets Manager
+        echo "Retrieving database secrets from AWS Secrets Manager..."
+        SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text)
+        if [ -z "$SECRET_JSON" ]; then
+          echo "Failed to retrieve database secrets"
+          exit 1
+        fi
+
+        # Parse the secrets JSON using jq
+        echo "Parsing database secrets..."
+        POSTGRES_HOST=$(echo "$SECRET_JSON" | jq -r '.host')
+        POSTGRES_PORT=$(echo "$SECRET_JSON" | jq -r '.port')
+        POSTGRES_DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+        POSTGRES_USER=$(echo "$SECRET_JSON" | jq -r '.username')
+        POSTGRES_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.password')
+        DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+
+        # Set additional environment variables
+        AWS_REGION=us-east-2
+        LOG_LEVEL=2
+        LOG_FILE=/var/log/app.log
+
+        # Stop and remove existing container if it exists
+        if [ "$(docker ps -a -q -f name=ece461-phase2-container)" ]; then
+          echo "Stopping and removing existing Docker container..."
+          docker stop ece461-phase2-container
+          docker rm ece461-phase2-container
+        fi
+
+        # Run the Docker container with environment variables
+        echo "Running Docker container..."
         docker run -d --name ece461-phase2-container -p 8081:8081 \
-        -e GITHUB_TOKEN=$(aws ssm get-parameter --name "/ece461-phase2/github-token-riley" --with-decryption --query "Parameter.Value" --output text || { echo "Failed to retrieve token"; exit 1; }) \
-        export $(aws secretsmanager get-secret-value --secret-id postgres_db --region us-east-2 --query SecretString --output text | jq -r '. as $secret | "POSTGRES_HOST=\($secret | .host)\nPOSTGRES_PORT=5432\nPOSTGRES_DB=\($secret | .dbname)\nPOSTGRES_USER=\($secret | .username)\nPOSTGRES_PASSWORD=\($secret | .password)\nDATABASE_URL=postgres://\($secret | .username):\($secret | .password)@\($secret | .host):5432/\($secret | .dbname)"') \
-        -e RDS_ENDPOINT=${{secrets.RDS_ENDPOINT}} \
-        -e RDS_PASSWORD=${{secrets.RDS_PASSWORD}} \
-        -e RDS_PORT=${{secrets.RDS_PORT}} \
-        -e RDS_USERNAME=${{secrets.RDS_USERNAME}} \
-        -e RDS_DATABASE=${{secrets.RDS_DATABASE}} \
-        -e AWS_REGION=${{secrets.AWS_REGION}} \
-        -e LOG_LEVEL=2 \
-        -e LOG_FILE=/var/log/app.log \
-        phillips302/ece461-phase2:latest
+          -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+          -e POSTGRES_HOST="$POSTGRES_HOST" \
+          -e POSTGRES_PORT="$POSTGRES_PORT" \
+          -e POSTGRES_DB="$POSTGRES_DB" \
+          -e POSTGRES_USER="$POSTGRES_USER" \
+          -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+          -e DATABASE_URL="$DATABASE_URL" \
+          -e AWS_REGION="$AWS_REGION" \
+          -e LOG_LEVEL="$LOG_LEVEL" \
+          -e LOG_FILE="$LOG_FILE" \
+          phillips302/ece461-phase2:latest
