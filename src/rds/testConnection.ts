@@ -32,7 +32,7 @@ export async function testClient(): Promise<string> {
         console.log('Connected to RDS PostgreSQL');
 
         // Run a test query
-        const res = await client.query('SELECT NOW()');
+        const res = await client.query('SELECT * FROM packages');
         console.log('Server Time:', res.rows[0]);
 
         return 'connection success';
@@ -52,7 +52,7 @@ export async function testPoolQuery(): Promise<string> {
         console.log('Testing pool connection to PostgreSQL RDS...');
         
         // Test the connection with a simple query
-        const result = await pool.query('SELECT NOW()');
+        const result = await pool.query('SELECT * FROM packages');
         console.log('Successfully connected to PostgreSQL RDS');
         console.log('Server time:', result.rows[0].now);
 
