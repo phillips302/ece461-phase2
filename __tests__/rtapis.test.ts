@@ -1,12 +1,31 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'; //Working test
 import * as types from '../ratethecrate/src/api/types';
 import { getAllPackages, deletePackages, getPackage, updatePackage, uploadPackage, getPackageRate, getPackageCost, getCertainPackages } from '../ratethecrate/src/api/api';  // Adjust the path accordingly
 
-// Mocking fetch globally
-global.fetch = vi.fn();
 
-// Common URL constant for tests
+// Mocking fetch globally
+const globalAny: any = global;
+globalAny.fetch = vi.fn();
+
 const URL = 'http://localhost:8081/';
+
+// Define mock data
+const mockPackageMetadata: types.PackageMetadata = {
+  ID: '1',
+  Name: 'package1',
+  Version: '1.0.0'
+};
+
+const mockPackageData: types.PackageData = {
+  // Add only the necessary fields according to the types
+  Name: 'package1',
+  Content: 'content'
+};
+
+const mockPackage: types.Package = {
+  metadata: mockPackageMetadata,
+  data: {} // Provide necessary mock data here
+};
 
 describe('API Functions', () => {
   afterEach(() => {
@@ -15,8 +34,8 @@ describe('API Functions', () => {
 
   describe('getAllPackages', () => {
     it('should fetch all packages successfully', async () => {
-      const mockResponse = [{ name: 'package1', version: '1.0.0' }];
-      fetch.mockResolvedValue({
+      const mockResponse = [mockPackageMetadata];
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
@@ -26,7 +45,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on fetch failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Fetch failed'
       });
@@ -38,7 +57,7 @@ describe('API Functions', () => {
 
   describe('deletePackages', () => {
     it('should delete packages successfully', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         text: async () => 'Deleted successfully'
       });
@@ -48,7 +67,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on delete failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Delete failed'
       });
@@ -60,8 +79,8 @@ describe('API Functions', () => {
 
   describe('getPackage', () => {
     it('should fetch package details successfully', async () => {
-      const mockResponse = { id: '1', name: 'package1', version: '1.0.0' };
-      fetch.mockResolvedValue({
+      const mockResponse = mockPackage;
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
@@ -71,7 +90,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on fetch failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Fetch failed'
       });
@@ -83,45 +102,53 @@ describe('API Functions', () => {
 
   describe('updatePackage', () => {
     it('should update package successfully', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         text: async () => 'Updated successfully'
       });
 
-      const result = await updatePackage({ metadata: { ID: '1' } });
+      const updatedPackage: types.Package = {
+        metadata: mockPackageMetadata,
+        data: {} // Provide necessary mock data here
+      };
+      const result = await updatePackage(updatedPackage);
       expect(result).toEqual({ message: 'Updated successfully' });
     });
 
     it('should return an error message on update failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Update failed'
       });
 
-      const result = await updatePackage({ metadata: { ID: '1' } });
+      const updatedPackage: types.Package = {
+        metadata: mockPackageMetadata,
+        data: {} // Provide necessary mock data here
+      };
+      const result = await updatePackage(updatedPackage);
       expect(result).toEqual({ message: 'Update failed' });
     });
   });
 
   describe('uploadPackage', () => {
     it('should upload package successfully', async () => {
-      const mockResponse = { id: '1', name: 'package1', version: '1.0.0' };
-      fetch.mockResolvedValue({
+      const mockResponse = mockPackage;
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
 
-      const result = await uploadPackage({ name: 'package1', content: 'content' });
+      const result = await uploadPackage(mockPackageData);
       expect(result).toEqual(mockResponse);
     });
 
     it('should return an error message on upload failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Upload failed'
       });
 
-      const result = await uploadPackage({ name: 'package1', content: 'content' });
+      const result = await uploadPackage(mockPackageData);
       expect(result).toEqual({ message: 'Upload failed' });
     });
   });
@@ -129,7 +156,7 @@ describe('API Functions', () => {
   describe('getPackageRate', () => {
     it('should fetch package rate successfully', async () => {
       const mockResponse = { rating: 5 };
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
@@ -139,7 +166,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on fetch failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Fetch failed'
       });
@@ -152,7 +179,7 @@ describe('API Functions', () => {
   describe('getPackageCost', () => {
     it('should fetch package cost successfully', async () => {
       const mockResponse = { cost: 100 };
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
@@ -162,7 +189,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on fetch failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Fetch failed'
       });
@@ -174,8 +201,8 @@ describe('API Functions', () => {
 
   describe('getCertainPackages', () => {
     it('should fetch certain packages successfully', async () => {
-      const mockResponse = [{ name: 'package1', version: '1.0.0' }];
-      fetch.mockResolvedValue({
+      const mockResponse = [mockPackageMetadata];
+      globalAny.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       });
@@ -185,7 +212,7 @@ describe('API Functions', () => {
     });
 
     it('should return an error message on fetch failure', async () => {
-      fetch.mockResolvedValue({
+      globalAny.fetch.mockResolvedValueOnce({
         ok: false,
         text: async () => 'Fetch failed'
       });
@@ -195,4 +222,3 @@ describe('API Functions', () => {
     });
   });
 });
-

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; //app.test.ts not fully working yet 123444444444
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; //app.test.ts not fully working yet, but works for now 1234444444444
 import fetch, { Response } from 'node-fetch';
 import app from "../src/app.js"; // Adjust path as necessary 
 
