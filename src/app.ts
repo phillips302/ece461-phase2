@@ -68,7 +68,7 @@ app.get('/health', async (req: Request, res: Response) => {
 app.get('/envars', async (req: Request, res: Response) => {
   res.status(200).json({ 
     host: process.env.RDS_ENDPOINT,
-    port_hardcode: 5432,
+    port_hardcode: 3306,
     user: process.env.RDS_USERNAME,
     database: process.env.RDS_DATABASE,
   });
@@ -76,24 +76,20 @@ app.get('/envars', async (req: Request, res: Response) => {
 
 app.get('/rds/client', async (req: Request, res: Response) => { 
   const message = await testClient();
-  if(message === 'connection error') {
-    return res.status(500).send('Failed to connect to RDS');
-  }
   if(message === 'connection success') {
     return res.status(200).send('Connected to RDS');
+  } else {
+    return res.status(500).send(message);
   }
-  return res.status(501).send('unknown error');
 });
 
 app.get('/rds/pool', async (req: Request, res: Response) => { 
   const message = await testPoolQuery();
-  if(message === 'connection error') {
-    return res.status(500).send('Failed to connect to RDS');
-  }
   if(message === 'connection success') {
     return res.status(200).send('Connected to RDS');
+  } else {
+    return res.status(500).send(message);
   }
-  return res.status(501).send('unknown error');
 });
 
 app.get('/test/storePackage', async (req: Request, res: Response) => {
