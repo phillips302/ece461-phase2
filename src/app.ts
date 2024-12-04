@@ -9,7 +9,7 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { testClient, testPoolQuery, testStoreQuery, testReadAll } from './rds/testConnection.js';
+import { testClient, testPoolQuery } from './rds/testConnection.js';
 import { storePackage, readPackage } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -65,13 +65,10 @@ app.get('/health', async (req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
-
-
 app.get('/envars', async (req: Request, res: Response) => {
   res.status(200).json({ 
     host: process.env.RDS_ENDPOINT,
     port_hardcode: 5432,
-    port: process.env.RDS_PORT,
     user: process.env.RDS_USERNAME,
     database: process.env.RDS_DATABASE,
   });
@@ -90,17 +87,6 @@ app.get('/rds/client', async (req: Request, res: Response) => {
 
 app.get('/rds/pool', async (req: Request, res: Response) => { 
   const message = await testPoolQuery();
-  if(message === 'connection error') {
-    return res.status(500).send('Failed to connect to RDS');
-  }
-  if(message === 'connection success') {
-    return res.status(200).send('Connected to RDS');
-  }
-  return res.status(501).send('unknown error');
-});
-
-app.get('/test/dummystore', async (req: Request, res: Response) => {
-  const message = await testStoreQuery(packageDatabase[0]);
   if(message === 'connection error') {
     return res.status(500).send('Failed to connect to RDS');
   }
@@ -142,7 +128,7 @@ app.get('/test/readPackage', async (req: Request, res: Response) => {
 
   return res.status(200).json(foundPackage);
 });
-
+/*
 app.get('/test/readAllPackages', async (req: Request, res: Response) => {
 
   const allPackages = await testReadAll();
@@ -152,7 +138,7 @@ app.get('/test/readAllPackages', async (req: Request, res: Response) => {
 
   return res.status(200).json(allPackages);
 });
-
+*/
 
 app.post('/packages', (req: Request, res: Response) => { //works
   //account for Too many packages returned error when you switch over storage methods
