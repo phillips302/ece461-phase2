@@ -74,19 +74,6 @@ app.get('/envars', async (req: Request, res: Response) => {
     port: process.env.RDS_PORT,
     user: process.env.RDS_USERNAME,
     database: process.env.RDS_DATABASE,
-    password: process.env.RDS_PASSWORD
-  });
-});
-
-app.get('/envars/aws', async (req: Request, res: Response) => {
-  res.status(200).json({ 
-    host: process.env.POSTGREST_HOST,
-    port_hardcode: 5432,
-    port: process.env.POSTGRES_PORT,
-    user: process.env.POSTGRES_USER,
-    database: process.env.POSTGRES_DB,
-    password: process.env.POSTGRES_PASSWORD,
-    database_url: process.env.DATABASE_URL
   });
 });
 
