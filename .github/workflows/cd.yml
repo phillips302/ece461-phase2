@@ -46,7 +46,7 @@ jobs:
         echo "Parsing database secrets..."
         POSTGRES_HOST=$(echo "$SECRET_JSON" | jq -r '.host')
         POSTGRES_PORT=$(echo "$SECRET_JSON" | jq -r '.port')
-        POSTGRES_DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+        POSTGRES_DB=ratethecrate_db
         POSTGRES_USER=$(echo "$SECRET_JSON" | jq -r '.username')
         POSTGRES_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.password')
         DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
@@ -69,7 +69,7 @@ jobs:
           -e GITHUB_TOKEN="$GITHUB_TOKEN" \
           -e POSTGRES_HOST="$POSTGRES_HOST" \
           -e POSTGRES_PORT="$POSTGRES_PORT" \
-          -e POSTGRES_DB="ratethecrate_db" \
+          -e POSTGRES_DB="$POSTGRES_DB" \
           -e POSTGRES_USER="$POSTGRES_USER" \
           -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
           -e DATABASE_URL="$DATABASE_URL" \
@@ -115,7 +115,7 @@ jobs:
         echo "Parsing database secrets..."
         POSTGRES_HOST=$(echo "$SECRET_JSON" | jq -r '.host')
         POSTGRES_PORT=$(echo "$SECRET_JSON" | jq -r '.port')
-        POSTGRES_DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+        POSTGRES_DB=ratethecrate_db
         POSTGRES_USER=$(echo "$SECRET_JSON" | jq -r '.username')
         POSTGRES_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.password')
         DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
