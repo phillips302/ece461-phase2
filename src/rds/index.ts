@@ -26,8 +26,8 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
                 package_id, package_name, version, url, debloat, 
                 busfactor, busfactor_latency, correctness, correctness_latency, 
                 ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
-                license_score, license_score_latency, good_pinning_practice, 
-                good_pinning_practice_latency, pull_request, pull_request_latency, 
+                license_score, license_score_latency, fraction_dependencies, 
+                fraction_dependencies_latency, pr_fraction, pr_fraction_latency, 
                 net_score, net_score_latency
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
@@ -67,7 +67,7 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
 //     try {
 //         console.log('Connected to PostgreSQL RDS');
 //         // **Store Data Example**
-//         const insertText = 'INSERT INTO packages(bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, pull_request, pull_request_latency, net_score, net_score_latency) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *';
+//         const insertText = 'INSERT INTO packages(bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, fraction_dependencies, fraction_dependencies_latency, pr_fraction, pr_fraction_latency, net_score, net_score_latency) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *';
 //         const insertValues = [BusFactor, BusFactorLatency, Correctness, CorrectnessLatency, RampUp, RampUpLatency, ResponsiveMaintainer, ResponsiveMaintainerLatency, LicenseScore, LicenseScoreLatency, GoodPinningPractice, GoodPinningPracticeLatency, PullRequest, PullRequestLatency, NetScore, NetScoreLatency];
 //         const insertResult = await pool.query(insertText, insertValues);
 //         console.log('Inserted:', insertResult.rows[0]);
@@ -127,7 +127,7 @@ export async function readAllPackages(): Promise<Package[] | null> {
 
         if (rows.length === 0) {
             console.log('No packages found in the database');
-            return null;
+            return [];
         }
 
         const data: Package[] = [];
@@ -162,8 +162,8 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
         SELECT 
             busfactor, busfactor_latency, correctness, correctness_latency, 
             ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
-            license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, 
-            pull_request, pull_request_latency, net_score, net_score_latency 
+            license_score, license_score_latency, fraction_dependencies, fraction_dependencies_latency, 
+            pr_fraction, pr_fraction_latency, net_score, net_score_latency 
         FROM packages 
         WHERE package_id = ?
     `;
@@ -188,10 +188,10 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
             ResponsiveMaintainerLatency: rows[0].responsive_maintainer_latency,
             LicenseScore: rows[0].license_score,
             LicenseScoreLatency: rows[0].license_score_latency,
-            GoodPinningPractice: rows[0].good_pinning_practice,
-            GoodPinningPracticeLatency: rows[0].good_pinning_practice_latency,
-            PullRequest: rows[0].pull_request,
-            PullRequestLatency: rows[0].pull_request_latency,
+            GoodPinningPractice: rows[0].fraction_dependencies,
+            GoodPinningPracticeLatency: rows[0].fraction_dependencies_latency,
+            PullRequest: rows[0].pr_fraction,
+            PullRequestLatency: rows[0].pr_fraction_latency,
             NetScore: rows[0].net_score,
             NetScoreLatency: rows[0].net_score_latency
         }

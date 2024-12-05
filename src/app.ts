@@ -327,7 +327,7 @@ app.post('/package', async (req: Request, res: Response) => {
 
   const packages = await readAllPackages();
 
-  if ( !packages || packages.find(p => p.metadata.Name == repo) || packages.find(p => p.metadata.Name == req.body.Name) ) {
+  if ( packages && (packages.find(p => p.metadata.Name == repo) || packages.find(p => p.metadata.Name == req.body.Name)) ) { //circle back to this
     return res.status(409).send("Package exists already.");
   }
 
