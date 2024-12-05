@@ -20,9 +20,7 @@ dotenv.config();
 
 const app: Application = express();
 const port = 8081;
-/*
-app.use(cors());
-*/
+
 const corsOptions = {
   origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
   optionsSuccessStatus: 200
@@ -221,6 +219,28 @@ app.get('/package/:id', async (req: Request, res: Response) => {
   res.status(200).json(pkg);
 });
 
+app.post('/package/byRegEx', async (req: Request, res: Response) => { //connection works
+  if (!req.body.RegEx) {
+    return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
+  }
+  const packages = await searchPackagesRDS(req.body.RegEx);
+
+  if (!packages || packages.length == 0) {
+    return res.status(404).send("No package found under this regex.");
+  }
+
+  let foundPackages: PackageMetadata[] = [];
+
+  for (const pkg of packages) {
+    const match = await readPackage(pkg.ID)
+    if (match) {
+      foundPackages.push(match.metadata);
+    }
+  }
+
+  res.status(200).json(foundPackages);
+});
+
 app.post('/package/:id', async (req: Request, res: Response) => { //update this to populate content
   //assumes all IDs are unique
   if (!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
@@ -347,8 +367,12 @@ app.post('/package', async (req: Request, res: Response) => {
     }
   });
   
-  await storePackage(newPackage, JSON.parse(scores));
-  res.status(201).json(newPackage);
+  const result = await storePackage(newPackage, JSON.parse(scores));
+  if (!result) {
+    return res.status(500).send("Failed to store package.");
+  }
+
+  return res.status(201).json(newPackage);
 });
 
 app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
@@ -407,28 +431,6 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   pkgCost[pkg.metadata.ID].totalCost = parseFloat(pkgCost[pkg.metadata.ID].totalCost.toFixed(2));
 
   res.status(200).json(pkgCost);
-});
-
-app.post('/package/byRegEx', async (req: Request, res: Response) => { //connection works
-  if (!req.body.RegEx) {
-    return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
-  }
-  const packages = await searchPackagesRDS(req.body.RegEx);
-
-  if (!packages || packages.length == 0) {
-    return res.status(404).send("No package found under this regex.");
-  }
-
-  let foundPackages: PackageMetadata[] = [];
-
-  for (const pkg of packages) {
-    const match = await readPackage(pkg.ID)
-    if (match) {
-      foundPackages.push(match.metadata);
-    }
-  }
-
-  res.status(200).json(foundPackages);
 });
 
 app.get('/tracks', (req: Request, res: Response) => {
