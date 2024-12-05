@@ -137,8 +137,8 @@ app.post('/packages', async (req: Request, res: Response) => { //works
   //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
 
-  for (const q of pkgqry) {
-    if (validatePackageQuerySchema(q) !== 0) {
+  for (let i = 0; i < pkgqry.length; i++) {
+    if (validatePackageQuerySchema(pkgqry[i]) !== 0) {
       return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
     }
   }
@@ -161,17 +161,17 @@ app.post('/packages', async (req: Request, res: Response) => { //works
     }
   }
 
-  for (const q of pkgqry) {
-    if (!q.Version) { //get specific packages, no version
+  for (let q = 0; q < pkgqry.length; q++) {
+    if (!pkgqry[q].Version) { //get specific packages, no version
       for (let i = 0; i < packageArray.length && counter < offset; i++) {
-        if (packageArray[i].metadata.Name == q.Name) {
+        if (packageArray[i].metadata.Name == pkgqry[q].Name) {
           results.push(packageArray[i].metadata);
           counter++;
         }
       } 
     } else { //get specific packages, with version
       for (let i = 0; i < packageArray.length && counter < offset; i++) {
-        if (packageArray[i].metadata.Name == q.Name && packageArray[i].metadata.Version == q.Version) { //check that this gets packages correctly with range
+        if (packageArray[i].metadata.Name == pkgqry[q].Name && packageArray[i].metadata.Version == pkgqry[q].Version) { //check that this gets packages correctly with range
           results.push(packageArray[i].metadata);
           counter++;
         }
