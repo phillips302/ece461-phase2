@@ -9,7 +9,7 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { testClient, testPoolQuery } from './rds/testConnection.js';
+import { testClient, testPoolQuery, readAllPackageData } from './rds/testConnection.js';
 import { storePackage, readPackage } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -81,6 +81,11 @@ app.get('/rds/client', async (req: Request, res: Response) => {
 
 app.get('/rds/pool', async (req: Request, res: Response) => { 
   const message = await testPoolQuery();
+  return res.status(203).send(message);
+});
+
+app.get('/test/readPackages', async (req, res) => {
+  const message = await readAllPackageData();
   return res.status(203).send(message);
 });
 
