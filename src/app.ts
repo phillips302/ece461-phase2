@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from 'express';
 import { Package, PackageQuery, PackageMetadata, PackageCost, PackageRating } from './apis/types.js';
-import { validatePackageQuerySchema, validatePackageSchema } from './apis/validation.js';
+import { validatePackageSchema, validateDataSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
 import { getOwnerRepo } from './tools/utils.js';
@@ -9,14 +9,9 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { testClient, testPoolQuery, readAllPackageData } from './rds/testConnection.js';
 import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-
-import process from 'process';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const app: Application = express();
 const port = 8081;
@@ -30,24 +25,6 @@ app.use(cors(corsOptions));
 // Set a higher limit for the request body size
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-
-let packageDatabase: Package[] = [];
-
-// Example package to initialize the packageDatabase
-for (let i = 0; i < 10; i++) {
-  let examplePackage: Package = {
-    metadata: {
-      Name: `example-package-${i}`,
-      ID: `1234${i}`,
-      Version: "1.0.0"
-    },
-    data: {
-      debloat: false,
-      URL: "https://www.npmjs.com/package/browserify"
-    }
-  };
-  packageDatabase.push(examplePackage);
-}
 
 app.use(express.json());
 
@@ -63,81 +40,17 @@ app.get('/health', async (req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
-app.get('/envars', async (req: Request, res: Response) => {
-  res.status(200).json({ 
-    host: process.env.RDS_ENDPOINT,
-    port_hardcode: 3306,
-    user: process.env.RDS_USERNAME,
-    database: process.env.RDS_DATABASE,
-  });
-});
-
-app.get('/rds/client', async (req: Request, res: Response) => { 
-  const message: string | unknown = await testClient();
-  return res.status(203).send(message);
-});
-
-app.get('/rds/pool', async (req: Request, res: Response) => { 
-  const message = await testPoolQuery();
-  return res.status(203).send(message);
-});
-
-app.get('/test/readPackages', async (req, res) => {
-  const message = await readAllPackageData();
-  return res.status(203).send(message);
-});
-
-app.get('/test/storePackage', async (req: Request, res: Response) => {
-  const dummyPackageRating: PackageRating = {
-    BusFactor: 0.8,
-    BusFactorLatency: 50, // milliseconds
-    Correctness: 0.95,
-    CorrectnessLatency: 45, // milliseconds
-    RampUp: 0.85,
-    RampUpLatency: 60, // milliseconds
-    ResponsiveMaintainer: 0.9,
-    ResponsiveMaintainerLatency: 30, // milliseconds
-    LicenseScore: 0.92,
-    LicenseScoreLatency: 25, // milliseconds
-    GoodPinningPractice: 0.88,
-    GoodPinningPracticeLatency: 40, // milliseconds
-    PullRequest: 0.7,
-    PullRequestLatency: 35, // milliseconds
-    NetScore: 0.89,
-    NetScoreLatency: 20, // milliseconds
-  };
-
-  await storePackage(packageDatabase[0], dummyPackageRating);
-});
-
-app.get('/test/readPackage', async (req: Request, res: Response) => {
-
-  const foundPackage = await readPackage(packageDatabase[0].metadata.ID);
-  if (!foundPackage) {
-    return res.status(404).send('Package not found');
-  }
-
-  return res.status(200).json(foundPackage);
-});
-/*
-app.get('/test/readAllPackages', async (req: Request, res: Response) => {
-
-  const allPackages = await testReadAll();
-  if (allPackages === "connection error") {
-    return res.status(500).send('Failed to connect to RDS');
-  }
-
-  return res.status(200).json(allPackages);
-});
-*/
-
 app.post('/packages', async (req: Request, res: Response) => { //works
   //account for Too many packages returned error when you switch over storage methods
   const pkgqry: PackageQuery[] = req.body;
 
+  if (!pkgqry[0]) {
+    return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
+  }
+
   for (let i = 0; i < pkgqry.length; i++) {
-    if (validatePackageQuerySchema(pkgqry[i]) !== 0) {
-      return res.status(400).send("There is missing field(s) in the PackageQuery or it is formed improperly, or is invalid.");
+    if (!pkgqry[i].Name) {
+      return res.status(400).send("There is missing field(s) in the PackageQuery (Name is undefined)");
     }
   }
   const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
@@ -220,7 +133,7 @@ app.get('/package/:id', async (req: Request, res: Response) => {
 });
 
 app.post('/package/byRegEx', async (req: Request, res: Response) => { //connection works
-  if (!req.body.RegEx) {
+  if (!req.body || !req.body.RegEx) {
     return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
   }
   const packages = await searchPackagesRDS(req.body.RegEx);
@@ -243,22 +156,21 @@ app.post('/package/byRegEx', async (req: Request, res: Response) => { //connecti
 
 app.post('/package/:id', async (req: Request, res: Response) => { //update this to populate content
   //assumes all IDs are unique
-  if (!req.params.id && !validatePackageSchema(req.body)) { //validate inputs
+  
+  if (!req.params.id || !req.body) { //validate inputs
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
+  }
+
+  const validation = validatePackageSchema(req.body);
+
+  if(validation) {
+    return res.status(400).send(validation);
   }
   
   const pkg = await readPackage(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
-  }
-
-  if (!req.body.data.Content && !req.body.data.URL) { 
-    return res.status(400).send("Both Content and URL are undefined.");
-  }
-
-  if (req.body.data.Content && req.body.data.URL) { 
-    return res.status(400).send("Both Content and URL are defined.");
   }
 
   if (pkg.metadata.Name != req.body.metadata.Name) { //make sure name matches
@@ -315,16 +227,10 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
 
-  if (!req.body.Content && !req.body.URL) { 
-    return res.status(400).send("Both Content and URL are undefined.");
-  }
+  const validation = validateDataSchema(req.body);
 
-  if (req.body.Content && req.body.URL) { 
-    return res.status(400).send("Both Content and URL are defined.");
-  }
-
-  if (req.body.Content && !req.body.Name) { 
-    return res.status(400).send("If Content is defined Name also must be provided.");
+  if(validation) {
+    return res.status(400).send(validation);
   }
 
   if (req.body.Content) {
