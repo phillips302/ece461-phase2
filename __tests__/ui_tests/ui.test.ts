@@ -13,7 +13,7 @@ beforeAll(async () => {
 
   // Create Chrome options for headless mode
   const chromeOptions = new ChromeOptions();
-  //chromeOptions.addArguments('--headless'); // comment out to view the browser openning
+  chromeOptions.addArguments('--headless'); // comment out to view the browser openning
   chromeOptions.addArguments('--no-sandbox');
   chromeOptions.addArguments('--disable-dev-shm-usage');
 
