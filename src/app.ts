@@ -75,21 +75,13 @@ app.get('/envars', async (req: Request, res: Response) => {
 });
 
 app.get('/rds/client', async (req: Request, res: Response) => { 
-  const message = await testClient();
-  if(message === 'connection success') {
-    return res.status(200).send('Connected to RDS');
-  } else {
-    return res.status(500).send(message);
-  }
+  const message: string | unknown = await testClient();
+  return res.status(203).send(message);
 });
 
 app.get('/rds/pool', async (req: Request, res: Response) => { 
   const message = await testPoolQuery();
-  if(message === 'connection success') {
-    return res.status(200).send('Connected to RDS');
-  } else {
-    return res.status(500).send(message);
-  }
+  return res.status(203).send(message);
 });
 
 app.get('/test/storePackage', async (req: Request, res: Response) => {

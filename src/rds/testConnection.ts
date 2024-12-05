@@ -16,7 +16,7 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-export async function testPoolQuery() {
+export async function testPoolQuery(): Promise<string | unknown> {
     try {
         // Perform a simple query to check the connection
         const [rows] = await pool.query('SELECT 1 + 1 AS result');
@@ -24,14 +24,14 @@ export async function testPoolQuery() {
     
         // Optionally close the pool (useful for one-time tests)
         await pool.end();
-        return 'connection success';
+        return 'connection success: '+rows;
       } catch (err) {
         console.error('Database connection failed:', err);
         return err;
     }
 }
 
-export async function testClient() {
+export async function testClient(): Promise<string | unknown> {
     try {
       // Create the connection
       console.log('Connecting to the MySQL database...');
@@ -39,7 +39,7 @@ export async function testClient() {
         host: process.env.RDS_ENDPOINT,
         user: process.env.RDS_USERNAME,
         password: process.env.RDS_PASSWORD,
-        database: database: process.env.RDS_DATABASE,
+        database: process.env.RDS_DATABASE,
       });
   
       console.log('Connected to the MySQL database.');
@@ -50,7 +50,7 @@ export async function testClient() {
   
       // Close the connection
       await connection.end();
-      return 'connection success';
+      return 'connection success: '+rows;
     } catch (err) {
       console.error('Error connecting to the database:', err);
       return err;
