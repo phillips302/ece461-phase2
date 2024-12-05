@@ -19,11 +19,12 @@ const pool = mysql.createPool({
 //reuired, name,id , version, make upload_date DEFAULT
 
 export async function storePackage(newPackage: Package, scores: PackageRating): Promise<string | null> {
+    console.log('Storing package ID:', newPackage.metadata.ID);
     try {
         const insertText = `
             INSERT INTO packages(
                 package_id, package_name, version, url, debloat, 
-                bus_factor, bus_factor_latency, correctness, correctness_latency, 
+                busfactor, busfactor_latency, correctness, correctness_latency, 
                 ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
                 license_score, license_score_latency, good_pinning_practice, 
                 good_pinning_practice_latency, pull_request, pull_request_latency, 
@@ -79,6 +80,7 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
 // }
 
 export async function readPackage(packageId: string): Promise<Package | null> {
+    console.log('Reading package ID:', packageId);
     const query = `
         SELECT package_id, package_name, version, url, debloat 
         FROM packages 
@@ -118,7 +120,6 @@ export async function readPackage(packageId: string): Promise<Package | null> {
 
 export async function readAllPackages(): Promise<Package[] | null> {
     try {
-        console.log('Connected to PostgreSQL RDS');
         // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages';
         const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText);
@@ -156,9 +157,10 @@ export async function readAllPackages(): Promise<Package[] | null> {
 }
 
 export async function readPackageRating(packageId: string): Promise<PackageRating | null> {
+    console.log('Reading package rating');
     const selectText = `
         SELECT 
-            bus_factor, bus_factor_latency, correctness, correctness_latency, 
+            busfactor, busfactor_latency, correctness, correctness_latency, 
             ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
             license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, 
             pull_request, pull_request_latency, net_score, net_score_latency 
@@ -171,12 +173,13 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
         const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText, [packageId]);
 
         if (rows.length === 0) {
+            console.log('No package found with ID:', packageId);
             return null;
         }
 
         const data : PackageRating = {
-            BusFactor: rows[0].bus_factor,
-            BusFactorLatency: rows[0].bus_factor_latency,
+            BusFactor: rows[0].busfactor,
+            BusFactorLatency: rows[0].busfactor_latency,
             Correctness: rows[0].correctness,
             CorrectnessLatency: rows[0].correctness_latency,
             RampUp: rows[0].ramp_up,
@@ -194,7 +197,23 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
         }
 
         return data;
-    
+
+    } catch (err) {
+        console.error('Database operation failed:', err);
+        return null;
+    }
+}
+
+export async function deleteAllPackages(): Promise<string | null> {
+    console.log('Deleting all packages');
+    try {
+        // **Delete Data Example**
+        const deleteText = 'DELETE FROM packages';
+        const deleteResult = await pool.query(deleteText);
+        console.log('Deleted:', deleteResult);
+
+        return 'All packages deleted';
+
     } catch (err) {
         console.error('Database operation failed:', err);
         return null;
