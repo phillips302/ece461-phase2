@@ -18,18 +18,42 @@ const pool = mysql.createPool({
 
 //reuired, name,id , version, make upload_date DEFAULT
 
-export async function storePackage(newPackage: Package, scores: PackageRating) {
+export async function storePackage(newPackage: Package, scores: PackageRating): Promise<string | null> {
     try {
-        console.log('Connected to PostgreSQL RDS');
-        const insertText = 'INSERT INTO packages(package_id, package_name, version, url, debloat, bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, pull_request, pull_request_latency, net_score, net_score_latency) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *';
-        const insertValues = [newPackage.metadata.ID, newPackage.metadata.Name, newPackage.metadata.Version, newPackage.data.URL, newPackage.data.debloat, scores.BusFactor, scores.BusFactorLatency, scores.Correctness, scores.CorrectnessLatency, scores.RampUp, scores.RampUpLatency, scores.ResponsiveMaintainer, scores.ResponsiveMaintainerLatency, scores.LicenseScore, scores.LicenseScoreLatency, scores.GoodPinningPractice, scores.GoodPinningPracticeLatency, scores.PullRequest, scores.PullRequestLatency, scores.NetScore, scores.NetScoreLatency];
-        const insertResult = await pool.query(insertText, insertValues);
-        console.log('Inserted:', insertResult.rows[0]);
+        const insertText = `
+            INSERT INTO packages(
+                package_id, package_name, version, url, debloat, 
+                bus_factor, bus_factor_latency, correctness, correctness_latency, 
+                ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
+                license_score, license_score_latency, good_pinning_practice, 
+                good_pinning_practice_latency, pull_request, pull_request_latency, 
+                net_score, net_score_latency
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const insertValues = [
+            newPackage.metadata.ID, newPackage.metadata.Name, newPackage.metadata.Version, 
+            newPackage.data.URL, newPackage.data.debloat, 
+            scores.BusFactor, scores.BusFactorLatency, 
+            scores.Correctness, scores.CorrectnessLatency, 
+            scores.RampUp, scores.RampUpLatency, 
+            scores.ResponsiveMaintainer, scores.ResponsiveMaintainerLatency, 
+            scores.LicenseScore, scores.LicenseScoreLatency, 
+            scores.GoodPinningPractice, scores.GoodPinningPracticeLatency, 
+            scores.PullRequest, scores.PullRequestLatency, 
+            scores.NetScore, scores.NetScoreLatency
+        ];
+
+        // Execute the query
+        const [result] = await pool.query(insertText, insertValues);
+        
+        console.log('Inserted Package, Affected Rows:', (result as any).affectedRows);
+
+        return 'Package stored successfully';
 
     } catch (err) {
         console.error('Database operation failed:', err);
-    } finally {
-        console.log('Disconnected from PostgreSQL RDS');
+        return null;
     }
 }
 
@@ -49,39 +73,41 @@ export async function storePackage(newPackage: Package, scores: PackageRating) {
 //     }
 // }
 
-export async function readPackage(ID: string): Promise<Package | null> {
+export async function readPackage(packageId: string): Promise<Package | null> {
+    const query = `
+        SELECT package_id, package_name, version, url, debloat 
+        FROM packages 
+        WHERE package_id = ?
+    `;
     try {
-        console.log('Connected to PostgreSQL RDS');
-        // **Read Data Example**
-        const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages WHERE package_id = $1';
-        const selectValues = [ID];
-        const selectResult = await pool.query(selectText, selectValues);
-        console.log('Queried:', selectResult.rows);
+        // Execute the query with the provided packageId
+        const [rows] = await pool.query<mysql.RowDataPacket[]>(query, [packageId]);
 
-        if (selectResult.rows.length === 0) {
+        if (rows.length === 0) {
+            console.log('No package found with ID:', packageId);
             return null;
         }
 
+        console.log('Queried package:', rows[0]);
+
         const data: Package = {
             metadata: {
-                Name: selectResult.rows[0].package_name,
-                ID: selectResult.rows[0].package_id,
-                Version: selectResult.rows[0].version
+                Name: rows[0].package_name,
+                ID: rows[0].package_id,
+                Version: rows[0].version
             },
             data: {
-                Name: selectResult.rows[0].package_name,
-                URL: selectResult.rows[0].url,
-                debloat: selectResult.rows[0].debloat
+                Name: rows[0].package_name,
+                URL: rows[0].url,
+                debloat: rows[0].debloat
             }
         }
 
         return data;
 
-    } catch (err) {
-        console.error('Database operation failed:', err);
+    } catch (error) {
+        console.error('Error querying the database:', error);
         return null;
-    } finally {
-        console.log('Disconnected from PostgreSQL RDS');
     }
 }
 
@@ -90,27 +116,27 @@ export async function readAllPackages(): Promise<Package[] | null> {
         console.log('Connected to PostgreSQL RDS');
         // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages';
-        const selectResult = await pool.query(selectText);
-        console.log('Queried:', selectResult.rows);
+        const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText);
+        console.log('Queried:', rows);
 
-        if (selectResult.rows.length === 0) {
+        if (rows.length === 0) {
             console.log('No packages found in the database');
             return null;
         }
 
         const data: Package[] = [];
 
-        for (let i = 0; i < selectResult.rows.length; i++) {
+        for (let i = 0; i < rows.length; i++) {
             const row = {
                 metadata: {
-                    Name: selectResult.rows[i].package_name,
-                    ID: selectResult.rows[i].package_id,
-                    Version: selectResult.rows[i].version
+                    Name: rows[i].package_name,
+                    ID: rows[i].package_id,
+                    Version: rows[i].version
                 },
                 data: {
-                    Name: selectResult.rows[i].package_name,
-                    URL: selectResult.rows[i].url,
-                    debloat: selectResult.rows[i].debloat
+                    Name: rows[i].package_name,
+                    URL: rows[i].url,
+                    debloat: rows[i].debloat
                 }
             }
             data.push(row);
@@ -121,41 +147,45 @@ export async function readAllPackages(): Promise<Package[] | null> {
     } catch (err) {
         console.error('Database operation failed:', err);
         return null;
-    } finally {
-        console.log('Disconnected from PostgreSQL RDS');
     }
 }
 
-export async function readPackageRating(ID: string): Promise<PackageRating | null> {
-    try {
-        console.log('Connected to PostgreSQL RDS'); 
-        // **Read Data Example**
-        const selectText = 'SELECT bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, pull_request, pull_request_latency, net_score, net_score_latency FROM packages WHERE package_id = $1';
-        const selectValues = [ID];
-        const selectResult = await pool.query(selectText, selectValues);
-        console.log('Queried:', selectResult.rows);
+export async function readPackageRating(packageId: string): Promise<PackageRating | null> {
+    const selectText = `
+        SELECT 
+            bus_factor, bus_factor_latency, correctness, correctness_latency, 
+            ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, 
+            license_score, license_score_latency, good_pinning_practice, good_pinning_practice_latency, 
+            pull_request, pull_request_latency, net_score, net_score_latency 
+        FROM packages 
+        WHERE package_id = ?
+    `;
 
-        if (selectResult.rows.length === 0) {
+    try {
+        // Execute the query with the parameterized value
+        const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText, [packageId]);
+
+        if (rows.length === 0) {
             return null;
         }
 
         const data : PackageRating = {
-            BusFactor: selectResult.rows[0].bus_factor,
-            BusFactorLatency: selectResult.rows[0].bus_factor_latency,
-            Correctness: selectResult.rows[0].correctness,
-            CorrectnessLatency: selectResult.rows[0].correctness_latency,
-            RampUp: selectResult.rows[0].ramp_up,
-            RampUpLatency: selectResult.rows[0].ramp_up_latency,
-            ResponsiveMaintainer: selectResult.rows[0].responsive_maintainer,
-            ResponsiveMaintainerLatency: selectResult.rows[0].responsive_maintainer_latency,
-            LicenseScore: selectResult.rows[0].license_score,
-            LicenseScoreLatency: selectResult.rows[0].license_score_latency,
-            GoodPinningPractice: selectResult.rows[0].good_pinning_practice,
-            GoodPinningPracticeLatency: selectResult.rows[0].good_pinning_practice_latency,
-            PullRequest: selectResult.rows[0].pull_request,
-            PullRequestLatency: selectResult.rows[0].pull_request_latency,
-            NetScore: selectResult.rows[0].net_score,
-            NetScoreLatency: selectResult.rows[0].net_score_latency
+            BusFactor: rows[0].bus_factor,
+            BusFactorLatency: rows[0].bus_factor_latency,
+            Correctness: rows[0].correctness,
+            CorrectnessLatency: rows[0].correctness_latency,
+            RampUp: rows[0].ramp_up,
+            RampUpLatency: rows[0].ramp_up_latency,
+            ResponsiveMaintainer: rows[0].responsive_maintainer,
+            ResponsiveMaintainerLatency: rows[0].responsive_maintainer_latency,
+            LicenseScore: rows[0].license_score,
+            LicenseScoreLatency: rows[0].license_score_latency,
+            GoodPinningPractice: rows[0].good_pinning_practice,
+            GoodPinningPracticeLatency: rows[0].good_pinning_practice_latency,
+            PullRequest: rows[0].pull_request,
+            PullRequestLatency: rows[0].pull_request_latency,
+            NetScore: rows[0].net_score,
+            NetScoreLatency: rows[0].net_score_latency
         }
 
         return data;
@@ -163,7 +193,5 @@ export async function readPackageRating(ID: string): Promise<PackageRating | nul
     } catch (err) {
         console.error('Database operation failed:', err);
         return null;
-    } finally {
-        console.log('Disconnected from PostgreSQL RDS');
     }
 }
