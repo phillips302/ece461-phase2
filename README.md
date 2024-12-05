@@ -1,12 +1,8 @@
-# PackageProbe
-PackageProbe is a command-line interface (CLI) that analyzes GitHub repositories and npm packages.
+# Rate The Crate
+Rate The Crate is an online package registry!
 
 ## Dependencies
 Download and install Node.js: https://nodejs.org/en/download/package-manager
-
-## Installation
-Clone the repository: \
-`git clone https://github.com/Tridentinus/Team-Project-461.git`
 
 Run the following command in the repository root to install dependencies and build the project: \
 `./run install`
@@ -21,4 +17,4 @@ Run the following command in the repository root. Replace URL_FILE with the path
 `./run URL_FILE`
 
 ## Team Members
-Trent Seaman, Ryan Jordan, Josh Wai, Pulkit Chhabra
+Garrett Phillips, Riley Thomas, Nilayah Peter, Ethan James
