@@ -1,19 +1,19 @@
-import pkg from 'pg';
-const { Pool } = pkg;
 import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 import { Package, PackageRating } from '../apis/types.js';
 import console from 'console';
-
 import process from 'process';
 
 dotenv.config();
 
-export const pool = new Pool({
+const pool = mysql.createPool({
   host: process.env.RDS_ENDPOINT,
-  port: 5432, // Default PostgreSQL port
-  database: process.env.RDS_DATABASE,
   user: process.env.RDS_USERNAME,
-  password: process.env.RDS_PASSWORD
+  password: process.env.RDS_PASSWORD,
+  database: process.env.RDS_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 //reuired, name,id , version, make upload_date DEFAULT
