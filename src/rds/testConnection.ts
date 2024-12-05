@@ -36,16 +36,16 @@ export async function testClient() {
       // Create the connection
       console.log('Connecting to the MySQL database...');
       const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'your-username',
-        password: 'your-password',
-        database: 'your-database',
+        host: process.env.RDS_ENDPOINT,
+        user: process.env.RDS_USERNAME,
+        password: process.env.RDS_PASSWORD,
+        database: database: process.env.RDS_DATABASE,
       });
   
       console.log('Connected to the MySQL database.');
   
       // Example query
-      const [rows] = await connection.execute('SELECT * FROM your_table');
+      const [rows] = await connection.execute('SELECT 1 + 1 AS result');
       console.log('Query results:', rows);
   
       // Close the connection
