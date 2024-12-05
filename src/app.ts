@@ -278,7 +278,12 @@ app.post('/package/:id', async (req: Request, res: Response) => { //update this 
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
-  await storePackage(newPackage, JSON.parse(scores));
+  const result = await storePackage(newPackage, JSON.parse(scores));
+
+  if (!result) {
+    return res.status(500).send("Failed to update package.");
+  }
+  
   res.status(200).send("Version is updated.");
 });
 
