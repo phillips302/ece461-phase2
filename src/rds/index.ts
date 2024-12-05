@@ -45,7 +45,12 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
         ];
 
         // Execute the query
-        const [result] = await pool.query(insertText, insertValues);
+        const [result] = await pool.query<mysql.RowDataPacket[]>(insertText, insertValues);
+
+        if(result.length === 0) {
+            console.log('Failed to insert package');
+            return null;
+        }
         
         console.log('Inserted Package, Affected Rows:', (result as any).affectedRows);
 
