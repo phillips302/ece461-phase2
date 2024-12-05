@@ -56,7 +56,7 @@ jobs:
           --log-driver=awslogs \
           --log-opt awslogs-region=us-east-2 \
           --log-opt awslogs-group=docker-console-logs \
-          --log-opt awslogs-stream=runner1 \
+          --log-opt awslogs-stream=ratethecrate1 \
           phillips302/ece461-phase2:latest
   build-runner2:
     runs-on: [self-hosted, runner2]
@@ -106,5 +106,5 @@ jobs:
           --log-driver=awslogs \
           --log-opt awslogs-region=us-east-2 \
           --log-opt awslogs-group=docker-console-logs \
-          --log-opt awslogs-stream=runner1 \
+          --log-opt awslogs-stream=ratethecrate2 \
           phillips302/ece461-phase2:latest
