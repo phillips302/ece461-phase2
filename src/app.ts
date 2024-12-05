@@ -347,8 +347,12 @@ app.post('/package', async (req: Request, res: Response) => {
     }
   });
   
-  await storePackage(newPackage, JSON.parse(scores));
-  res.status(201).json(newPackage);
+  const result = await storePackage(newPackage, JSON.parse(scores));
+  if (!result) {
+    return res.status(500).send("Failed to store package.");
+  }
+  
+  return res.status(201).json(newPackage);
 });
 
 app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
