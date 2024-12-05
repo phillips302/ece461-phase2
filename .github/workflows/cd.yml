@@ -53,6 +53,10 @@ jobs:
           -e AWS_REGION="us-east-2" \
           -e LOG_LEVEL="2" \
           -e LOG_FILE="/var/log/app.log" \
+          --log-driver=awslogs \
+          --log-opt awslogs-region=us-east-2 \
+          --log-opt awslogs-group=docker-console-logs \
+          --log-opt awslogs-stream=runner1 \
           phillips302/ece461-phase2:latest
   build-runner2:
     runs-on: [self-hosted, runner2]
@@ -99,4 +103,8 @@ jobs:
           -e AWS_REGION="us-east-2" \
           -e LOG_LEVEL="2" \
           -e LOG_FILE="/var/log/app.log" \
+          --log-driver=awslogs \
+          --log-opt awslogs-region=us-east-2 \
+          --log-opt awslogs-group=docker-console-logs \
+          --log-opt awslogs-stream=runner1 \
           phillips302/ece461-phase2:latest
