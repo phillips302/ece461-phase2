@@ -200,3 +200,19 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
         return null;
     }
 }
+
+export async function deleteAllPackages(): Promise<string | null> {
+    try {
+        console.log('Connected to PostgreSQL RDS');
+        // **Delete Data Example**
+        const deleteText = 'DELETE FROM packages';
+        const deleteResult = await pool.query(deleteText);
+        console.log('Deleted:', deleteResult);
+
+        return 'All packages deleted';
+
+    } catch (err) {
+        console.error('Database operation failed:', err);
+        return null;
+    }
+}

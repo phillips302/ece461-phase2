@@ -10,7 +10,7 @@ import { fetchVersionHistory } from './tools/fetchVersion.js';
 import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import { testClient, testPoolQuery, readAllPackageData } from './rds/testConnection.js';
-import { storePackage, readAllPackages, readPackage, readPackageRating } from './rds/index.js';
+import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
@@ -182,11 +182,14 @@ app.post('/packages', async (req: Request, res: Response) => { //works
   res.status(200).send(results);
 });
 
-app.delete('/reset', (req: Request, res: Response) => { //works
+app.delete('/reset', async (req: Request, res: Response) => { //works
+  const result = await deleteAllPackages();
 
-  //delete packages from rds
+  if (!result) {
+    return res.status(500).send("Failed to reset the package database.");
+  }
 
-  res.status(200).send("The package database has been reset.");
+  return res.status(200).send("The package database has been reset.");
 });
 
 app.get('/package/:id', async (req: Request, res: Response) => {
@@ -283,7 +286,7 @@ app.post('/package/:id', async (req: Request, res: Response) => { //update this 
   if (!result) {
     return res.status(500).send("Failed to update package.");
   }
-  
+
   res.status(200).send("Version is updated.");
 });
 
