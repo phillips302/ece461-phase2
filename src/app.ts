@@ -194,6 +194,12 @@ app.post('/package/:id', async (req: Request, res: Response) => {
     } else {
       req.body.data.URL = url;
     }
+  } else {
+    const content = await urlToContent(req.body.data.URL);
+    if (content == 'Failed to get the zip file') {
+      return res.status(500).send("Failed to retrieve zip file from URL.");
+    }
+    req.body.data.Content = content;
   }
 
   //check rating before ingesting
