@@ -124,24 +124,6 @@ app.get('/package/:id', async (req: Request, res: Response) => {
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
   }
-
-  if (!pkg.data.Content) {
-    if (!pkg.data.URL) {
-      return res.status(400).send("Content and URL are both undefined");
-    }
-
-    try {
-      //const content = await urlToContent(pkg.data.URL);
-      const s3path = `${pkg.metadata.Name}/${pkg.metadata.ID}`;
-      const content = await readFromS3(s3path);
-      if (content === undefined) {
-        return res.status(500).send("Failed to retrieve content.");
-      }
-      pkg.data.Content = content;
-    } catch (error) {
-      return res.status(500).send("An error occurred while retrieving content.");
-    }
-  }
   res.status(200).json(pkg);
 });
 
@@ -253,6 +235,12 @@ app.post('/package', async (req: Request, res: Response) => {
       return res.status(500).send("Failed to retrieve data from Content.");
     }
     req.body.URL = url;
+  } else {
+    const content = await urlToContent(req.body.URL);
+    if (content == 'Failed to get the zip file') {
+      return res.status(500).send("Failed to retrieve zip file from URL.");
+    }
+    req.body.Content = content;
   }
 
   const { owner, repo } = await getOwnerRepo(req.body.URL);
@@ -261,7 +249,7 @@ app.post('/package', async (req: Request, res: Response) => {
   }
   
   let version = await fetchVersion(owner, repo);
-  if (!version) {
+  if (version === 'No version history') {
     version = '1.0.0';
   }
 
