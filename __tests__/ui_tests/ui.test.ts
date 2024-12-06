@@ -13,7 +13,7 @@ beforeAll(async () => {
 
   // Create Chrome options for headless mode
   const chromeOptions = new ChromeOptions();
-  //chromeOptions.addArguments('--headless'); // comment out to view the browser openning
+  chromeOptions.addArguments('--headless'); // comment out to view the browser openning
   chromeOptions.addArguments('--no-sandbox');
   chromeOptions.addArguments('--disable-dev-shm-usage');
 
@@ -26,10 +26,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await driver.quit();
-});
-
-afterEach(async () => {
-  vi.clearAllMocks();
 });
 
 describe('UI Tests for React App', () => {
@@ -210,7 +206,8 @@ describe('UI Tests for React App', () => {
     expect(await url.isDisplayed()).toBe(true);
     await driver.sleep(10)
     await url.sendKeys('https://github.com/phillips302/ECE461');
-    await version[0].sendKeys('1');
+    await version[0].clear()
+    await version[0].sendKeys('1.1.1.1.1');
 
     // Test Submit
     const submitButton = await popup.findElement(By.css('.SubmitButton'));
@@ -235,28 +232,43 @@ describe('UI Tests for React App', () => {
     await driver.sleep(100)
     await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
     let resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    //expect(resultItems.length).toBe(2);
+    expect(resultItems.length).toBe(2);
 
     // Search by Version
     let version = await driver.findElement(By.id('searchBar2'));
-    await version.sendKeys('1.0.01');
+    await version.sendKeys('1.1.1.1.1');
     await searchButton.click();
     await driver.sleep(100)
-    // await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
-    // resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    //expect(resultItems.length).toBe(1);
+    await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
+    resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBe(1);
 
     //need to implement Search by Regex
+    const toggle = await driver.findElement(By.css('.switch input[type="checkbox"]'));
+    await driver.executeScript("arguments[0].click();", toggle);
+    let regexSearchBar = await driver.findElement(By.id('searchBar'));
+    expect(await regexSearchBar.isDisplayed()).toBe(true);
+
+    await regexSearchBar.sendKeys(".?ECE.")
+    await searchButton.click();
+    await driver.sleep(100)
+
+    resultItems = await driver.findElements(By.css('.lightBlueBox'));
+    expect(resultItems.length).toBe(2);
   });
 
   it('should handle delete functionality', async () => {
     const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
-
+  
     await deleteButton.click();
+    await driver.sleep(100);
 
-    // Confirm deletion by checking for an empty list
+    const submitButton = await driver.findElements(By.css('.deleteButtons'));
+    await submitButton[0].click();
+    await driver.sleep(100);
+
     const packageList = await driver.findElements(By.css('.lightBlueBox'));
-    expect(packageList.length).toBe(0);
+    expect(packageList.length).toBe(0); // Check that the list is empty
   });
 });
 
