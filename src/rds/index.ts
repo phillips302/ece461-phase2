@@ -59,12 +59,10 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
         }
         
         console.log('Inserted Package, Affected Rows:', (result as any).affectedRows);
-
         returnString = 'Package data stored successfully in RDS.';
-
     } catch (err) {
         console.error('Database operation failed:', err);
-        returnString = 'Package data failed to store in RDS.';
+        return null;
     }
     try {
         let s3result;
@@ -72,13 +70,14 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
         if (newPackage.data.Content) {
             s3result = await uploadToS3(s3path, newPackage.data.Content);
         } else {
-            s3result = await ingestPackageHelper(s3path, newPackage.data.Name, newPackage.metadata.Version);
+            console.log('No content to store in S3');
+            return null
         }
         console.log('Uploaded to S3:', s3result);
         returnString += ` --- Package content stored successfully in S3 for package ${newPackage.data.Name}-${newPackage.metadata.Version} w/ ID: ${newPackage.metadata.ID}.`;
     } catch (err) {
         console.error('S3 operation failed:', err);
-        returnString += ` --- Package content failed to store in S3 for package ${newPackage.data.Name}-${newPackage.metadata.Version}.`;
+        return null;
     }
     return returnString;
 }  
