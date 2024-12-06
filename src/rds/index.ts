@@ -4,7 +4,6 @@ import { Package, PackageRating } from '../apis/types.js';
 import console from 'console';
 import process from 'process';
 import { uploadToS3, readFromS3 } from '../tools/uploadToS3.js';
-import { ingestPackageHelper } from '../tools/ingest.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -84,7 +83,6 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
 
 export async function downloadPackageContent(packageId: string): Promise<string | null> {
     console.log(`Downloading content for package ID: ${packageId}`);
-    const downloadDirectory = path.join(__dirname, 'downloads');
     try {
         const packageData = await readPackage(packageId);
         if (!packageData) {
@@ -93,19 +91,20 @@ export async function downloadPackageContent(packageId: string): Promise<string 
         }
 
         const s3Path = `${packageData.metadata.Name}/${packageData.metadata.ID}`;
-        const content = await readFromS3(s3Path);
-        if (!content) {
+        const zipString = await readFromS3(s3Path);
+        if (!zipString) {
             console.log('Failed to read content from S3');
             return null;
         }
 
-        if (!fs.existsSync(downloadDirectory)) {
-            fs.mkdirSync(downloadDirectory, { recursive: true });
+        const zipBuffer = Buffer.from(zipString, 'base64');
+        const downloadsFolder = path.join(require('os').homedir(), 'Downloads');
+        if (!fs.existsSync(downloadsFolder)) {
+            fs.mkdirSync(downloadsFolder);
         }
 
-        const filePath = path.join(downloadDirectory, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
-        fs.writeFileSync(filePath, content);
-
+        const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
+        fs.writeFileSync(filePath, zipBuffer);
         console.log(`Content downloaded and saved to ${filePath}`);
         return filePath;
     } catch (err) {
@@ -113,23 +112,6 @@ export async function downloadPackageContent(packageId: string): Promise<string 
         return null;
     }
 }
-
-
-// export async function storePackageRating(BusFactor: number, BusFactorLatency: number, Correctness: number, CorrectnessLatency: number, RampUp: number, RampUpLatency: number, ResponsiveMaintainer: number, ResponsiveMaintainerLatency: number, LicenseScore: number, LicenseScoreLatency: number, GoodPinningPractice: number, GoodPinningPracticeLatency: number, PullRequest: number, PullRequestLatency: number, NetScore: number, NetScoreLatency: number) {
-//     try {
-//         console.log('Connected to PostgreSQL RDS');
-//         // **Store Data Example**
-//         const insertText = 'INSERT INTO packages(bus_factor, bus_factor_latency, correctness, correctness_latency, ramp_up, ramp_up_latency, responsive_maintainer, responsive_maintainer_latency, license_score, license_score_latency, fraction_dependencies, fraction_dependencies_latency, pr_fraction, pr_fraction_latency, net_score, net_score_latency) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *';
-//         const insertValues = [BusFactor, BusFactorLatency, Correctness, CorrectnessLatency, RampUp, RampUpLatency, ResponsiveMaintainer, ResponsiveMaintainerLatency, LicenseScore, LicenseScoreLatency, GoodPinningPractice, GoodPinningPracticeLatency, PullRequest, PullRequestLatency, NetScore, NetScoreLatency];
-//         const insertResult = await pool.query(insertText, insertValues);
-//         console.log('Inserted:', insertResult.rows[0]);
-
-//     } catch (err) {
-//         console.error('Database operation failed:', err);
-//     } finally {
-//         console.log('Disconnected from PostgreSQL RDS');
-//     }
-// }
 
 export async function readPackage(packageId: string): Promise<Package | null> {
     console.log('Reading package ID:', packageId);
