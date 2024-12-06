@@ -8,55 +8,26 @@ import {gitHubRequest, logMessage, npmToGitHub} from "./utils.js";
  * @returns A promise that resolves to an array of release objects or an empty array if none found.
  */
 
-interface GitHubRelease {
-    name: string;
+interface ReleaseNode {
     tagName: string;
     publishedAt: string;
-    url: string;
+    name: string;
+    description: string;
 }
 
-interface GitHubReleaseResponse {
-    data: {
-        repository: {
-            releases: {
-                nodes: GitHubRelease[];
+interface VersionHistoryResponse {
+    repository: {
+        releases: {
+            nodes: ReleaseNode[];
+            pageInfo: {
+                hasNextPage: boolean;
+                endCursor: string | null;
             };
         };
     };
 }
 
-export async function fetchVersion(owner: string, repo: string): Promise<string | null> {
-    const query = `
-        query ($owner: String!, $repo: String!) {
-            repository(owner: $owner, name: $repo) {
-                releases(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) {
-                    nodes {
-                        name
-                        tagName
-                        publishedAt
-                        url
-                    }
-                }
-            }
-        }
-    `;
-    try {
-        const variables = { owner, repo };
-        const response = await gitHubRequest(query, variables) as GitHubReleaseResponse;
-
-        const releases = response.data.repository.releases.nodes;
-
-        // Return the most recent release or null if none exist
-        return releases && releases.length > 0 ? releases[0].tagName : null;
-    } catch (error) {
-        logMessage("ERROR", `Error fetching version history for ${owner}/${repo}: ${error}`);
-        return null;
-    }
-
-}
-
-/*
-export async function fetchVersionHistory(owner: string, repo: string): Promise<string> {
+export async function fetchVersion(owner: string, repo: string): Promise<string> {
     const allReleases: ReleaseNode[] = [];
     let hasNextPage = true;
     let endCursor: string | null = null;
@@ -97,7 +68,7 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
         const earliestVersion = sortedVersionHistory[0].tagName.replace(/^v/, ''); // Remove leading 'v'
         const latestVersion = sortedVersionHistory[sortedVersionHistory.length - 1].tagName.replace(/^v/, ''); // Remove leading 'v'
         const versionRange = `${earliestVersion} - ${latestVersion}`;
-        return(versionRange);    
+        return(latestVersion);  
 
     }
     else{
@@ -106,4 +77,3 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
     }
     
 }
-*/

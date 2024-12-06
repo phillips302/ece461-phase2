@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchVersionHistory } from "../../src/tools/fetchVersion.js";
+import { fetchVersion } from "../../src/tools/fetchVersion.js";
 import { gitHubRequest, logMessage } from "../../src/tools/utils.js";
 
 // Mock the gitHubRequest and logMessage functions
@@ -30,8 +30,8 @@ describe("fetchVersionHistory", () => {
     // Cast gitHubRequest to a mock function that returns a resolved promise
     (gitHubRequest as typeof gitHubRequest & { mockResolvedValue: any }).mockResolvedValue(mockResponse);
 
-    const result = await fetchVersionHistory("owner", "repo");
-    expect(result).toBe("1.0.0 - 2.0.0");
+    const result = await fetchVersion("owner", "repo");
+    expect(result).toBe("2.0.0");
   });
 
   it("should handle pagination and merge all releases", async () => {
@@ -69,8 +69,8 @@ describe("fetchVersionHistory", () => {
       .mockResolvedValueOnce(mockPage1)
       .mockResolvedValueOnce(mockPage2);
 
-    const result = await fetchVersionHistory("owner", "repo");
-    expect(result).toBe("1.0.0 - 2.0.0");
+    const result = await fetchVersion("owner", "repo");
+    expect(result).toBe("2.0.0");
   });
 
   it("should return 'No version history' when no releases are found", async () => {
@@ -89,7 +89,7 @@ describe("fetchVersionHistory", () => {
     // Mock gitHubRequest to return no releases
     (gitHubRequest as typeof gitHubRequest & { mockResolvedValue: any }).mockResolvedValue(mockResponse);
 
-    const result = await fetchVersionHistory("owner", "repo");
+    const result = await fetchVersion("owner", "repo");
 
     expect(result).toBe("No version history");
     expect(logMessage).toHaveBeenCalledWith("INFO", "No version history found for owner/repo");
