@@ -9,7 +9,7 @@ import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersion } from './tools/fetchVersion.js';
 import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages, downloadPackageContent } from './rds/index.js';
+import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { readFromS3, deleteFromS3 } from './tools/uploadToS3.js';
@@ -355,32 +355,6 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   pkgCost[pkg.metadata.ID].totalCost = parseFloat(pkgCost[pkg.metadata.ID].totalCost.toFixed(2));
 
   res.status(200).json(pkgCost);
-});
-
-app.get('/package/:id/download', async (req: Request, res: Response) => {
-  if (!req.params.id) {
-    return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
-  }
-
-  const pkg = await readPackage(req.params.id);
-
-  if (!pkg) {
-    return res.status(404).send("Package does not exist.");
-  }
-
-  if (!pkg.data.URL) {
-    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
-  }
-
-  const response = await downloadPackageContent(pkg.metadata.ID);
-
-  if (response === null) {
-    return res.status(500).send("Failed to retrieve content.");
-  } else if (response.includes('Failed')) {
-      return res.status(500).send(response);
-  }
-  return res.status(200).send(response);
-
 });
 
 app.get('/tracks', (req: Request, res: Response) => {
