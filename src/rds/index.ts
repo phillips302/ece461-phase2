@@ -80,43 +80,6 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
         return null;
     }
     return returnString;
-}  
-
-export async function downloadPackageContent(packageId: string): Promise<string | null> {
-    console.log(`Downloading content for package ID: ${packageId}`);
-    try {
-        const packageData = await readPackage(packageId);
-        if (!packageData) {
-            console.log('Package not found');
-            return null;
-        }
-
-        const s3Path = `${packageData.metadata.Name}/${packageData.metadata.ID}`;
-        console.log(s3Path);
-        const zipString = await readFromS3(s3Path);
-        if (!zipString) {
-            console.log('Failed to read content from S3');
-            return null;
-        }
-        console.log(zipString.slice(0, 100));
-
-        const zipBuffer = Buffer.from(zipString, 'base64');
-        const downloadsFolder = path.join(homedir(), 'Downloads');
-        console.log(zipBuffer.slice(0, 100));
-        console.log(downloadsFolder);
-        if (!fs.existsSync(downloadsFolder)) {
-            fs.mkdirSync(downloadsFolder);
-        }
-
-        const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
-        console.log('Writing content to:', filePath);
-        fs.writeFileSync(filePath, zipBuffer);
-        console.log(`Content downloaded and saved to ${filePath}`);
-        return filePath;
-    } catch (err) {
-        console.error('Failed to download package content:', err);
-        return null;
-    }
 }
 
 export async function readPackage(packageId: string): Promise<Package | null> {
