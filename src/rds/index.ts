@@ -134,6 +134,7 @@ export async function downloadPackageContent(packageId: string): Promise<string 
 
 export async function readPackage(packageId: string): Promise<Package | null> {
     console.log('Reading package ID:', packageId);
+    let data: Package;
     const query = `
         SELECT package_id, package_name, version, url, debloat 
         FROM packages 
@@ -150,7 +151,7 @@ export async function readPackage(packageId: string): Promise<Package | null> {
 
         console.log('Queried package:', rows[0]);
 
-        const data: Package = {
+        data = {
             metadata: {
                 Name: rows[0].package_name,
                 ID: rows[0].package_id,
@@ -162,13 +163,23 @@ export async function readPackage(packageId: string): Promise<Package | null> {
                 debloat: rows[0].debloat
             }
         }
-
-        return data;
-
     } catch (error) {
         console.error('Error querying the database:', error);
         return null;
     }
+    try {
+        const s3path = `${data.metadata.Name}/${data.metadata.ID}`;
+        const content = await readFromS3(s3path);
+        if (content === undefined) {
+            console.log('Could not retrieve package content for ID: ', packageId);
+            return null;
+        }
+        data.data.Content = content;
+    } catch (error) {
+        console.error('Error retrieving package content:', error);
+        return null;
+    }
+    return data;
 }
 
 export async function readAllPackages(): Promise<Package[] | null> {
