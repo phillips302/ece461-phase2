@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"; // ES Modules
 import { logMessage } from "../tools/utils.js";
+import { Readable } from "stream";
 
 const region = 'us-east-2';
 const s3 = new S3Client({ region: region });
@@ -23,7 +24,7 @@ export async function uploadToS3(key: string, data: any): Promise<string | null>
 }
 
 export async function readFromS3(key: string): Promise<string | undefined> {
-    var params = {
+    const params = {
         Bucket: bucketName,
         Key: key
     };
@@ -32,7 +33,8 @@ export async function readFromS3(key: string): Promise<string | undefined> {
         const data = await s3.send(command);
         logMessage("INFO", `File @ ${key} found in s3.`);
         if (data.Body) {
-            return data.Body.toString();
+            const bodyString = await streamToString(data.Body as Readable);
+            return bodyString;
         } else {
             console.log('No content found in S3 object');
             return undefined;
@@ -41,6 +43,15 @@ export async function readFromS3(key: string): Promise<string | undefined> {
         logMessage("DEBUG", "Reading data from s3 failed.");
         return undefined;
     }
+}
+
+async function streamToString(stream: Readable): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const chunks: any[] = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
 }
 
 export async function deleteFromS3(key: string): Promise<string | null> {
