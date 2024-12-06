@@ -23,7 +23,7 @@ export const validateDataSchema = (obj: Partial<PackageData>): string | undefine
     return "Both Content and URL are defined.";
   }
 
-  if (obj.Content && !obj.Name) { 
-    return "If Content is defined Name also must be provided in data.";
-  }
+  // if (obj.Content && !obj.Name) { 
+  //   return "If Content is defined Name also must be provided in data.";
+  // }
 };
