@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; //app.test.ts not fully working yet, but works for now 1234444444444
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; 
 import fetch, { Response } from 'node-fetch';
 import app from "../src/app.js"; // Adjust path as necessary 
 
@@ -94,57 +94,7 @@ describe('Enhanced Express App Testing', () => {
     const response = await fetch(`${baseUrl}/package/non-existent`);
     expect(response.status).toBe(404);
   });
-
-//   it('GET /package/:id/rate should return ratings for a valid package', async () => {
-//     const response = await fetch(`${baseUrl}/package/12340/rate`);
-//     expect(response.headers.get('Content-Type')).toContain('Hello');
-//     const data = await parseJsonResponse(response);
-
-//     if (response.status === 404) {
-//       expect(data).toEqual('Package does not exist.');
-//     } else {
-//       expect(response.status).toBe(200);
-//       expect(data).toMatchObject({
-//         NetScore: 1,
-//         Maintainability: 0.9,
-//       });
-//     }
-//   });
-
-//   it('GET /package/:id/cost should return cost information', async () => {
-//     const response = await fetch(`${baseUrl}/package/12340/cost`);
-//     expect(response.headers.get('Content-Type')).toContain('application/json');
-//     const data = await parseJsonResponse(response);
-
-//     if (response.status === 404) {
-//       expect(data).toEqual('Package does not exist.');
-//     } else {
-//       expect(response.status).toBe(200);
-//       expect(data).toMatchObject({
-//         totalCost: 200,
-//         standaloneCost: 100,
-//       });
-//     }
-//   });
-
-//   it('POST /package/byRegEx should return matching packages', async () => {
-//     const response = await fetch(`${baseUrl}/package/byRegEx`, {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ RegEx: 'example*' }),
-//     });
-
-//     expect(response.headers.get('Content-Type')).toContain('application/json');
-//     const data = await parseJsonResponse(response);
-
-//     if (response.status === 404) {
-//       expect(data).toEqual('Package does not exist.');
-//     } else {
-//       expect(response.status).toBe(200);
-//       expect(data).toBeInstanceOf(Array);
-//     }
-//   });
-
+  
   it('should handle invalid requests with proper status codes', async () => {
     const response = await fetch(`${baseUrl}/invalid-route`);
     expect(response.status).toBe(404);

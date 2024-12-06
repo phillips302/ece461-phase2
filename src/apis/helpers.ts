@@ -81,7 +81,7 @@ export async function urlToContent(url: string): Promise<string> {
 //console.log(await urlToContent('https://www.npmjs.com/package/browserify'));
 
 
-function findPackageJson(directory: string): string | null {
+export function findPackageJson(directory: string): string | null {
     const files = fs.readdirSync(directory);
     for (const file of files) {
         const fullPath = path.join(directory, file);
