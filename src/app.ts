@@ -154,7 +154,7 @@ app.post('/package/byRegEx', async (req: Request, res: Response) => { //connecti
   res.status(200).json(foundPackages);
 });
 
-app.post('/package/:id', async (req: Request, res: Response) => { //update this to populate content
+app.post('/package/:id', async (req: Request, res: Response) => {
   //assumes all IDs are unique
   
   if (!req.params.id || !req.body) { //validate inputs
@@ -191,13 +191,22 @@ app.post('/package/:id', async (req: Request, res: Response) => { //update this 
     return res.status(400).send("Outdated Version.");
   }
 
+  if (req.body.data.Content) {
+    const url = await contentToURL(req.body.data.Content);
+    if (url == 'Failed to get the url') {
+      return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.")
+    } else {
+      req.body.data.URL = url;
+    }
+  }
+
   //check rating before ingesting
-  const { owner, repo } = await getOwnerRepo(req.body.URL);
+  const { owner, repo } = await getOwnerRepo(req.body.data.URL);
   if (!owner || !repo) {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
 
-  let scores = await getScores(owner, repo, req.body.URL);
+  let scores = await getScores(owner, repo, req.body.data.URL);
   const filteredOutput = Object.entries(scores)
     .filter(([key]) => 
         !key.includes('_Latency') && 
