@@ -131,9 +131,9 @@ app.get('/package/:id', async (req: Request, res: Response) => {
     }
 
     try {
-      //const content = await urlToContent(pkg.data.URL);
-      const s3path = `${pkg.metadata.Name}/${pkg.metadata.ID}`;
-      const content = await readFromS3(s3path);
+      const content = await urlToContent(pkg.data.URL);
+      //const s3path = `${pkg.metadata.Name}/${pkg.metadata.ID}`;
+      //const content = await readFromS3(s3path);
       if (content === undefined) {
         return res.status(500).send("Failed to retrieve content.");
       }
