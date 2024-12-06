@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage, uploadPackage } from './api/api';
+import { deletePackages,
+         getAllPackages,
+         getPackage,
+         getPackageCost,
+         getPackageRate,
+         getCertainPackages,
+         updatePackage,
+         uploadPackage,
+         downloadPackage } from './api/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/App.css';
 import PopUp from './PopUp';
@@ -183,8 +191,21 @@ const App: React.FC = () => {
       setIsLoading(false)
     })
   }
+  
+  const handleDownloadClick = ( id:string ) => { 
+      downloadPackage(id)
+      .then((data) => {
+        setTitle("");
+        setMessage(data.message);
+        setPopUpVisible(true);
+        setPackages([]);
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }
 
-  const handleDownloadClick = () => { alert(`Download Button clicked!`); }
+  //const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
   const handleUpdateClick = (updatedPackage:types.Package) => { 
     setTimeout(() => setIsLoading(true), 1);
@@ -295,7 +316,7 @@ const App: React.FC = () => {
           handlePackageClick(id);
           break;
         case "download":
-          handleDownloadClick();
+          handleDownloadClick(id);
           break;
         case "update":
           getPackage(id)
