@@ -1,7 +1,4 @@
 import * as types from './types';
-import { homedir } from 'os';
-import fs from 'fs';
-import path from 'path';
 
 export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[] | { message : string }> => { //works
   try {
@@ -178,7 +175,7 @@ export const downloadPackage = async (id: string): Promise<{ message: string }> 
   return { message: `Content downloaded and saved to ${filePath}` };
 
 }
-
+/*
 const downloadPackageContent = async (packageData: types.Package): Promise<string | null> => {
   console.log(`Downloading content for package ID: ${packageData.metadata.ID}`);
   try {
@@ -204,5 +201,40 @@ const downloadPackageContent = async (packageData: types.Package): Promise<strin
       return null;
   }
 }
+*/
+export const downloadPackageContent = async (packageData: types.Package): Promise<string | null> => {
+  console.log(`Downloading content for package ID: ${packageData.metadata.ID}`);
+  try {
+      const zipString = packageData.data.Content;
+      if (!zipString) {
+          console.log('Failed to read content from S3');
+          return null;
+      }
+
+      const zipBuffer = Buffer.from(zipString, 'base64');
+      const blob = new Blob([zipBuffer], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+
+      // Create and click the download link
+      const fileName = `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Release the object URL
+      URL.revokeObjectURL(url);
+
+      console.log(`Content downloaded: ${fileName}`);
+      return fileName;
+  } catch (err) {
+      console.error('Failed to download package content:', err);
+      return null;
+  }
+};
+
+
 
 //implement download once Ethan implements download
