@@ -6,12 +6,14 @@ import { getScores } from './tools/score.js';
 import { getOwnerRepo } from './tools/utils.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
 import queryVersionRoutes from './apis/queryVersion.js';
-import { fetchVersionHistory } from './tools/fetchVersion.js';
+import { fetchVersion } from './tools/fetchVersion.js';
 import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { uploadToS3 } from './tools/uploadToS3.js';
+import { ingestPackageHelper } from './tools/ingest.js';
 
 const app: Application = express();
 const port = 8081;
@@ -246,18 +248,19 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
   
-  let versionHistory = await fetchVersionHistory(owner, repo);
-  if (versionHistory == 'No version history') {
-    versionHistory = '1.0.0';
+  let version = await fetchVersion(owner, repo);
+  if (!version) {
+    version = '1.0.0';
   }
 
   const packages = await readAllPackages();
 
-  if ( packages && (packages.find(p => p.metadata.Name == repo) || packages.find(p => p.metadata.Name == req.body.Name)) ) { //circle back to this
+  if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
     return res.status(409).send("Package exists already.");
   }
 
-  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
+  const ID = uuidv4();
+  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: ID, Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
@@ -273,9 +276,19 @@ app.post('/package', async (req: Request, res: Response) => {
     }
   });
   
+  let s3result = null;
   const result = await storePackage(newPackage, JSON.parse(scores));
-  if (!result) {
-    return res.status(500).send("Failed to store package.");
+  if (req.body.Content) {
+    s3result = await uploadToS3(ID, req.body.Content);
+  } else {
+    s3result = await ingestPackageHelper(ID, repo, version);
+  }
+  if (!result || !s3result) {
+    if (s3result) {
+      return res.status(500).send("Failed to store package data.");
+    } else {
+      return res.status(500).send("Failed to upload to S3.");
+    }
   }
 
   return res.status(201).json(newPackage);

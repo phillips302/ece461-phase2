@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"; // ES Modules
 import { logMessage } from "../tools/utils.js";
 
-const region = process.env.AWS_REGION;
+const region = 'us-east-2';
 const s3 = new S3Client({ region: region });
 const bucketName = "ece461-phase2-bucket";
 

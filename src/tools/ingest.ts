@@ -4,6 +4,8 @@ import { simpleGit, SimpleGit, CleanOptions } from 'simple-git';
 import { logMessage } from "./utils.js";
 import { removeDirectory } from '../tools/dependencyCost.js';
 import { uploadToS3 } from '../tools/uploadToS3.js';
+import { v4 as uuidv4 } from 'uuid';
+
 
 /**
  * Ingests a package if each of the non-latency scores is >= 0.5.
@@ -36,19 +38,20 @@ export async function ingestPackage(output: { [key: string]: number | string }, 
             logMessage('DEBUG', `Owner or repo is null. Skipping ingestion.`);
             return;
         }
-        await ingestPackageHelper(repo, version);
+        const ID = uuidv4();
+        await ingestPackageHelper(ID, repo, version);
     } else {
         logMessage('DEBUG', `Package not ingested due to failing metrics.`);
         console.log(`${repo} not ingested due to failing metrics.`);
     }
 }
 
-export async function ingestPackageHelper(repo: string | null, version: string): Promise<void> {
+export async function ingestPackageHelper(ID: string, repo: string | null, version: string): Promise<void> {
     logMessage('INFO', `Ingesting package for repository: ${repo}`);
     const dir = `./ingestedPackages/${repo}-${version}.tgz`;
     const url = `https://registry.npmjs.org/${repo}/-/${repo}-${version}.tgz`;
     await downloadFile(url, dir);
-    //uploadToS3(`${repo}-${version}`, fs.createReadStream(dir));
+    uploadToS3(ID, fs.createReadStream(dir));
     await removeDirectory(dir);
 }
 

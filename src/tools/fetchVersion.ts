@@ -7,25 +7,55 @@ import {gitHubRequest, logMessage, npmToGitHub} from "./utils.js";
  * @param repo - The name of the GitHub repository.
  * @returns A promise that resolves to an array of release objects or an empty array if none found.
  */
-interface ReleaseNode {
+
+interface GitHubRelease {
+    name: string;
     tagName: string;
     publishedAt: string;
-    name: string;
-    description: string;
+    url: string;
 }
 
-interface VersionHistoryResponse {
-    repository: {
-        releases: {
-            nodes: ReleaseNode[];
-            pageInfo: {
-                hasNextPage: boolean;
-                endCursor: string | null;
+interface GitHubReleaseResponse {
+    data: {
+        repository: {
+            releases: {
+                nodes: GitHubRelease[];
             };
         };
     };
 }
 
+export async function fetchVersion(owner: string, repo: string): Promise<string | null> {
+    const query = `
+        query ($owner: String!, $repo: String!) {
+            repository(owner: $owner, name: $repo) {
+                releases(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) {
+                    nodes {
+                        name
+                        tagName
+                        publishedAt
+                        url
+                    }
+                }
+            }
+        }
+    `;
+    try {
+        const variables = { owner, repo };
+        const response = await gitHubRequest(query, variables) as GitHubReleaseResponse;
+
+        const releases = response.data.repository.releases.nodes;
+
+        // Return the most recent release or null if none exist
+        return releases && releases.length > 0 ? releases[0].tagName : null;
+    } catch (error) {
+        logMessage("ERROR", `Error fetching version history for ${owner}/${repo}: ${error}`);
+        return null;
+    }
+
+}
+
+/*
 export async function fetchVersionHistory(owner: string, repo: string): Promise<string> {
     const allReleases: ReleaseNode[] = [];
     let hasNextPage = true;
@@ -76,5 +106,4 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
     }
     
 }
-
-
+*/
