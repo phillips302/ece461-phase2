@@ -3,6 +3,10 @@ import mysql from 'mysql2/promise';
 import { Package, PackageRating } from '../apis/types.js';
 import console from 'console';
 import process from 'process';
+import { uploadToS3, readFromS3 } from '../tools/uploadToS3.js';
+import { ingestPackageHelper } from '../tools/ingest.js';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -19,7 +23,8 @@ const pool = mysql.createPool({
 //reuired, name,id , version, make upload_date DEFAULT
 
 export async function storePackage(newPackage: Package, scores: PackageRating): Promise<string | null> {
-    console.log('Storing package ID:', newPackage.metadata.ID);
+    console.log(`Storing package ${newPackage.metadata.ID}`);
+    let returnString = "";
     try {
         const insertText = `
             INSERT INTO packages(
@@ -55,13 +60,61 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
         
         console.log('Inserted Package, Affected Rows:', (result as any).affectedRows);
 
-        return 'Package stored successfully';
+        returnString = 'Package data stored successfully in RDS.';
 
     } catch (err) {
         console.error('Database operation failed:', err);
+        returnString = 'Package data failed to store in RDS.';
+    }
+    try {
+        let s3result;
+        const s3path = `${newPackage.metadata.Name}/${newPackage.metadata.ID}`;
+        if (newPackage.data.Content) {
+            s3result = await uploadToS3(s3path, newPackage.data.Content);
+        } else {
+            s3result = await ingestPackageHelper(s3path, newPackage.data.Name, newPackage.metadata.Version);
+        }
+        console.log('Uploaded to S3:', s3result);
+        returnString += ` --- Package content stored successfully in S3 for package ${newPackage.data.Name}-${newPackage.metadata.Version} w/ ID: ${newPackage.metadata.ID}.`;
+    } catch (err) {
+        console.error('S3 operation failed:', err);
+        returnString += ` --- Package content failed to store in S3 for package ${newPackage.data.Name}-${newPackage.metadata.Version}.`;
+    }
+    return returnString;
+}  
+
+export async function downloadPackageContent(packageId: string): Promise<string | null> {
+    console.log(`Downloading content for package ID: ${packageId}`);
+    const downloadDirectory = path.join(__dirname, 'downloads');
+    try {
+        const packageData = await readPackage(packageId);
+        if (!packageData) {
+            console.log('Package not found');
+            return null;
+        }
+
+        const s3Path = `${packageData.metadata.Name}/${packageData.metadata.ID}`;
+        const content = await readFromS3(s3Path);
+        if (!content) {
+            console.log('Failed to read content from S3');
+            return null;
+        }
+
+        if (!fs.existsSync(downloadDirectory)) {
+            fs.mkdirSync(downloadDirectory, { recursive: true });
+        }
+
+        const filePath = path.join(downloadDirectory, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
+        fs.writeFileSync(filePath, content);
+
+        console.log(`Content downloaded and saved to ${filePath}`);
+        return filePath;
+    } catch (err) {
+        console.error('Failed to download package content:', err);
         return null;
     }
 }
+
 
 // export async function storePackageRating(BusFactor: number, BusFactorLatency: number, Correctness: number, CorrectnessLatency: number, RampUp: number, RampUpLatency: number, ResponsiveMaintainer: number, ResponsiveMaintainerLatency: number, LicenseScore: number, LicenseScoreLatency: number, GoodPinningPractice: number, GoodPinningPracticeLatency: number, PullRequest: number, PullRequestLatency: number, NetScore: number, NetScoreLatency: number) {
 //     try {
@@ -81,6 +134,7 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
 
 export async function readPackage(packageId: string): Promise<Package | null> {
     console.log('Reading package ID:', packageId);
+    let data: Package;
     const query = `
         SELECT package_id, package_name, version, url, debloat 
         FROM packages 
@@ -97,7 +151,7 @@ export async function readPackage(packageId: string): Promise<Package | null> {
 
         console.log('Queried package:', rows[0]);
 
-        const data: Package = {
+        data = {
             metadata: {
                 Name: rows[0].package_name,
                 ID: rows[0].package_id,
@@ -109,13 +163,23 @@ export async function readPackage(packageId: string): Promise<Package | null> {
                 debloat: rows[0].debloat
             }
         }
-
-        return data;
-
     } catch (error) {
         console.error('Error querying the database:', error);
         return null;
     }
+    try {
+        const s3path = `${data.metadata.Name}/${data.metadata.ID}`;
+        const content = await readFromS3(s3path);
+        if (content === undefined) {
+            console.log('Could not retrieve package content for ID: ', packageId);
+            return null;
+        }
+        data.data.Content = content;
+    } catch (error) {
+        console.error('Error retrieving package content:', error);
+        return null;
+    }
+    return data;
 }
 
 export async function readAllPackages(): Promise<Package[] | null> {

@@ -7,6 +7,7 @@ import {gitHubRequest, logMessage, npmToGitHub} from "./utils.js";
  * @param repo - The name of the GitHub repository.
  * @returns A promise that resolves to an array of release objects or an empty array if none found.
  */
+
 interface ReleaseNode {
     tagName: string;
     publishedAt: string;
@@ -26,7 +27,7 @@ interface VersionHistoryResponse {
     };
 }
 
-export async function fetchVersionHistory(owner: string, repo: string): Promise<string> {
+export async function fetchVersion(owner: string, repo: string): Promise<string> {
     const allReleases: ReleaseNode[] = [];
     let hasNextPage = true;
     let endCursor: string | null = null;
@@ -67,7 +68,7 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
         const earliestVersion = sortedVersionHistory[0].tagName.replace(/^v/, ''); // Remove leading 'v'
         const latestVersion = sortedVersionHistory[sortedVersionHistory.length - 1].tagName.replace(/^v/, ''); // Remove leading 'v'
         const versionRange = `${earliestVersion} - ${latestVersion}`;
-        return(versionRange);    
+        return(latestVersion);  
 
     }
     else{
@@ -76,5 +77,3 @@ export async function fetchVersionHistory(owner: string, repo: string): Promise<
     }
     
 }
-
-
