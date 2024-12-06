@@ -159,4 +159,17 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
   }  
 };
 
+export const downloadPackage = async (id: string): Promise<{ message: string }> => { //works
+  const response = await fetch(`api/package/${id}/download`);
+
+  if (!response.ok) {
+    const message_text = await response.text();
+    return { message: message_text };
+  }
+
+  const message_text = await response.text();
+
+  return { message: message_text };
+}
+
 //implement download once Ethan implements download

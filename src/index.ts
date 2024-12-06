@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { getScores } from "./tools/score.js";
 import { getUrlsFromFile, logMessage, getOwnerRepo } from "./tools/utils.js";
-import { fetchVersionHistory } from "./tools/fetchVersion.js";
+import { fetchVersion } from "./tools/fetchVersion.js";
 import { ingestPackage } from "./tools/ingest.js";
 import { getPackageNames } from "./tools/fetchPackages.js";
 import { updatePackage } from './tools/updatePackage.js';
@@ -12,7 +12,7 @@ import { log } from 'console';
 
 const args = process.argv.slice(2);
 
-let versionHistory: string = "";
+let versionHistory: string | null = null;
 let packageDirectory: string[] = [];
 let urlArray: string[] = [];
 let input: string = args[0];
@@ -112,7 +112,7 @@ for (const url of urlArray) {
       await updatePackage(repo);
     }
     output = await getScores(owner, repo, url);
-    versionHistory = await fetchVersionHistory(owner, repo);
+    versionHistory = await fetchVersion(owner, repo);
   }
 
   if (call === "ingest") {
@@ -128,7 +128,7 @@ for (const url of urlArray) {
       //console.log(JSON.stringify(temp));
     }
   } else {
-    log("Version Range: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
+    log("Version: ", versionHistory); //Currently Outputs version history, may need to change when front end developed
     log(output);
   }
 }

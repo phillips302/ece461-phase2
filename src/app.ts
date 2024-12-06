@@ -6,12 +6,13 @@ import { getScores } from './tools/score.js';
 import { getOwnerRepo } from './tools/utils.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
 import queryVersionRoutes from './apis/queryVersion.js';
-import { fetchVersionHistory } from './tools/fetchVersion.js';
+import { fetchVersion } from './tools/fetchVersion.js';
 import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
-import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
+import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages, downloadPackageContent } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { readFromS3, deleteFromS3 } from './tools/uploadToS3.js';
 
 const app: Application = express();
 const port = 8081;
@@ -94,6 +95,16 @@ app.post('/packages', async (req: Request, res: Response) => { //works
 });
 
 app.delete('/reset', async (req: Request, res: Response) => { //works
+  const packages = await readAllPackages();
+  if (!packages) {
+    return res.status(500).send("Failed to read packages from RDS.");
+  }
+
+  for (const pkg of packages) {
+    let path = `${pkg.metadata.Name}/${pkg.metadata.ID}`;
+    await deleteFromS3(path);
+  }
+
   const result = await deleteAllPackages();
 
   if (!result) {
@@ -121,7 +132,9 @@ app.get('/package/:id', async (req: Request, res: Response) => {
 
     try {
       const content = await urlToContent(pkg.data.URL);
-      if (content === 'Failed to get the zip file') {
+      //const s3path = `${pkg.metadata.Name}/${pkg.metadata.ID}`;
+      //const content = await readFromS3(s3path);
+      if (content === undefined) {
         return res.status(500).send("Failed to retrieve content.");
       }
       pkg.data.Content = content;
@@ -168,6 +181,7 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   }
   
   const pkg = await readPackage(req.params.id);
+  //const pkgContent = await readFromS3(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -255,18 +269,19 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
   
-  let versionHistory = await fetchVersionHistory(owner, repo);
-  if (versionHistory == 'No version history') {
-    versionHistory = '1.0.0';
+  let version = await fetchVersion(owner, repo);
+  if (!version) {
+    version = '1.0.0';
   }
 
   const packages = await readAllPackages();
 
-  if ( packages && (packages.find(p => p.metadata.Name == repo) || packages.find(p => p.metadata.Name == req.body.Name)) ) { //circle back to this
+  if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
     return res.status(409).send("Package exists already.");
   }
 
-  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: versionHistory }, data: req.body };
+  const ID = uuidv4();
+  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: ID, Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
@@ -281,7 +296,7 @@ app.post('/package', async (req: Request, res: Response) => {
       return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
   });
-  
+
   const result = await storePackage(newPackage, JSON.parse(scores));
   if (!result) {
     return res.status(500).send("Failed to store package.");
@@ -348,6 +363,32 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
   res.status(200).json(pkgCost);
 });
 
+app.get('/package/:id/download', async (req: Request, res: Response) => {
+  if (!req.params.id) {
+    return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
+  }
+
+  const pkg = await readPackage(req.params.id);
+
+  if (!pkg) {
+    return res.status(404).send("Package does not exist.");
+  }
+
+  if (!pkg.data.URL) {
+    return res.status(400).send("There is missing field(s) in the PackageData or it is formed improperly, or is invalid.");
+  }
+
+  const response = await downloadPackageContent(pkg.metadata.ID);
+
+  if (response === null) {
+    return res.status(500).send("Failed to retrieve content.");
+  } else if (response.includes('Failed')) {
+      return res.status(500).send(response);
+  }
+  return res.status(200).send(response);
+
+});
+
 app.get('/tracks', (req: Request, res: Response) => {
   try {
     res.status(200).json({ plannedTracks: ['Performance track'] })
@@ -360,3 +401,5 @@ app.listen(port, () => {
   //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
   console.log(`Express is listening at https://api.ratethecratebackend.com/`);
 });
+
+export default app;

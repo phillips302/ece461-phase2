@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { deletePackages, getAllPackages, getPackage, getPackageCost, getPackageRate, getCertainPackages, updatePackage, uploadPackage } from './api/api';
+import { deletePackages,
+         getAllPackages,
+         getPackage,
+         getPackageCost,
+         getPackageRate,
+         getCertainPackages,
+         updatePackage,
+         uploadPackage,
+         downloadPackage } from './api/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/App.css';
 import PopUp from './PopUp';
 import UpdatePopUp from './UpdatePopUp';
 import UploadPopUp from './UploadPopUp';
+import DeletePopUp from './DeletePopUp';
 import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
@@ -34,6 +43,7 @@ const App: React.FC = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [isUpdatePopUpVisible, setUpdatePopUpVisible] = useState(false);
   const [isUploadPopUpVisible, setUploadPopUpVisible] = useState(false);
+  const [isDeletePopUpVisible, setDeletePopUpVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [selectedPackage, setSelectedPackage] = useState<types.Package>(defaultPackage);
@@ -50,7 +60,7 @@ const App: React.FC = () => {
 
   //helper functions
     const handleSearchClick = () => {
-    if (nameValue !== "" && versionValue === ""){
+    if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
       getAllPackages(nameValue, undefined)
       .then((data) => {
         if ('message' in data) {
@@ -65,7 +75,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (nameValue === "" && versionValue !== ""){
+    else if (nameValue === "" && versionValue !== "" && !showTwoSearchBars){
       getAllPackages("*", versionValue)
       .then((data) => {
         if ('message' in data) {
@@ -80,7 +90,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (nameValue !== "" && versionValue !== ""){
+    else if (nameValue !== "" && versionValue !== "" && !showTwoSearchBars){
       getAllPackages(nameValue, versionValue)
       .then((data) => {
         if ('message' in data) {
@@ -95,7 +105,7 @@ const App: React.FC = () => {
         setIsLoading(false)
       })
     }
-    else if (regexValue !== ""){
+    else if (regexValue !== "" && showTwoSearchBars){
       getCertainPackages(regexValue)
       .then((data) => {
         if ('message' in data) {
@@ -175,7 +185,7 @@ const App: React.FC = () => {
         setTitle(data.metadata.Name)
         setMessage(`Id: ${data.metadata.ID} <br />
           Version: ${data.metadata.Version} <br />
-          URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer">${data.data.URL}</a> `)
+          URL: <a href="${data.data.URL}" target="_blank" rel="noopener noreferrer" style="color: white;">${data.data.URL}</a> `)
         setPopUpVisible(true)
         }
     })
@@ -183,8 +193,21 @@ const App: React.FC = () => {
       setIsLoading(false)
     })
   }
+  
+  const handleDownloadClick = ( id:string ) => { 
+      downloadPackage(id)
+      .then((data) => {
+        setTitle("");
+        setMessage(data.message);
+        setPopUpVisible(true);
+        setPackages([]);
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }
 
-  const handleDownloadClick = () => { alert(`Download Button clicked!`); }
+  //const handleDownloadClick = () => { alert(`Download Button clicked!`); }
 
   const handleUpdateClick = (updatedPackage:types.Package) => { 
     setTimeout(() => setIsLoading(true), 1);
@@ -289,13 +312,13 @@ const App: React.FC = () => {
           setUploadPopUpVisible(true);
           break;
         case "delete":
-          handleDeleteClick();
+          setDeletePopUpVisible(true);
           break;
         case "package":
           handlePackageClick(id);
           break;
         case "download":
-          handleDownloadClick();
+          handleDownloadClick(id);
           break;
         case "update":
           getPackage(id)
@@ -331,9 +354,6 @@ const App: React.FC = () => {
 
    const handleToggleChange = () => {
     setShowTwoSearchBars(prevState => !prevState); // Toggle between two search bars or one
-    setNameValue("");
-    setVersionValue("");
-    setRegexValue("");
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,102 +370,116 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      {isLoading && <LoadingOverlay />}
+      {isLoading && <LoadingOverlay aria-live="assertive" aria-label="Loading, please wait..." />}
       <header>
         <h1>Rate the Crate</h1>
       </header>
       <main>
-
-        <label className="switch">
-          <input 
-            type="checkbox" 
-            checked={showTwoSearchBars} 
+        <label htmlFor="Searching">
+        {/* Toggle Switch */}
+        <label htmlFor="toggleSearchBars" className="switch">
+          <input
+            id="toggleSearchBars"
+            type="checkbox"
+            checked={showTwoSearchBars}
             onChange={handleToggleChange}
+            aria-checked={showTwoSearchBars}
+            aria-label="Switch between searching by Regular Expression and Name/Version"
+            onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              // Toggle on Enter or Space
+              e.preventDefault(); // Prevent scrolling for space key
+              handleToggleChange();
+            }
+           }}
           />
           <span className="slider"></span>
         </label>
-
+  
+        {/* Search Bars */}
         {showTwoSearchBars && (
           <React.Fragment>
             <input
-              id="searchBar"
+              id="regexSearchBar"
               className="searchBar"
               type="text"
               value={regexValue}
               onChange={handleRegexChange}
               placeholder="Search by Regular Expression..."
-              aria-label="Search Bar"
+              aria-label="Search using a regular expression"
             />
           </React.Fragment>
         )}
-
         {!showTwoSearchBars && (
           <React.Fragment>
             <input
-              id="searchBar"
+              id="nameSearchBar"
               className="searchBar2"
               type="text"
               value={nameValue}
               onChange={handleNameChange}
               placeholder="Search by Name..."
-              aria-label="Search Bar"
+              aria-label="Search by package name"
             />
             <input
-              id="searchBar2"
+              id="versionSearchBar"
               className="searchBar2"
               type="text"
               value={versionValue}
               onChange={handleVersionChange}
               placeholder="Search by Version..."
-              aria-label="Search Bar 2"
+              aria-label="Search by package version"
             />
           </React.Fragment>
         )}
+  
+        {/* Action Buttons */}
         <button
-              title="Search"
-              aria-label="Search"
-              className={`searchButton ${sinkingButtons[`-search`] ? 'sunk' : ''}`}
-              onClick={() => handleSinkingClick("", 'search')}
-            >
-              <i className="fas fa-search" aria-hidden="true"></i>
+          title="Search"
+          aria-label="Search packages"
+          className={`searchButton ${sinkingButtons['-search'] ? 'sunk' : ''}`}
+          onClick={() => handleSinkingClick("", 'search')}
+        >
+          <i className="fas fa-search" aria-hidden="true"></i>
         </button>
-
+        </label>
+  
         <button
           title="Upload"
-          aria-label="Upload Package"
-          className={`uploadButton ${sinkingButtons[`-upload`] ? 'sunk' : ''}`}
+          aria-label="Upload a package"
+          className={`uploadButton ${sinkingButtons['-upload'] ? 'sunk' : ''}`}
           onClick={() => handleSinkingClick("", 'upload')}
         >
           <i className="fas fa-upload" aria-hidden="true"></i>
         </button>
-
+  
         <button
           title="Reset"
-          aria-label="Reset All Packages"
-          className={`uploadButton ${sinkingButtons[`-delete`] ? 'sunk' : ''}`}
+          aria-label="Reset all packages"
+          className={`uploadButton ${sinkingButtons['-delete'] ? 'sunk' : ''}`}
           onClick={() => handleSinkingClick("", 'delete')}
         >
           <i className="fas fa-trash" aria-hidden="true"></i>
         </button>
-
+  
+        {/* Package List */}
         <section className="darkBlueBox">
           <ul>
             {packages.map((product) => (
               <li key={product.ID}>
                 <div className="lightBlueBox">
                   <span>{product.Name}</span>
-
                   <div className="rightAligned">
                     <button
-                      title='Package'
-                      aria-label={`Link to ${product.Name}`}
+                      title="Package"
+                      aria-label={`View details for ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-package`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'package')}
                     >
                       <i className="fas fa-box-open" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Download'
+                      title="Download"
                       aria-label={`Download ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-download`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'download')}
@@ -453,7 +487,7 @@ const App: React.FC = () => {
                       <i className="fas fa-download" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Update'
+                      title="Update"
                       aria-label={`Update ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-update`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'update')}
@@ -461,7 +495,7 @@ const App: React.FC = () => {
                       <i className="fas fa-sync" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Rate'
+                      title="Rate"
                       aria-label={`Rate ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-rate`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'rate')}
@@ -469,8 +503,8 @@ const App: React.FC = () => {
                       <i className="fas fa-star" aria-hidden="true"></i>
                     </button>
                     <button
-                      title='Cost'
-                      aria-label={`Cost of ${product.Name}`}
+                      title="Cost"
+                      aria-label={`View cost of ${product.Name}`}
                       className={`packageButtons ${sinkingButtons[`${product.ID}-cost`] ? 'sunk' : ''}`}
                       onClick={() => handleSinkingClick(product.ID, 'cost')}
                     >
@@ -482,11 +516,14 @@ const App: React.FC = () => {
             ))}
           </ul>
         </section>
+  
+        {/* PopUps */}
         <PopUp
           isVisible={isPopUpVisible}
           onClose={() => setPopUpVisible(false)}
           title={title}
           message={message}
+          aria-live="polite"
         />
         <UpdatePopUp
           isVisible={isUpdatePopUpVisible}
@@ -495,7 +532,7 @@ const App: React.FC = () => {
             setIsLoading(false);
           }}
           title="Update Package Information"
-          currPackage = {selectedPackage}
+          currPackage={selectedPackage}
           onSubmit={handleUpdateClick}
         />
         <UploadPopUp
@@ -507,9 +544,17 @@ const App: React.FC = () => {
           title="Upload Package Information"
           onSubmit={handleUploadClick}
         />
+        <DeletePopUp
+          isVisible={isDeletePopUpVisible}
+          onClose={() => {
+            setDeletePopUpVisible(false);
+            setIsLoading(false);
+          }}
+          onSubmit={handleDeleteClick}
+        />
       </main>
     </div>
   );
-};
+};  
 
 export default App;

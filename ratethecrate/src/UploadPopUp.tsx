@@ -109,6 +109,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
           <label className="switch">
             <input
               type="checkbox"
+              aria-label="Toggle between Content and URL"
               checked={inputMode}
               onChange={() => {
                 setInputMode(!inputMode); // Toggle between Content and URL
