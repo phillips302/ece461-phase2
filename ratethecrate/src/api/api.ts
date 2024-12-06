@@ -1,4 +1,7 @@
 import * as types from './types';
+import { homedir } from 'os';
+import fs from 'fs';
+import path from 'path';
 
 export const getAllPackages = async ( name:string, version:string | undefined ): Promise<types.PackageMetadata[] | { message : string }> => { //works
   try {
@@ -160,16 +163,46 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
 };
 
 export const downloadPackage = async (id: string): Promise<{ message: string }> => { //works
-  const response = await fetch(`api/package/${id}/download`);
+  const response = await fetch(`api/package/${id}`);
 
   if (!response.ok) {
     const message_text = await response.text();
     return { message: message_text };
   }
 
-  const message_text = await response.text();
+  const packageData: types.Package = await response.json();
+  const filePath = await downloadPackageContent(packageData);
+  if (!filePath) {
+    return { message: 'Failed to download package content' };
+  }
+  return { message: `Content downloaded and saved to ${filePath}` };
 
-  return { message: message_text };
+}
+
+const downloadPackageContent = async (packageData: types.Package): Promise<string | null> => {
+  console.log(`Downloading content for package ID: ${packageData.metadata.ID}`);
+  try {
+      const zipString = packageData.data.Content;
+      if (!zipString) {
+          console.log('Failed to read content from S3');
+          return null;
+      }
+
+      const zipBuffer = Buffer.from(zipString, 'base64');
+      const downloadsFolder = path.join(homedir(), 'Downloads');
+      if (!fs.existsSync(downloadsFolder)) {
+          fs.mkdirSync(downloadsFolder);
+      }
+
+      const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
+      console.log('Writing content to:', filePath);
+      fs.writeFileSync(filePath, zipBuffer);
+      console.log(`Content downloaded and saved to ${filePath}`);
+      return filePath;
+  } catch (err) {
+      console.error('Failed to download package content:', err);
+      return null;
+  }
 }
 
 //implement download once Ethan implements download
