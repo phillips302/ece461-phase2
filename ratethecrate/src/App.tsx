@@ -5,6 +5,7 @@ import './styles/App.css';
 import PopUp from './PopUp';
 import UpdatePopUp from './UpdatePopUp';
 import UploadPopUp from './UploadPopUp';
+import DeletePopUp from './DeletePopUp';
 import LoadingOverlay from './LoadingOverlay';
 import * as types from '../../src/apis/types.js';
 
@@ -34,6 +35,7 @@ const App: React.FC = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [isUpdatePopUpVisible, setUpdatePopUpVisible] = useState(false);
   const [isUploadPopUpVisible, setUploadPopUpVisible] = useState(false);
+  const [isDeletePopUpVisible, setDeletePopUpVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [selectedPackage, setSelectedPackage] = useState<types.Package>(defaultPackage);
@@ -50,6 +52,7 @@ const App: React.FC = () => {
 
   //helper functions
     const handleSearchClick = () => {
+    if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
     if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
       getAllPackages(nameValue, undefined)
       .then((data) => {
@@ -289,7 +292,7 @@ const App: React.FC = () => {
           setUploadPopUpVisible(true);
           break;
         case "delete":
-          handleDeleteClick();
+          setDeletePopUpVisible(true);
           break;
         case "package":
           handlePackageClick(id);
@@ -520,6 +523,14 @@ const App: React.FC = () => {
           }}
           title="Upload Package Information"
           onSubmit={handleUploadClick}
+        />
+        <DeletePopUp
+          isVisible={isDeletePopUpVisible}
+          onClose={() => {
+            setDeletePopUpVisible(false);
+            setIsLoading(false);
+          }}
+          onSubmit={handleDeleteClick}
         />
       </main>
     </div>

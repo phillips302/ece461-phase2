@@ -1,14 +1,14 @@
-  .PopUpOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.PopUpOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   .PopUpContent {
     background: #3173ca;
@@ -19,18 +19,18 @@
     position: relative;
   }
 
-  .UpdatePopUpOverlay {
-    position: fixed; /* Ensures the overlay covers the entire viewport */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-    display: flex; /* Flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    z-index: 9999; /* Ensure the popup appears above other elements */
-  }
+.UpdatePopUpOverlay {
+  position: fixed; /* Ensures the overlay covers the entire viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  display: flex; /* Flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  z-index: 9999; /* Ensure the popup appears above other elements */
+}
 
   /* The content of the popup */
   .UpdatePopUpContent {
@@ -45,18 +45,18 @@
     position: relative;
   }
 
-  .UploadPopUpOverlay {
-    position: fixed; /* Ensures the overlay covers the entire viewport */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-    display: flex; /* Flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    z-index: 9999; /* Ensure the popup appears above other elements */
-  }
+.UploadPopUpOverlay {
+  position: fixed; /* Ensures the overlay covers the entire viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  display: flex; /* Flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  z-index: 9999; /* Ensure the popup appears above other elements */
+}
 
   /* The content of the popup */
   .UploadPopUpContent {
@@ -71,124 +71,136 @@
     position: relative;
   }
 
-  /* Close button style */
-  .closeButton {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-  }
+/* Close button style */
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-  /* Input styles */
-  .PopUpInputs {
-    margin-top: 15px;
-  }
+/* Input styles */
+.PopUpInputs {
+  margin-top: 15px;
+}
 
-  .InputRow {
-    display: flex;
-    align-items: center; /* Aligns label and input vertically */
-    margin-bottom: 10px; /* Adds spacing between rows */
-  }
+.InputRow {
+  display: flex;
+  align-items: center; /* Aligns label and input vertically */
+  margin-bottom: 10px; /* Adds spacing between rows */
+}
 
-  .InputRow label {
-    width: 120px; /* Fixed width for labels */
-    text-align: right; /* Aligns label text to the right */
-    margin-right: 10px; /* Adds space between label and input */
-    font-size: 14px;
-    color: #ffffff; /* White text for better contrast on the background */
-  }
+.InputRow label {
+  width: 120px; /* Fixed width for labels */
+  text-align: right; /* Aligns label text to the right */
+  margin-right: 10px; /* Adds space between label and input */
+  font-size: 14px;
+  color: #ffffff; /* White text for better contrast on the background */
+}
 
-  .PopUpInput {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 380px; /* Ensures it doesn't overflow */
-  }
+.PopUpInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 380px; /* Ensures it doesn't overflow */
+}
 
-  .SubmitButton {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #193861;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+.SubmitButton {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #193861;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  .InputRowUrl {
-    display: flex;
-    padding-left: 34px;
-    align-items: center; /* Aligns label and input vertically */
-    margin-bottom: 10px; /* Adds spacing between rows */
-  }
+.DeleteButtons {
+  margin-top: 15px;
+  padding: 10px 20px;
+  margin-left: 10px;
+  background-color: #193861;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  .InputRowContent {
-    display: flex;
-    padding-left: 6px;
-    align-items: center; /* Aligns label and input vertically */
-    margin-bottom: 10px; /* Adds spacing between rows */
-  }
+.InputRowUrl {
+  display: flex;
+  padding-left: 34px;
+  align-items: center; /* Aligns label and input vertically */
+  margin-bottom: 10px; /* Adds spacing between rows */
+}
 
-  .InputRow2Label {
-    margin-right: 12px;
-  }
+.InputRowContent {
+  display: flex;
+  padding-left: 6px;
+  align-items: center; /* Aligns label and input vertically */
+  margin-bottom: 10px; /* Adds spacing between rows */
+}
 
-  .switch {
-    margin-right: 10px;
-    margin-top: 5px;
-    position: relative;
-    display: inline-block;
-    width: 42.5px; /* Increased by a quarter from 34px */
-    height: 25px;  /* Increased by a quarter from 20px */
-  }
+.InputRow2Label {
+  margin-right: 12px;
+}
 
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+.switch {
+  margin-right: 10px;
+  margin-top: 5px;
+  position: relative;
+  display: inline-block;
+  width: 42.5px; /* Increased by a quarter from 34px */
+  height: 25px;  /* Increased by a quarter from 20px */
+}
 
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #193861;
-    transition: 0.4s;
-    border-radius: 34px;
-  }
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 15px; /* Increased by a quarter from 12px */
-    width: 15px;  /* Increased by a quarter from 12px */
-    border-radius: 50%;
-    left: 5px;  /* Increased by a quarter from 4px */
-    bottom: 5px; /* Increased by a quarter from 4px */
-    background-color: white;
-    transition: 0.4s;
-  }
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #193861;
+  transition: 0.4s;
+  border-radius: 34px;
+}
 
-  input:focus-visible + .slider {
-    box-shadow: 0 0 0 1px white; /* White outline */
-    outline: none; /* Remove default focus outline */
-  }
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 15px; /* Increased by a quarter from 12px */
+  width: 15px;  /* Increased by a quarter from 12px */
+  border-radius: 50%;
+  left: 5px;  /* Increased by a quarter from 4px */
+  bottom: 5px; /* Increased by a quarter from 4px */
+  background-color: white;
+  transition: 0.4s;
+}
 
-  input:checked + .slider {
-    background-color: #193861;
-  }
+input:focus-visible + .slider {
+  box-shadow: 0 0 0 1px white; /* White outline */
+  outline: none; /* Remove default focus outline */
+}
 
-  input:checked + .slider:before {
-    transform: translateX(17.5px); /* Increased by a quarter from 14px */
-  }
+input:checked + .slider {
+  background-color: #193861;
+}
 
-  .CombineRow {
-    display: flex;
-  }
+input:checked + .slider:before {
+  transform: translateX(17.5px); /* Increased by a quarter from 14px */
+}
+
+.CombineRow {
+  display: flex;
+}
