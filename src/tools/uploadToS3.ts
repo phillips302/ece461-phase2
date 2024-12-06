@@ -29,9 +29,14 @@ export async function readFromS3(key: string): Promise<string | undefined> {
     };
     const command = new GetObjectCommand(params);
     try {
-        const response = await s3.send(command);
+        const data = await s3.send(command);
         logMessage("INFO", `File @ ${key} found in s3.`);
-        return response.toString();
+        if (data.Body) {
+            return data.Body.toString();
+        } else {
+            console.log('No content found in S3 object');
+            return undefined;
+        }
     } catch (error) {
         logMessage("DEBUG", "Reading data from s3 failed.");
         return undefined;
