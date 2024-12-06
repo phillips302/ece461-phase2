@@ -210,9 +210,16 @@ export const downloadPackageContent = async (packageData: types.Package): Promis
           console.log('Failed to read content from S3');
           return null;
       }
+      
+      // Decode Base64 string into binary data
+      const binaryString = atob(zipString);
+      const zipArray = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+          zipArray[i] = binaryString.charCodeAt(i);
+      }
 
-      const zipBuffer = Buffer.from(zipString, 'base64');
-      const blob = new Blob([zipBuffer], { type: 'application/zip' });
+      // Create a Blob from the binary data
+      const blob = new Blob([zipArray], { type: 'application/zip' });
       const url = URL.createObjectURL(blob);
 
       // Create and click the download link
