@@ -4,6 +4,7 @@ import { Package, PackageRating } from '../apis/types.js';
 import console from 'console';
 import process from 'process';
 import { uploadToS3, readFromS3 } from '../tools/uploadToS3.js';
+import { homedir } from 'os';
 import fs from 'fs';
 import path from 'path';
 
@@ -100,15 +101,15 @@ export async function downloadPackageContent(packageId: string): Promise<string 
         console.log(zipString.slice(0, 100));
 
         const zipBuffer = Buffer.from(zipString, 'base64');
+        const downloadsFolder = path.join(homedir(), 'Downloads');
         console.log(zipBuffer.slice(0, 100));
-        const downloadsFolder = path.join(require('os').homedir(), 'Downloads');
         console.log(downloadsFolder);
         if (!fs.existsSync(downloadsFolder)) {
             fs.mkdirSync(downloadsFolder);
         }
 
         const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
-        console.log(filePath);
+        console.log('Writing content to:', filePath);
         fs.writeFileSync(filePath, zipBuffer);
         console.log(`Content downloaded and saved to ${filePath}`);
         return filePath;
