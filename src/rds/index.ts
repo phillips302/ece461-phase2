@@ -93,19 +93,20 @@ export async function downloadPackageContent(packageId: string): Promise<string 
         }
 
         const s3Path = `${packageData.metadata.Name}/${packageData.metadata.ID}`;
-        const content = await readFromS3(s3Path);
-        if (!content) {
+        const zipString = await readFromS3(s3Path);
+        if (!zipString) {
             console.log('Failed to read content from S3');
             return null;
         }
 
-        if (!fs.existsSync(downloadDirectory)) {
-            fs.mkdirSync(downloadDirectory, { recursive: true });
+        const zipBuffer = Buffer.from(zipString, 'base64');
+        const downloadsFolder = path.join(require('os').homedir(), 'Downloads');
+        if (!fs.existsSync(downloadsFolder)) {
+            fs.mkdirSync(downloadsFolder);
         }
 
-        const filePath = path.join(downloadDirectory, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
-        fs.writeFileSync(filePath, content);
-
+        const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
+        fs.writeFileSync(filePath, zipBuffer);
         console.log(`Content downloaded and saved to ${filePath}`);
         return filePath;
     } catch (err) {
