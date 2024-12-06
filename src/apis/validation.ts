@@ -1,33 +1,29 @@
-import { Package, PackageQuery, PackageMetadata, PackageData } from './types.js';
+import { Package, PackageData } from './types.js';
 
-export const validatePackageQuerySchema = (obj: Partial<PackageQuery>): number => {
-    const requiredFields: (keyof PackageQuery)[] = ['Name'];
-    const missingFields = requiredFields.filter((field) => obj[field] === undefined);
-    return missingFields.length;
-  };
-  
-export const validatePackageSchema = (obj: Partial<Package>): number => {
-    let numMissingFields = 0;
-  
-    const requiredFields: (keyof Package)[] = ['metadata'];
-    const missingFields = requiredFields.filter((field) => obj[field] === undefined);
-    numMissingFields += missingFields.length;
-  
-    if (obj.metadata) {
-      const requiredFields2: (keyof PackageMetadata)[] = ['Name', 'ID', 'Version'];
-      const missingFields2 = requiredFields2.filter((field) => obj.metadata![field] === undefined);
-      numMissingFields += missingFields2.length;
+export const validatePackageSchema = (obj: Partial<Package>): string | undefined => {
+    if(!obj.metadata || !obj.data){
+        return "There is missing field(s) in the Package (metadata and data must be defined)";
     }
-  
-    // if (obj.data) {
-    //   numMissingFields += validatePackageDataSchema(obj.data);
-    // }
-  
-    return numMissingFields;
+
+    if(!obj.metadata.Name || !obj.metadata.ID || !obj.metadata.Version){
+      return "There is missing field(s) in the PackageMetadata (Name, ID, and Version must be defined)";
+    }
+
+    if (validateDataSchema(obj.data)) { 
+        return validateDataSchema(obj.data);
+    }
 };
   
-// export const validatePackageDataSchema = (obj: Partial<PackageData>): number => {
-//     const requiredFields: (keyof PackageData)[] = ['debloat', 'JSProgram'];
-//     const missingFields = requiredFields.filter((field) => obj[field] === undefined);
-//     return missingFields.length;
-// };
+export const validateDataSchema = (obj: Partial<PackageData>): string | undefined => {
+  if(!obj.URL && !obj.Content){
+    return "Both Content and URL are undefined.";
+  }
+
+  if(obj.URL && obj.Content){
+    return "Both Content and URL are defined.";
+  }
+
+  // if (obj.Content && !obj.Name) { 
+  //   return "If Content is defined Name also must be provided in data.";
+  // }
+};

@@ -3,6 +3,7 @@ import * as path from 'path';
 import axios from 'axios';
 import { getLinkType, logMessage, getOwnerRepo } from "./utils.js";
 import { readAllPackages } from '../rds/index.js';
+import console from 'console';
 
 /**
  * Searches for packname or README content for a given regular expression.
@@ -82,14 +83,17 @@ export async function searchPackages(regex_string: string): Promise<{ Version: s
 }
 
 export async function searchPackagesRDS(regex_string: string): Promise<{ ID: string }[]> {
+    console.log('searchPackagesRDS');
     let regex = new RegExp(regex_string);
     let matchedPackages: { ID: string }[] = [];
 
     try {
         // Read the directories (packages) in the ingestedPackages folder
         const packages = await readAllPackages();
+        console.log('readAllPackages results:', packages);
 
-        if (packages === null) {
+        if (!packages || packages.length === 0) {
+            console.log('No packages found in the database');
             logMessage('INFO', 'No packages found in the database');
             return matchedPackages;
         }
@@ -97,12 +101,10 @@ export async function searchPackagesRDS(regex_string: string): Promise<{ ID: str
         for (const pkg of packages) {
             // Search in the package name
             if (regex.test(pkg.metadata.Name)) {
+                console.log('Matched package name:', pkg.metadata.Name);
                 logMessage('INFO', `Matched package name: ${pkg.metadata.Name}`);
                 matchedPackages.push({ ID: pkg.metadata.ID });
-            }
-
-            // Search in the README.md file (if it exists)
-            if(pkg.data.URL) {
+            } else if(pkg.data.URL) {
                 let readmeContent = '';
                 if(getLinkType(pkg.data.URL) === 'GitHub'){
                     try {
