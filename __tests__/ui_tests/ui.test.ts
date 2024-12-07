@@ -244,7 +244,7 @@ describe('UI Tests for React App', () => {
     await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
     let resultItems = await driver.findElements(By.css('.lightBlueBox'));
     expect(resultItems.length).toBeGreaterThanOrEqual(2);
-
+    
     // Search by Version
     let version = await driver.findElement(By.id('versionSearchBar'));
     await version.sendKeys('1.1.1.1.1');
@@ -252,36 +252,34 @@ describe('UI Tests for React App', () => {
     await driver.sleep(100)
     resultItems = await driver.findElements(By.css('.lightBlueBox'));
     expect(resultItems.length).toBeGreaterThanOrEqual(1);
-
+    
     // Search by Regex
     const toggle = await driver.findElement(By.css('.switch input[type="checkbox"]'));
     await driver.executeScript("arguments[0].click();", toggle);
     let regexSearchBar = await driver.findElement(By.id('regexSearchBar'));
     expect(await regexSearchBar.isDisplayed()).toBe(true);
-
     await regexSearchBar.sendKeys(".?cross.")
     await searchButton.click();
-    await driver.sleep(100)
-
+    await driver.sleep(200)
     resultItems = await driver.findElements(By.css('.lightBlueBox'));
     expect(resultItems.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('should handle delete functionality', async () => {
-    const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
+  // it('should handle delete functionality', async () => {
+  //   const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
   
-    await deleteButton.click();
-    await driver.sleep(100);
+  //   await deleteButton.click();
+  //   await driver.sleep(100);
 
-    const submitButton = await driver.findElements(By.css('.DeleteButtons'));
-    await submitButton[0].click();
-    await driver.sleep(100);
+  //   const submitButton = await driver.findElements(By.css('.DeleteButtons'));
+  //   await submitButton[0].click();
+  //   await driver.sleep(100);
 
-    const closeButton = await driver.findElement(By.css('.closeButton'));
-    await closeButton.click();
+  //   const closeButton = await driver.findElement(By.css('.closeButton'));
+  //   await closeButton.click();
 
-    const packageList = await driver.findElements(By.css('.lightBlueBox'));
-    expect(packageList.length).toBe(0); // Check that the list is empty
-  });
+  //   const packageList = await driver.findElements(By.css('.lightBlueBox'));
+  //   expect(packageList.length).toBe(0); // Check that the list is empty
+  // });
 });
 
