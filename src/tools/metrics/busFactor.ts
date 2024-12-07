@@ -169,5 +169,9 @@ export async function getBusFactorScore(owner: string, repo: string): Promise<nu
   {
     score = 0;
   }
+  if(score >= 1)
+  {
+    score = 1;
+  }
   return score;
 }
