@@ -1,18 +1,18 @@
 import express, { Application, Request, Response } from 'express';
-import { Package, PackageQuery, PackageMetadata, PackageCost, PackageRating } from './apis/types.js';
+import { Package, PackageQuery, PackageMetadata, PackageCost } from './apis/types.js';
 import { validatePackageSchema, validateDataSchema } from './apis/validation.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getScores } from './tools/score.js';
 import { getOwnerRepo } from './tools/utils.js';
 import { getCumulativeSize } from './tools/dependencyCost.js';
-import queryVersionRoutes from './apis/queryVersion.js';
 import { fetchVersion } from './tools/fetchVersion.js';
-import { searchPackages, searchPackagesRDS } from './tools/searchPackages.js';
+import { searchPackagesRDS } from './tools/searchPackages.js';
 import { contentToURL, urlToContent } from './apis/helpers.js';
 import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAllPackages } from './rds/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import { readFromS3, deleteFromS3 } from './tools/uploadToS3.js';
+import { deleteFromS3 } from './tools/uploadToS3.js';
+import console from 'console';
 
 const app: Application = express();
 const port = 8081;
@@ -29,10 +29,6 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(express.json());
 
-// Use imported routes
-app.use('/', queryVersionRoutes);
-//app.use('/package', packageRoutes);
-
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the REST API!');
 });
@@ -41,8 +37,7 @@ app.get('/health', async (req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
-app.post('/packages', async (req: Request, res: Response) => { //works
-  //account for Too many packages returned error when you switch over storage methods
+app.post('/packages', async (req: Request, res: Response) => { 
   const pkgqry: PackageQuery[] = req.body;
 
   if (!pkgqry[0]) {
@@ -54,9 +49,9 @@ app.post('/packages', async (req: Request, res: Response) => { //works
       return res.status(400).send("There is missing field(s) in the PackageQuery (Name is undefined)");
     }
   }
-  const offset = req.params.offset ? parseInt(req.params.offset) : 8; //set offset to 8 if its undefined
+  const offset = req.params.offset ? parseInt(req.params.offset) : 20;
   
-  const packageArray = await readAllPackages(); //might need to change this for offset
+  const packageArray = await readAllPackages();
   if (!packageArray) {
     return res.status(500).send("Failed to read packages from RDS.");
   }
@@ -94,7 +89,7 @@ app.post('/packages', async (req: Request, res: Response) => { //works
   res.status(200).send(results);
 });
 
-app.delete('/reset', async (req: Request, res: Response) => { //works
+app.delete('/reset', async (req: Request, res: Response) => {
   const packages = await readAllPackages();
   if (!packages) {
     return res.status(500).send("Failed to read packages from RDS.");
@@ -127,7 +122,7 @@ app.get('/package/:id', async (req: Request, res: Response) => {
   res.status(200).json(pkg);
 });
 
-app.post('/package/byRegEx', async (req: Request, res: Response) => { //connection works
+app.post('/package/byRegEx', async (req: Request, res: Response) => {
   if (!req.body || !req.body.RegEx) {
     return res.status(400).send("There is missing field(s) in the PackageRegEx or it is formed improperly, or is invalid.");
   }
@@ -163,7 +158,6 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   }
   
   const pkg = await readPackage(req.params.id);
-  //const pkgContent = await readFromS3(req.params.id);
 
   if (!pkg) {
     return res.status(404).send("Package does not exist.");
@@ -209,18 +203,17 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   }
 
   let scores = await getScores(owner, repo, req.body.data.URL);
-  const filteredOutput = Object.entries(scores)
-    .filter(([key]) => 
-        !key.includes('_Latency') && 
-        key !== 'URL' && 
-        key !== 'NetScore'
-    );
-
-  filteredOutput.forEach(([key, value]) => {
-    if (typeof value === 'number' && value < 0.5) {
-      return res.status(424).send("Package is not updated due to the disqualified rating.");
+  const ratings = JSON.parse(scores);
+  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
+  console.log(nonLatencyScores);
+  
+  for (const metric of nonLatencyScores) {
+    const numValue = Number(metric);
+    console.log(numValue);
+    if (numValue < 0.5) {
+      return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
-  });
+  }
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
@@ -274,22 +267,20 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(409).send("Package exists already.");
   }
 
-  const ID = uuidv4();
-  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: ID, Version: version }, data: req.body };
+  let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
-  const filteredOutput = Object.entries(scores)
-    .filter(([key]) => 
-        !key.includes('_Latency') && 
-        key !== 'URL' && 
-        key !== 'NetScore'
-    );
+  const ratings = JSON.parse(scores);
+  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
+  console.log(nonLatencyScores);
 
-  filteredOutput.forEach(([key, value]) => {
-    if (typeof value === 'number' && value < 0.5) {
+  for (const metric of nonLatencyScores) {
+    const numValue = Number(metric);
+    console.log(numValue);
+    if (numValue < 0.5) {
       return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
-  });
+  }
 
   const result = await storePackage(newPackage, JSON.parse(scores));
   if (!result) {
@@ -299,7 +290,7 @@ app.post('/package', async (req: Request, res: Response) => {
   return res.status(201).json(newPackage);
 });
 
-app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
+app.get('/package/:id/rate', async (req: Request, res: Response) => {
   if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }
@@ -323,7 +314,7 @@ app.get('/package/:id/rate', async (req: Request, res: Response) => { //works
   res.status(200).json(scores);
 });
 
-app.get('/package/:id/cost', async (req: Request, res: Response) => { //works
+app.get('/package/:id/cost', async (req: Request, res: Response) => {
   if (!req.params.id) {
     return res.status(400).send("There is missing field(s) in the PackageID or it is formed improperly, or is invalid.");
   }

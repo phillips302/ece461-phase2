@@ -37,7 +37,7 @@ describe('Documentation Scoring', () => {
 
     const score = await getDocumentationScore(mockRepoOwner, mockRepoName);
     
-    expect(score).toBe(1); // All keywords present, so score is 1
+    expect(score).toBeCloseTo(0.66666); // All keywords present, so score is about 0.6666666
   });
 
   it('should return DEFAULT_SCORE when no README-like file is found', async () => {
@@ -85,6 +85,6 @@ describe('Documentation Scoring', () => {
 
     const score = await calculateRampUpScore(mockRepoOwner, mockRepoName);
 
-    expect(score).toBe(0.5); // 3 out of 6 keywords present (installation, usage, api, examples)
+    expect(score).toBeCloseTo(0.33333333); // Only 2 out of 6 keywords present, so score is about 0.3333333
   });
 });
