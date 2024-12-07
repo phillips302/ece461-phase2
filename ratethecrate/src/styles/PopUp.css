@@ -10,14 +10,14 @@
   justify-content: center;
 }
 
-.PopUpContent {
-  background: #3173ca;
-  padding: 20px;
-  width: 400px;
-  border-radius: 8px;
-  text-align: center;
-  position: relative;
-}
+  .PopUpContent {
+    background: #3173ca;
+    padding: 20px;
+    width: 400px;
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+  }
 
 .UpdatePopUpOverlay {
   position: fixed; /* Ensures the overlay covers the entire viewport */
@@ -32,18 +32,18 @@
   z-index: 9999; /* Ensure the popup appears above other elements */
 }
 
-/* The content of the popup */
-.UpdatePopUpContent {
-  background: #3173ca; /* Popup background color */
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
-  max-width: 90%; /* Responsive width */
-  width: 600px; /* Default width */
-  text-align: center;
-  z-index: 10000;
-  position: relative;
-}
+  /* The content of the popup */
+  .UpdatePopUpContent {
+    background: #3173ca; /* Popup background color */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+    max-width: 90%; /* Responsive width */
+    width: 600px; /* Default width */
+    text-align: center;
+    z-index: 10000;
+    position: relative;
+  }
 
 .UploadPopUpOverlay {
   position: fixed; /* Ensures the overlay covers the entire viewport */
@@ -58,18 +58,18 @@
   z-index: 9999; /* Ensure the popup appears above other elements */
 }
 
-/* The content of the popup */
-.UploadPopUpContent {
-  background: #3173ca; /* Popup background color */
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
-  max-width: 90%; /* Responsive width */
-  width: 650px; /* Default width */
-  text-align: center;
-  z-index: 10000;
-  position: relative;
-}
+  /* The content of the popup */
+  .UploadPopUpContent {
+    background: #3173ca; /* Popup background color */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+    max-width: 90%; /* Responsive width */
+    width: 650px; /* Default width */
+    text-align: center;
+    z-index: 10000;
+    position: relative;
+  }
 
 /* Close button style */
 .closeButton {
