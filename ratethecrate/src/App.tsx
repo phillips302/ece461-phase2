@@ -53,7 +53,6 @@ const App: React.FC = () => {
   //helper functions
     const handleSearchClick = () => {
     if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
-    if (nameValue !== "" && versionValue === "" && !showTwoSearchBars){
       getAllPackages(nameValue, undefined)
       .then((data) => {
         if ('message' in data) {
@@ -347,7 +346,7 @@ const App: React.FC = () => {
   const handleRegexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRegexValue(event.target.value);
   };
-
+  
   return (
     <div className="App">
       {isLoading && <LoadingOverlay aria-live="assertive" aria-label="Loading, please wait..." />}
