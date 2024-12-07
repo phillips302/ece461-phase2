@@ -163,6 +163,15 @@ export function calculateBusFactor(contributors: CommitNode[]): number {
 export async function getBusFactorScore(owner: string, repo: string): Promise<number> {
   const contributors = await fetchRepoContributors(owner, repo);
   const busFactor = calculateBusFactor(contributors);
-  const score = Math.min(busFactor / 5, 1);
+  //const score = Math.min(busFactor / 5, 1); 
+  let score = Math.max(busFactor / 5, 0.5);
+  if(busFactor == 0)
+  {
+    score = 0;
+  }
+  if(score >= 1)
+  {
+    score = 1;
+  }
   return score;
 }
