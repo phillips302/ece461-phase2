@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
