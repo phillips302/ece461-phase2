@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -24,8 +24,8 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   const [debloat, setDebloat] = useState(currPackage.data.debloat ?? false);
 
   // States for toggling input mode and managing file name
-  const [inputMode, setInputMode] = useState(false); // False means upload file mode
-  const [fileName, setFileName] = useState<string>(currPackage.data.Content ?? '');
+  const [inputMode, setInputMode] = useState(currPackage.data.Content === undefined ? false : true); // False means upload file mode
+  const [fileName, setFileName] = useState<string>('');
 
   // Sync state with currPackage when it changes
   useEffect(() => {
@@ -33,9 +33,45 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
     setDebloat(currPackage?.data?.debloat ?? false);
   }, [currPackage]);
 
-  const handleClose = () => {
-    onClose();
-  };
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            handleClose();
+        }
+    };
+
+    const handleClose = () => {
+        setContent('')
+        setFileName('')
+        setUrl('')
+        setDebloat(false)
+        setInputMode(true)
+        onClose();
+    };
+
+    useEffect(() => {
+        if (isVisible) {
+            // Set focus to the close button when the modal opens
+            closeButtonRef.current?.focus();
+        }
+    }, [isVisible]);
+
+    useEffect(() => {
+      // Trap focus within the modal
+      const handleFocusTrap = (e: FocusEvent) => {
+          if (!modalRef.current?.contains(e.target as Node)) {
+              closeButtonRef.current?.focus();
+          }
+      };
+      if (isVisible) {
+          document.addEventListener('focus', handleFocusTrap, true);
+      }
+      return () => {
+          document.removeEventListener('focus', handleFocusTrap, true);
+      };
+  }, [isVisible]);
 
   const handleSubmit = () => {
     if (onSubmit) {
@@ -54,7 +90,7 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
       };
       onSubmit(updatedPackage);
     }
-    onClose(); // Close the popup
+    handleClose(); // Close the popup
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,13 +142,25 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="UpdatePopUpOverlay">
-      <div className="UpdatePopUpContent">
-        <button className="closeButton" onClick={handleClose}>
+    <div
+      className="UpdatePopUpOverlay"
+      role="dialog"
+      aria-labelledby="popup-title"
+      aria-describedby="popup-description"
+      aria-modal="true"
+      onKeyDown={handleKeyDown}
+    >
+      <div className="UpdatePopUpContent" ref={modalRef}>
+        <button
+          className="closeButton"
+          onClick={handleClose}
+          ref={closeButtonRef}
+          aria-label="Close popup"
+        >
           &times;
         </button>
-        <h2>{title}</h2>
-        <div className="PopUpInputs">
+        <h2 id="popup-title">{title}</h2>
+        <div id="popup-description" className="PopUpInputs">
           <div className="InputRow">
             <label htmlFor="version">Version:</label>
             <input
@@ -121,75 +169,80 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
               value={version}
               onChange={(e) => setVersion(e.target.value)}
               className="PopUpInput"
+              aria-required="true"
             />
           </div>
           <div className="CombineRow">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={inputMode}
-              onChange={() => {
-                setInputMode(!inputMode); // Toggle between Content and URL
-              }} // Toggle between Content and URL
-            />
-            <span className="slider"></span>
-          </label>
-          {!inputMode && (
-            <div className="InputRowContent">
-              <label className='InputRow2Label' htmlFor="content">Content:</label>
-              {/* Upload Button */}
-              <div className="file-upload">
-                <input
-                  id="fileUpload"
-                  type="file"
-                  accept=".zip"
-                  style={{ display: "none" }} // Hide default input
-                  onChange={handleFileUpload}
-                />
-                <button
-                  onClick={() => document.getElementById("fileUpload")?.click()} // Trigger file input
-                  className="uploadButton"
-                >
-                  <i className="fas fa-file-upload"></i>
-                  {fileName && (
-                    <p className="file-name">{fileName}</p>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-          {inputMode && (
-            <div className="InputRowUrl">
-            <label className='InputRow2Label' htmlFor="url">URL:</label>
+            <label htmlFor="content-or-url-toggle" className="switch">
               <input
-                id="url"
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="PopUpInput"
+                id="content-or-url-toggle"
+                type="checkbox"
+                checked={inputMode}
+                onChange={() => setInputMode(!inputMode)}
+                aria-checked={inputMode}
+                aria-label="Switch between content upload and URL input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setInputMode(!inputMode);
+                  }
+                 }}
               />
-            </div>
-          )}
+              <span className="slider"></span>
+            </label>
+            {!inputMode && (
+              <div className="InputRowContent">
+                <label className="InputRow2Label" htmlFor="fileUpload">
+                  Content:
+                </label>
+                <div className="file-upload">
+                  <input
+                    id="fileUpload"
+                    type="file"
+                    accept=".zip"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                  />
+                  <button
+                    onClick={() => document.getElementById('fileUpload')?.click()}
+                    className="uploadButton"
+                    aria-label="Upload"
+                  >
+                    <i className="fas fa-file-upload"></i>
+                    {fileName && <p className="file-name">{fileName}</p>}
+                  </button>
+                </div>
+              </div>
+            )}
+            {inputMode && (
+              <div className="InputRowUrl">
+                <label className="InputRow2Label" htmlFor="url">
+                  URL:
+                </label>
+                <input
+                  id="url"
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="PopUpInput"
+                  aria-required="true"
+                />
+              </div>
+            )}
           </div>
           <div className="InputRow">
-              <label htmlFor="debloat">Debloat:</label>
-              <input
+            <label htmlFor="debloat">Debloat:</label>
+            <input
               id="debloat"
               type="text"
               value={String(debloat)}
-              onChange={(e) => {
-                if (e.target.value === "true") {
-                  setDebloat(true);
-                } else if (e.target.value === "false") {
-                  setDebloat(false);
-                }
-              }}
+              onChange={(e) => setDebloat(e.target.value === 'true')}
               className="PopUpInput"
-              />
+              aria-required="true"
+            />
           </div>
         </div>
-        {/* Submit button */}
-        <button className="SubmitButton" onClick={handleSubmit}>
+        <button className="SubmitButton" aria-label="Submit" onClick={handleSubmit}>
           Submit
         </button>
       </div>
