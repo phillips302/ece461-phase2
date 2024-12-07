@@ -202,10 +202,8 @@ app.post('/package/:id', async (req: Request, res: Response) => {
     return res.status(500).send("Failed to retrieve owner and repo.");
   }
 
-  let scores = await getScores(owner, repo, req.body.data.URL);
-  const ratings = JSON.parse(scores);
-  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
-  console.log(nonLatencyScores);
+  let scores = await getScores(owner, repo, req.body.URL);
+  const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
   
   for (const metric of nonLatencyScores) {
     const numValue = Number(metric);
@@ -217,7 +215,7 @@ app.post('/package/:id', async (req: Request, res: Response) => {
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
-  const result = await storePackage(newPackage, JSON.parse(scores));
+  const result = await storePackage(newPackage, scores);
 
   if (!result) {
     return res.status(500).send("Failed to update package.");
@@ -261,17 +259,16 @@ app.post('/package', async (req: Request, res: Response) => {
     version = '1.0.0';
   }
 
-  const packages = await readAllPackages();
+  // const packages = await readAllPackages();
 
-  if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
-    return res.status(409).send("Package exists already.");
-  }
+  // if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
+  //   return res.status(409).send("Package exists already.");
+  // }
 
   let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
-  const ratings = JSON.parse(scores);
-  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
+  const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
   console.log(nonLatencyScores);
 
   for (const metric of nonLatencyScores) {
@@ -282,7 +279,7 @@ app.post('/package', async (req: Request, res: Response) => {
     }
   }
 
-  const result = await storePackage(newPackage, JSON.parse(scores));
+  const result = await storePackage(newPackage, scores);
   if (!result) {
     return res.status(500).send("Failed to store package.");
   }
