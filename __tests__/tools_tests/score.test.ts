@@ -47,7 +47,7 @@ describe('getScores', () => {
     vi.spyOn(latencyModule, 'measureConcurrentLatencies').mockImplementation(mockedFunction);
 
     const result = await getScores('owner', 'repo', 'https://github.com/owner/repo');
-    const scores: PackageRating = JSON.parse(result);
+    const scores: PackageRating = result;
 
     // Test individual scores
     expect(scores.RampUp).toBe(0.8);
@@ -101,7 +101,7 @@ describe('getScores', () => {
     vi.spyOn(latencyModule, 'measureConcurrentLatencies').mockImplementation(mockedFunction);
 
     const result = await getScores('owner', 'repo', 'https://github.com/owner/repo');
-    const scores: PackageRating = JSON.parse(result);
+    const scores: PackageRating = result;
 
     expect(scores.RampUp).toBe(0);
     expect(scores.BusFactor).toBe(0);
@@ -121,7 +121,7 @@ describe('getScores', () => {
     vi.spyOn(latencyModule, 'measureConcurrentLatencies').mockImplementation(mockedFunction);
 
     const result = await getScores('owner', 'repo', 'https://github.com/owner/repo');
-    const scores: PackageRating = JSON.parse(result);
+    const scores: PackageRating = result;
 
     expect(scores.NetScore).toBe(0);
     expect(scores.NetScoreLatency).toBeCloseTo(Number((7 * 0.1).toFixed(3)), 0.1);
@@ -141,7 +141,7 @@ describe('getScores', () => {
 
     const testUrl = 'https://github.com/test/repo';
     const result = await getScores('test', 'repo', testUrl);
-    const scores: PackageRating = JSON.parse(result);
+    const scores: PackageRating = result;
 
     expect(JSON.stringify(scores))
   });
