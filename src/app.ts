@@ -13,6 +13,7 @@ import { storePackage, readAllPackages, readPackage, readPackageRating, deleteAl
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { readFromS3, deleteFromS3 } from './tools/uploadToS3.js';
+import console from 'console';
 
 const app: Application = express();
 const port = 8081;
@@ -209,18 +210,17 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   }
 
   let scores = await getScores(owner, repo, req.body.data.URL);
-  const filteredOutput = Object.entries(scores)
-    .filter(([key]) => 
-        !key.includes('Latency') && 
-        key !== 'URL'
-    );
-
-    for (const [key, value] of filteredOutput) {
-      const numValue = Number(value);
-      if (numValue < 0.5) {
-        return res.status(424).send("Package is not uploaded due to the disqualified rating.");
-      }
+  const ratings = JSON.parse(scores);
+  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
+  console.log(nonLatencyScores);
+  
+  for (const metric of nonLatencyScores) {
+    const numValue = Number(metric);
+    console.log(numValue);
+    if (numValue < 0.5) {
+      return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
+  }
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
@@ -268,24 +268,23 @@ app.post('/package', async (req: Request, res: Response) => {
     version = '1.0.0';
   }
 
-  const packages = await readAllPackages();
+  // const packages = await readAllPackages();
 
-  if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
-    return res.status(409).send("Package exists already.");
-  }
+  // if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
+  //   return res.status(409).send("Package exists already.");
+  // }
 
   const ID = uuidv4();
   let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: ID, Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
-  const filteredOutput = Object.entries(scores)
-    .filter(([key]) => 
-        !key.includes('Latency') && 
-        key !== 'URL'
-    );
+  const ratings = JSON.parse(scores);
+  const nonLatencyScores = [ratings.RampUp, ratings.Correctness, ratings.BusFactor, ratings.ResponsiveMaintainer, ratings.prFraction, ratings.License, ratings.GoodPinningPractice, ratings.netScore];
+  console.log(nonLatencyScores);
 
-  for (const [key, value] of filteredOutput) {
-    const numValue = Number(value);
+  for (const metric of nonLatencyScores) {
+    const numValue = Number(metric);
+    console.log(numValue);
     if (numValue < 0.5) {
       return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
