@@ -21,7 +21,7 @@ const corsOptions = {
   origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
   optionsSuccessStatus: 200
 };
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Set a higher limit for the request body size
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
@@ -211,16 +211,16 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   let scores = await getScores(owner, repo, req.body.data.URL);
   const filteredOutput = Object.entries(scores)
     .filter(([key]) => 
-        !key.includes('_Latency') && 
-        key !== 'URL' && 
-        key !== 'NetScore'
+        !key.includes('Latency') && 
+        key !== 'URL'
     );
 
-  filteredOutput.forEach(([key, value]) => {
-    if (typeof value === 'number' && value < 0.5) {
-      return res.status(424).send("Package is not updated due to the disqualified rating.");
+    for (const [key, value] of filteredOutput) {
+      const numValue = Number(value);
+      if (numValue < 0.5) {
+        return res.status(424).send("Package is not uploaded due to the disqualified rating.");
+      }
     }
-  });
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
@@ -280,16 +280,16 @@ app.post('/package', async (req: Request, res: Response) => {
   let scores = await getScores(owner, repo, req.body.URL);
   const filteredOutput = Object.entries(scores)
     .filter(([key]) => 
-        !key.includes('_Latency') && 
-        key !== 'URL' && 
-        key !== 'NetScore'
+        !key.includes('Latency') && 
+        key !== 'URL'
     );
 
-  filteredOutput.forEach(([key, value]) => {
-    if (typeof value === 'number' && value < 0.5) {
+  for (const [key, value] of filteredOutput) {
+    const numValue = Number(value);
+    if (numValue < 0.5) {
       return res.status(424).send("Package is not uploaded due to the disqualified rating.");
     }
-  });
+  }
 
   const result = await storePackage(newPackage, JSON.parse(scores));
   if (!result) {
