@@ -25,5 +25,6 @@ elif [ "$1" == "reset" ]; then
   node dist/reset.js "$1"
 #any other argument send to index.js
 else
-  node dist/index.js "$@"
+  echo "Invalid argument"
+  exit 1
 fi
