@@ -205,7 +205,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
                     className="uploadButton"
                     aria-label="Upload"
                   >
-                    <i className="fas fa-file-upload" aria-hidden="true"></i>
+                    <i className="fas fa-file-upload" aria-hidden="true" aria-label="Upload Icon"></i>
                     {fileName && <p className="file-name">{fileName}</p>}
                   </button>
                 </div>
