@@ -159,4 +159,89 @@ export const getCertainPackages = async ( reg: string): Promise<types.PackageMet
   }  
 };
 
+export const downloadPackage = async (id: string): Promise<{ message: string }> => { //works
+  const response = await fetch(`api/package/${id}`);
+
+  if (!response.ok) {
+    const message_text = await response.text();
+    return { message: message_text };
+  }
+
+  const packageData: types.Package = await response.json();
+  const filePath = await downloadPackageContent(packageData);
+  if (!filePath) {
+    return { message: 'Failed to download package content' };
+  }
+  return { message: `Content downloaded and saved to ${filePath}` };
+
+}
+/*
+const downloadPackageContent = async (packageData: types.Package): Promise<string | null> => {
+  console.log(`Downloading content for package ID: ${packageData.metadata.ID}`);
+  try {
+      const zipString = packageData.data.Content;
+      if (!zipString) {
+          console.log('Failed to read content from S3');
+          return null;
+      }
+
+      const zipBuffer = Buffer.from(zipString, 'base64');
+      const downloadsFolder = path.join(homedir(), 'Downloads');
+      if (!fs.existsSync(downloadsFolder)) {
+          fs.mkdirSync(downloadsFolder);
+      }
+
+      const filePath = path.join(downloadsFolder, `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`);
+      console.log('Writing content to:', filePath);
+      fs.writeFileSync(filePath, zipBuffer);
+      console.log(`Content downloaded and saved to ${filePath}`);
+      return filePath;
+  } catch (err) {
+      console.error('Failed to download package content:', err);
+      return null;
+  }
+}
+*/
+export const downloadPackageContent = async (packageData: types.Package): Promise<string | null> => {
+  console.log(`Downloading content for package ID: ${packageData.metadata.ID}`);
+  try {
+      const zipString = packageData.data.Content;
+      if (!zipString) {
+          console.log('Failed to read content from S3');
+          return null;
+      }
+      
+      // Decode Base64 string into binary data
+      const binaryString = atob(zipString);
+      const zipArray = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+          zipArray[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create a Blob from the binary data
+      const blob = new Blob([zipArray], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+
+      // Create and click the download link
+      const fileName = `${packageData.metadata.Name}-${packageData.metadata.Version}.zip`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Release the object URL
+      URL.revokeObjectURL(url);
+
+      console.log(`Content downloaded: ${fileName}`);
+      return fileName;
+  } catch (err) {
+      console.error('Failed to download package content:', err);
+      return null;
+  }
+};
+
+
+
 //implement download once Ethan implements download

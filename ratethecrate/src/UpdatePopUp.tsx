@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -38,11 +39,16 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
-            onClose();
+            handleClose();
         }
     };
 
     const handleClose = () => {
+        setContent('')
+        setFileName('')
+        setUrl('')
+        setDebloat(false)
+        setInputMode(true)
         onClose();
     };
 
@@ -85,7 +91,7 @@ const UpdatePopUp: React.FC<UpdatePopUpProps> = ({
       };
       onSubmit(updatedPackage);
     }
-    onClose(); // Close the popup
+    handleClose(); // Close the popup
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

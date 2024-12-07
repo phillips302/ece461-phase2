@@ -16,7 +16,7 @@ import { PackageRating } from "../apis/types.js";
  * @param url - The URL of the repository.
  * @returns The scores for the repository.
  */
-export async function getScores(owner: string, repo: string, url: string): Promise<string> {
+export async function getScores(owner: string, repo: string, url: string): Promise<PackageRating> {
 
   // Run the functions concurrently and measure the latencies
   const { latencies, results, errors } = await measureConcurrentLatencies([calculateRampUpScore, getCorrectness, getBusFactorScore, getIRM, isLicenseCompatible, getDependencyFraction, getPrFraction], owner, repo);
@@ -46,29 +46,6 @@ export async function getScores(owner: string, repo: string, url: string): Promi
   const netScore = Number(((0.125 * rampUp + 0.125 * correctness + 0.25 * busFactor + 0.25 * responsiveMaintainer + 0.125 * prFraction) * license).toFixed(3));
   const netScoreLatency = Number((rampUpLatency + correctnessLatency + busFactorLatency + responsiveMaintainerLatency + licenseLatency + prFractionLatency).toFixed(3));
 
-  // Output the results
-  const output = {
-    "URL": url,
-    "NetScore": netScore,
-    "NetScore_Latency": netScoreLatency,
-    "RampUp": rampUp,
-    "RampUp_Latency": rampUpLatency,
-    "Correctness": correctness,
-    "Correctness_Latency": correctnessLatency,
-    "BusFactor": busFactor,
-    "BusFactor_Latency": busFactorLatency,
-    "ResponsiveMaintainer": responsiveMaintainer,
-    "ResponsiveMaintainer_Latency": responsiveMaintainerLatency,
-    "License": license,
-    "License_Latency": licenseLatency,
-    "FractionDependencies": fractionDependencies,
-    "FractionDependencies_Latency": fractionDependenciesLatency,
-    "prFraction": prFraction,
-    "prFraction_Latency": prFractionLatency
-  };
-
-  //return JSON.stringify(output);
-
   const rating: PackageRating = {
     BusFactor: busFactor,
     BusFactorLatency: busFactorLatency,
@@ -88,5 +65,5 @@ export async function getScores(owner: string, repo: string, url: string): Promi
     NetScoreLatency: netScoreLatency,
   };
 
-  return JSON.stringify(rating);
+  return rating;
 }

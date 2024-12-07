@@ -54,7 +54,7 @@ describe('Pull Request Fraction Calculation', () => {
         mockPullRequestData[1].node.reviews.totalCount = 0;
         
         const prFraction = calculatePrFraction(mockPullRequestData);
-        expect(prFraction).toBe(0.5); // Expected fraction for the example data is 0.5
+        expect(prFraction).toBe(0.9); // Expected fraction for the example data is 0.9
     });
 
     it('Fraction should be 0 when no pull requests have reviews', () => {

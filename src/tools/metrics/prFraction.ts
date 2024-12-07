@@ -60,9 +60,30 @@ export function calculatePrFraction(pullRequests: RequestNode[]): number {
           // If the PR was reviewed, increment reviewed code changes
           reviewedCodeChanges += totalChanges;
         }
-    });
-
-    const fractionReviewed = reviewedCodeChanges / totalCodeChanges;
+    }); 
+    
+    let fractionReviewed = 0;
+    if((reviewedCodeChanges / totalCodeChanges) == 0)
+    {
+        fractionReviewed = 0;
+    }
+    else if((reviewedCodeChanges / totalCodeChanges) < 0.3)
+    {
+        fractionReviewed = 0.5;
+    }
+    else if((reviewedCodeChanges / totalCodeChanges) < 0.5)
+    {
+        fractionReviewed = 0.7;
+    }
+    else if((reviewedCodeChanges / totalCodeChanges) < 0.7)
+    {
+        fractionReviewed = 0.9;
+    }
+    else
+    {
+        fractionReviewed = 1;
+    }
+    //const fractionReviewed = reviewedCodeChanges / totalCodeChanges;
     return parseFloat(fractionReviewed.toFixed(2));
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/PopUp.css';
 import * as types from '../../src/apis/types.js';
 
@@ -27,11 +28,17 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
-            onClose();
+            handleClose();
         }
     };
 
     const handleClose = () => {
+        setName('')
+        setUrl('')
+        setContent('')
+        setFileName('')
+        setDebloat(false)
+        setInputMode(true)
         onClose();
     };
 
@@ -67,7 +74,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
       };
       onSubmit(uploadedPackageData);
     }
-    onClose(); // Close the popup
+    handleClose(); // Close the popup
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,7 +206,7 @@ const UploadPopUp: React.FC<UploadPopUpProps> = ({
                     className="uploadButton"
                     aria-label="Upload"
                   >
-                    <i className="fas fa-file-upload" aria-hidden="true"></i>
+                    <i className="fas fa-file-upload" aria-hidden="true" aria-label="Upload Icon"></i>
                     {fileName && <p className="file-name">{fileName}</p>}
                   </button>
                 </div>
