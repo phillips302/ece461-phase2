@@ -2,7 +2,7 @@ import { gql } from 'graphql-request';
 import { JSDOM } from 'jsdom';
 import { gitHubRequest, logMessage } from '../utils.js';
 
-const KEYWORDS = ["installation", "usage", "api", "examples"];
+const KEYWORDS = ["installation", "usage", "api", "examples", "run", "load"]; //Added keywords after examples
 const DEFAULT_SCORE = 0; // Default score when no documentation is found
 
 // Helper function to calculate the documentation score
