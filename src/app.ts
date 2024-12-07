@@ -225,6 +225,14 @@ app.post('/package/:id', async (req: Request, res: Response) => {
 });
 
 app.post('/package', async (req: Request, res: Response) => {
+  console.log(" ");
+
+  if (!req.body.Name) {
+    console.log("Uploading package: ", req.body.Name);
+  } else {
+    console.log("Uploading package: no name provided");
+  }
+
   if (!req.body) {
     return res.status(400).send("There is missing field(s) in the Package or it is formed improperly, or is invalid.");
   }
@@ -236,11 +244,13 @@ app.post('/package', async (req: Request, res: Response) => {
   }
 
   if (req.body.Content) {
+    console.log("Upload by content");
     const url = await contentToURL(req.body.Content);
     if (url == 'Failed to get the url') {
       return res.status(500).send("Failed to retrieve data from Content.");
     }
     req.body.URL = url;
+    console.log("URL from content: ", url);
   } else {
     const content = await urlToContent(req.body.URL);
     if (content == 'Failed to get the zip file') {
@@ -259,11 +269,11 @@ app.post('/package', async (req: Request, res: Response) => {
     version = '1.0.0';
   }
 
-  // const packages = await readAllPackages();
+  const packages = await readAllPackages();
 
-  // if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
-  //   return res.status(409).send("Package exists already.");
-  // }
+  if ( packages && (packages.find(p => p.metadata.Name == repo && p.metadata.Version == version) || packages.find(p => p.metadata.Name == req.body.Name && p.metadata.Version == version)) ) {
+    return res.status(409).send("Package exists already.");
+  }
 
   let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: version }, data: req.body };
 

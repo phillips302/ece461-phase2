@@ -33,8 +33,9 @@ export async function contentToURL(Content: string): Promise<string> {
             const packageJson: PackageJson = JSON.parse(packageJsonContent);
 
             // Step 5: Get the URL
-            const url = packageJson.repository?.url || packageJson.homepage || 'Failed to get the url';
-            //return url.replace(/\.git$/, '');
+            let url = packageJson.repository?.url || packageJson.homepage || 'Failed to get the url';
+            url = url.replace(/^git\+/, "");
+            url = url.replace(/^git:\/\//, "");
             return url;
         } else {
             return 'Failed to get the url';
