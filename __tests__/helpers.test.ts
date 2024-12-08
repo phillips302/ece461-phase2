@@ -33,10 +33,20 @@ describe('yourModule Tests', () => {
     expect(url).toBe('Failed to get the url');
   });
 
-  it('should convert URL to content', async () => {
+  it('should fail to convert URL to Content', async () => {
     const url = 'https://github.com/user/repo';
     const content = await urlToContent(url);
     expect(content).toBe('Failed to get the zip file');
+  });
+
+  it('should convert URL to Content and back to URL', async () => {
+    const url = 'https://github.com/browserify/browserify';
+
+    const content = await urlToContent(url);
+    expect(content).toBeTruthy();
+
+    const newUrl = await contentToURL(content);
+    expect(newUrl).toBeTruthy();
   });
 
   it('should find package.json', async () => {
