@@ -1,5 +1,5 @@
 # Rate The Crate
-Rate The Crate is an online package registry!
+Rate The Crate is an online package registry to upload your own packages from github and npm to view their rating and cost!
 
 ## Usage
 To access the website go to URL: https://prod.d1k3s8at0zz65i.amplifyapp.com/
@@ -9,8 +9,9 @@ Select the import icon
 - Click the toggle to switch between uploading by URl or Content
 - Upload using URL
     - fill in the url of the package repository (either from github or npm)
+    - ex. "https://github.com/phillips302/ece461-phase2"
 - Upload using Content
-    -  select a zip file from your computer to upload
+    -  select a **zip** file from your computer to upload
   
 Select submit to upload your package
 
