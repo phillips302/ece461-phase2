@@ -69,11 +69,11 @@ describe('getScores', () => {
 
     // Test net score calculation
     const expectedNetScore = Number(((0.125 * 0.8 + 0.125 * 0.9 + 0.25 * 0.7 + 
-                                    0.25 * 0.85 + 0.125 * 0.75) * 1.0).toFixed(3));
+                                    0.25 * 0.85 + 0.125 * 0.95 + 0.125 * 0.75) * 1.0).toFixed(3));
     expect(scores.NetScore).toBe(expectedNetScore);
 
     // Test net score latency
-    const expectedNetScoreLatency = Number((0.1 + 0.2 + 0.15 + 0.25 + 0.1 + 0.2).toFixed(3));
+    const expectedNetScoreLatency = Number((0.1 + 0.2 + 0.15 + 0.25 + 0.1 + 0.3 + 0.2).toFixed(3));
     expect(scores.NetScoreLatency).toBe(expectedNetScoreLatency);
   });
 

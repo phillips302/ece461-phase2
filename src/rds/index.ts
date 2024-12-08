@@ -17,8 +17,6 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-//reuired, name,id , version, make upload_date DEFAULT
-
 export async function storePackage(newPackage: Package, scores: PackageRating): Promise<string | null> {
     console.log(`Storing package ${newPackage.metadata.ID}`);
     let returnString = "";
@@ -128,7 +126,6 @@ export async function readPackage(packageId: string): Promise<Package | null> {
 
 export async function readAllPackages(): Promise<Package[] | null> {
     try {
-        // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages';
         const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText);
 
@@ -214,7 +211,6 @@ export async function readPackageRating(packageId: string): Promise<PackageRatin
 export async function deleteAllPackages(): Promise<string | null> {
     console.log('Deleting all packages');
     try {
-        // **Delete Data Example**
         const deleteText = 'DELETE FROM packages';
         const deleteResult = await pool.query(deleteText);
         console.log('Deleted:', deleteResult);
