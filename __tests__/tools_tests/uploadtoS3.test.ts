@@ -63,5 +63,30 @@ describe("S3 Utility Functions", () => {
             // Verify the return value of the uploadToS3 function
             expect(result).toBeNull();
         });
+
+        it("should fail to read data from S3", async () => {
+            // Setup mock response for the send method
+            mockSend.mockResolvedValueOnce({
+                $metadata: { httpStatusCode: 200 }
+            });
+
+            // Call the function being tested
+            const result = await readFromS3(key);
+
+            // Verify that PutObjectCommand was instantiated with the correct parameters
+            expect(GetObjectCommand).toHaveBeenCalledWith({
+                Bucket: bucketName,
+                Key: key
+            });
+
+            // // Ensure the send method was called
+            // expect(mockSend).toHaveBeenCalled();
+
+            // Check that logMessage was called with the expected success message
+            expect(mockLogMessage).toHaveBeenCalledWith("INFO", `File @ ${key} found in s3.`);
+
+            // Verify the return value of the uploadToS3 function
+            expect(result).toBe(undefined);
+        });
     });
 });
