@@ -21,7 +21,7 @@ const corsOptions = {
   origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
   optionsSuccessStatus: 200
 };
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Set a higher limit for the request body size
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
