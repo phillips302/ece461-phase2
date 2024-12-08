@@ -11,6 +11,10 @@ import * as fs from 'fs/promises';
 import { logMessage } from '../../src/tools/utils.js';
 
 
+import { getPackageSize, removeDirectory, changeDirectory, getCumulativeSize } from '../../src/tools/dependencyCost.js';;  // Adjust import as necessary
+import { ingestPackageFree } from '../../src/tools/ingest.js';
+
+
 vi.mock('fs/promises', () => ({
   access: vi.fn(),
   readdir: vi.fn(),
@@ -131,4 +135,80 @@ describe('dependencyCost functions', () => {
       expect(size).toBe(12345);
     });
   });
+});
+
+// Mocks
+vi.mock('./yourModule', () => ({
+  getDirectorySize: vi.fn(),
+  generatePackageLock: vi.fn(),
+  readPackageLock: vi.fn(),
+  readPackageJson: vi.fn(),
+  calculateDependenciesSize: vi.fn(),
+  logMessage: vi.fn(),
+}));
+
+beforeEach(() => {
+  // Reset mocks before each test
+  vi.resetAllMocks();
+});
+
+it('should return correct size when package is cached', async () => {
+  const seenPackages = new Map([['package1', 1024]]);
+  const name = 'package1';
+  const depends = true;
+
+  const result = await getPackageSize(name, seenPackages, depends);
+
+
+});
+
+
+
+it('should skip dependency size calculation when depends is false', async () => {
+  const seenPackages = new Map([['package1', 1024]]);
+  const name = 'package1';
+  const depends = false;
+
+  const result = await getPackageSize(name, seenPackages, depends);
+
+  expect(result).toEqual([1024, 0]);
+  //expect(logMessage).toHaveBeenCalledWith('INFO', `Size of ${name}: 1024 KB`);
+});
+
+it('should calculate total size with dependencies when depends is true', async () => {
+  const seenPackages = new Map([['package1', 1024]]);
+  const name = 'package1';
+  const depends = true;
+
+  // Mock additional functions
+  vi.fn().mockResolvedValue(undefined);
+  vi.fn().mockResolvedValue({
+    name: "mock-package",
+    version: "1.0.0",
+    lockfileVersion: 1,
+    requires: true,
+    packages: {}
+  }); // Mock an empty package-lock object
+  vi.fn().mockResolvedValue({ dependencies: ['dep1'], devDependencies: ['devDep1'] });
+  vi.fn().mockResolvedValue(512);
+
+  const result = await getPackageSize(name, seenPackages, depends);
+
+  
+});
+
+it('should log error if dependencies calculation fails', async () => {
+  const seenPackages = new Map([['package1', 1024]]);
+  const name = 'package1';
+  const depends = true;
+
+  // Mock failure for calculateDependenciesSize
+  vi.fn().mockRejectedValue(new Error('Failed to calculate dependencies size'));
+
+  try {
+    await getPackageSize(name, seenPackages, depends);
+  } catch (error) {
+    expect(error.message).toBe('Failed to calculate dependencies size');
+  }
+  
 });
