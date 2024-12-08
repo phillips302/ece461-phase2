@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 
 try {
-    exec('npx vitest run --config vitest.backend.config.ts --coverage', (error, stdout, stderr) => {
+    exec('npx vitest run --coverage', (error, stdout, stderr) => {
         let totalTests = '0';
         let passedTests = '0';
         let coverage = '0';

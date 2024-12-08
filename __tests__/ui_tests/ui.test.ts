@@ -35,6 +35,23 @@ describe('UI Tests for React App', () => {
     expect(title).to.equal('Rate the Crate'); // Replace with actual title
   });
 
+  it('should clear the packages', async () => {
+    const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
+  
+    await deleteButton.click();
+    await driver.sleep(100);
+
+    const submitButton = await driver.findElements(By.css('.DeleteButtons'));
+    await submitButton[0].click();
+    await driver.sleep(100);
+
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+
+    const packageList = await driver.findElements(By.css('.lightBlueBox'));
+    expect(packageList.length).toBe(0); // Check that the list is empty
+  });
+
   it('should toggle search bars', async () => {
     // Locate the toggle switch
     const toggle = await driver.findElement(By.css('.switch input[type="checkbox"]'));
@@ -265,21 +282,21 @@ describe('UI Tests for React App', () => {
     expect(resultItems.length).toBeGreaterThanOrEqual(2);
   });
 
-  // it('should handle delete functionality', async () => {
-  //   const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
+  it('should handle delete functionality', async () => {
+    const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
   
-  //   await deleteButton.click();
-  //   await driver.sleep(100);
+    await deleteButton.click();
+    await driver.sleep(100);
 
-  //   const submitButton = await driver.findElements(By.css('.DeleteButtons'));
-  //   await submitButton[0].click();
-  //   await driver.sleep(100);
+    const submitButton = await driver.findElements(By.css('.DeleteButtons'));
+    await submitButton[0].click();
+    await driver.sleep(100);
 
-  //   const closeButton = await driver.findElement(By.css('.closeButton'));
-  //   await closeButton.click();
+    // const closeButton = await driver.findElement(By.css('.closeButton'));
+    // await closeButton.click();
 
-  //   const packageList = await driver.findElements(By.css('.lightBlueBox'));
-  //   expect(packageList.length).toBe(0); // Check that the list is empty
-  // });
+    const packageList = await driver.findElements(By.css('.lightBlueBox'));
+    expect(packageList.length).toBe(0); // Check that the list is empty
+  });
 });
 

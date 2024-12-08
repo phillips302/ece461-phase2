@@ -12,10 +12,8 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc",
-    "test": "npm run test:backend",
+    "test": "npx vitest run --coverage",
     "selenium-test": "nyc selenium",
-    "test:frontend": "npx vitest run --config vitest.frontend.config.ts --coverage",
-    "test:backend": "npx vitest run --config vitest.backend.config.ts --coverage",
     "clean:logs": "node dist/clearLog.js",
     "start": "node dist/app.js"
   },
