@@ -47,6 +47,7 @@ describe('UI Tests for React App', () => {
 
     const closeButton = await driver.findElement(By.css('.closeButton'));
     await closeButton.click();
+    await driver.sleep(100);
 
     const packageList = await driver.findElements(By.css('.lightBlueBox'));
     expect(packageList.length).toBe(0); // Check that the list is empty
@@ -292,8 +293,9 @@ describe('UI Tests for React App', () => {
     await submitButton[0].click();
     await driver.sleep(100);
 
-    // const closeButton = await driver.findElement(By.css('.closeButton'));
-    // await closeButton.click();
+    const closeButton = await driver.findElement(By.css('.closeButton'));
+    await closeButton.click();
+    await driver.sleep(100);
 
     const packageList = await driver.findElements(By.css('.lightBlueBox'));
     expect(packageList.length).toBe(0); // Check that the list is empty
