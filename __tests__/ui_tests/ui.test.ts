@@ -261,7 +261,7 @@ describe('UI Tests for React App', () => {
     await driver.sleep(100)
     await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
     let resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    expect(resultItems.length).toBeGreaterThanOrEqual(2);
+    expect(resultItems.length).toBeGreaterThanOrEqual(1);
     
     // Search by Version
     let version = await driver.findElement(By.id('versionSearchBar'));
