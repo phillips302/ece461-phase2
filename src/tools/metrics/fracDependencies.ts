@@ -21,7 +21,7 @@ type GraphQLResponse = {
  * @param name - The name of the repository.h * @returns A promise that resolves to a list of dependencies. *
  * @throws Will log an error message if the request fails and return an empty array. * * @example * ```typescript * const contributors = await fetchRepoContributors('octocat', 'Hello-World'); * console.log(contributors); * ```
  */
-async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse> {
+export async function fetchDependencies(owner: string, name: string): Promise<DependencyResponse> {
     const query = `
         query($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {

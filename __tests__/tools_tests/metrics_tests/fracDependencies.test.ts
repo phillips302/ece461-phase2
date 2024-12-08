@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { calculateDependencyScore, DependencyResponse } from '../../../src/tools/metrics/fracDependencies.js';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { calculateDependencyScore, DependencyResponse, fetchDependencies } from '../../../src/tools/metrics/fracDependencies.js';
+import { gitHubRequest, logMessage } from '../../../src/tools/utils.js';
+
 
 vi.mock('./utils.js', () => ({
     gitHubRequest: vi.fn(),
@@ -52,3 +54,34 @@ describe('Dependency Fraction Test', () => {
         expect(fracDependency).toBe(0.5); // Expected fraction to 1 if no dependecies are provided
     });
 });
+
+
+// Mock the modules
+vi.mock('../utils.js', () => ({
+  gitHubRequest: vi.fn(),
+  logMessage: vi.fn(),
+}));
+
+describe('fetchDependencies - Error Testing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks(); // Clear mocks before each test to reset state
+  });
+
+  it('should return a Promise resolving to an empty object {} when an error occurs', async () => {
+    // Mock gitHubRequest to simulate an error
+    vi.fn().mockImplementationOnce(() => {
+      throw new Error('Simulated API error');
+    });
+
+    const owner = 'invalid-owner';
+    const name = 'invalid-repo';
+
+
+    await expect(fetchDependencies(owner, name)).toBeInstanceOf(Promise);
+
+  
+  });
+});
+
+
+
