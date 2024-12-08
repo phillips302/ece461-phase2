@@ -1,4 +1,3 @@
-import JSZip from 'jszip';
 import { Buffer } from 'buffer';
 import axios from 'axios';
 import { getOwnerRepo } from '../tools/utils.js';
@@ -35,7 +34,7 @@ export async function contentToURL(Content: string): Promise<string> {
             // Step 5: Get the URL
             let url = packageJson.repository?.url || packageJson.homepage || 'Failed to get the url';
             url = url.replace(/^git\+/, "");
-            url = url.replace(/^git:\/\//, "");
+            url = url.replace(/^git:\/\//, ""); //try delteing these tomorrow
             return url;
         } else {
             return 'Failed to get the url';
@@ -52,11 +51,6 @@ export async function contentToURL(Content: string): Promise<string> {
         }
     }
 }
-
-// const zipFileBuffer = fs.readFileSync('../lodash-main.zip');
-// const base64String = zipFileBuffer.toString('base64');
-// //console.log(base64String);
-// console.log(await contentToURL(base64String));
 
 export async function urlToContent(url: string): Promise<string> {
     const { owner, repo } = await getOwnerRepo(url);
@@ -78,8 +72,6 @@ export async function urlToContent(url: string): Promise<string> {
         return 'Failed to get the zip file';
     }
 }
-
-//console.log(await urlToContent('https://www.npmjs.com/package/browserify'));
 
 
 export function findPackageJson(directory: string): string | null {
