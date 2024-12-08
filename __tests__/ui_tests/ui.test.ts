@@ -45,7 +45,7 @@ describe('UI Tests for React App', () => {
     await submitButton[0].click();
     await driver.sleep(100);
 
-    const closeButton = await driver.findElement(By.css('.closeButton'));
+    const closeButton = await driver.wait(until.elementLocated(By.css('.closeButton')), 5000);
     await closeButton.click();
     await driver.sleep(100);
 
@@ -293,7 +293,7 @@ describe('UI Tests for React App', () => {
     await submitButton[0].click();
     await driver.sleep(100);
 
-    const closeButton = await driver.findElement(By.css('.closeButton'));
+    const closeButton = await driver.wait(until.elementLocated(By.css('.closeButton')), 5000);
     await closeButton.click();
     await driver.sleep(100);
 
