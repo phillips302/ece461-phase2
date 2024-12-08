@@ -203,15 +203,14 @@ app.post('/package/:id', async (req: Request, res: Response) => {
   }
 
   let scores = await getScores(owner, repo, req.body.URL);
-  const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
+  // const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
   
-  for (const metric of nonLatencyScores) {
-    const numValue = Number(metric);
-    console.log(numValue);
-    if (numValue < 0.5) {
-      return res.status(424).send("Package is not uploaded due to the disqualified rating.");
-    }
-  }
+  // for (const metric of nonLatencyScores) {
+  //   const numValue = Number(metric);
+  //   if (numValue < 0.5) {
+  //     return res.status(424).send("Package is not uploaded due to the disqualified rating.");
+  //   }
+  // }
 
   let newPackage: Package = { metadata: { Name: pkg.metadata.Name, ID: uuidv4(), Version: req.body.metadata.Version }, data: req.body.data };
 
@@ -243,6 +242,8 @@ app.post('/package', async (req: Request, res: Response) => {
     return res.status(400).send(validation);
   }
 
+  let uploadByURL = false;
+
   if (req.body.Content) {
     console.log("Upload by content");
     const url = await contentToURL(req.body.Content);
@@ -252,6 +253,7 @@ app.post('/package', async (req: Request, res: Response) => {
     req.body.URL = url;
     console.log("URL from content: ", url);
   } else {
+    uploadByURL = true;
     const content = await urlToContent(req.body.URL);
     if (content == 'Failed to get the zip file') {
       return res.status(500).send("Failed to retrieve zip file from URL.");
@@ -278,14 +280,16 @@ app.post('/package', async (req: Request, res: Response) => {
   let newPackage: Package = { metadata: { Name: req.body.Name || repo, ID: uuidv4(), Version: version }, data: req.body };
 
   let scores = await getScores(owner, repo, req.body.URL);
-  const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
-  console.log(nonLatencyScores);
 
-  for (const metric of nonLatencyScores) {
-    const numValue = Number(metric);
-    console.log(numValue);
-    if (numValue < 0.5) {
-      return res.status(424).send("Package is not uploaded due to the disqualified rating.");
+  if (uploadByURL) {
+    const nonLatencyScores = [scores.RampUp, scores.Correctness, scores.BusFactor, scores.ResponsiveMaintainer, scores.PullRequest, scores.LicenseScore, scores.GoodPinningPractice, scores.NetScore];
+    console.log(nonLatencyScores);
+
+    for (const metric of nonLatencyScores) {
+      const numValue = Number(metric);
+      if (numValue < 0.5) {
+        return res.status(424).send("Package is not uploaded due to the disqualified rating.");
+      }
     }
   }
 

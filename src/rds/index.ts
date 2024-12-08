@@ -4,9 +4,6 @@ import { Package, PackageRating } from '../apis/types.js';
 import console from 'console';
 import process from 'process';
 import { uploadToS3, readFromS3 } from '../tools/uploadToS3.js';
-import { homedir } from 'os';
-import fs from 'fs';
-import path from 'path';
 
 dotenv.config();
 
@@ -58,7 +55,6 @@ export async function storePackage(newPackage: Package, scores: PackageRating): 
             return null;
         }
         
-        console.log('Inserted Package, Affected Rows:', (result as any).affectedRows);
         returnString = 'Package data stored successfully in RDS.';
     } catch (err) {
         console.error('Database operation failed:', err);
@@ -99,8 +95,6 @@ export async function readPackage(packageId: string): Promise<Package | null> {
             return null;
         }
 
-        console.log('Queried package:', rows[0]);
-
         data = {
             metadata: {
                 Name: rows[0].package_name,
@@ -137,7 +131,6 @@ export async function readAllPackages(): Promise<Package[] | null> {
         // **Read Data Example**
         const selectText = 'SELECT package_id, package_name, version, url, debloat FROM packages';
         const [rows] = await pool.query<mysql.RowDataPacket[]>(selectText);
-        console.log('Queried:', rows);
 
         if (rows.length === 0) {
             console.log('No packages found in the database');
