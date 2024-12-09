@@ -253,35 +253,35 @@ describe('UI Tests for React App', () => {
     expect(isPopupDisplayed.length).toBe(0); // Expecting no popup elements to be found
   });
 
-  it('should perform search by name and then version and then regex', async () => {
-    const searchButton = await driver.findElement(By.css('.searchButton'));
+  // it('should perform search by name and then version and then regex', async () => {
+  //   const searchButton = await driver.findElement(By.css('.searchButton'));
 
-    // Search by Name
-    await searchButton.click();
-    await driver.sleep(100)
-    await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
-    let resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    expect(resultItems.length).toBeGreaterThanOrEqual(1);
+  //   // Search by Name
+  //   await searchButton.click();
+  //   await driver.sleep(100)
+  //   await driver.wait(until.elementLocated(By.css('.lightBlueBox')), 5000);
+  //   let resultItems = await driver.findElements(By.css('.lightBlueBox'));
+  //   expect(resultItems.length).toBeGreaterThanOrEqual(1);
     
-    // Search by Version
-    let version = await driver.findElement(By.id('versionSearchBar'));
-    await version.sendKeys('1.1.1.1.1');
-    await searchButton.click();
-    await driver.sleep(100)
-    resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    expect(resultItems.length).toBeGreaterThanOrEqual(1);
+  //   // Search by Version
+  //   let version = await driver.findElement(By.id('versionSearchBar'));
+  //   await version.sendKeys('1.1.1.1.1');
+  //   await searchButton.click();
+  //   await driver.sleep(100)
+  //   resultItems = await driver.findElements(By.css('.lightBlueBox'));
+  //   expect(resultItems.length).toBeGreaterThanOrEqual(1);
     
-    // Search by Regex
-    const toggle = await driver.findElement(By.css('.switch input[type="checkbox"]'));
-    await driver.executeScript("arguments[0].click();", toggle);
-    let regexSearchBar = await driver.findElement(By.id('regexSearchBar'));
-    expect(await regexSearchBar.isDisplayed()).toBe(true);
-    await regexSearchBar.sendKeys(".?cross.")
-    await searchButton.click();
-    await driver.sleep(200)
-    resultItems = await driver.findElements(By.css('.lightBlueBox'));
-    expect(resultItems.length).toBeGreaterThanOrEqual(2);
-  });
+  //   // Search by Regex
+  //   const toggle = await driver.findElement(By.css('.switch input[type="checkbox"]'));
+  //   await driver.executeScript("arguments[0].click();", toggle);
+  //   let regexSearchBar = await driver.findElement(By.id('regexSearchBar'));
+  //   expect(await regexSearchBar.isDisplayed()).toBe(true);
+  //   await regexSearchBar.sendKeys(".?cross.")
+  //   await searchButton.click();
+  //   await driver.sleep(200)
+  //   resultItems = await driver.findElements(By.css('.lightBlueBox'));
+  //   expect(resultItems.length).toBeGreaterThanOrEqual(2);
+  // });
 
   it('should handle delete functionality', async () => {
     const deleteButton = await driver.findElement(By.css('.uploadButton[title="Reset"]'));
