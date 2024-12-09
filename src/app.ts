@@ -18,10 +18,10 @@ const app: Application = express();
 const port = 8081;
 
 const corsOptions = {
-  origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+   origin: 'https://prod.d1k3s8at0zz65i.amplifyapp.com',
+   optionsSuccessStatus: 200
+ };
+ app.use(cors(corsOptions));
 
 // Set a higher limit for the request body size
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
@@ -263,7 +263,7 @@ app.post('/package', async (req: Request, res: Response) => {
 
   const { owner, repo } = await getOwnerRepo(req.body.URL);
   if (!owner || !repo) {
-    return res.status(500).send("Failed to retrieve owner and repo.");
+    return res.status(500).send("Failed to retrieve owner and repo (Invalid URL)");
   }
   
   let version = await fetchVersion(owner, repo);
@@ -343,7 +343,7 @@ app.get('/package/:id/cost', async (req: Request, res: Response) => {
   }
 
   if (req.query.dependency == 'true') {
-    [ pkgCost[pkg.metadata.ID].standaloneCost, pkgCost[pkg.metadata.ID].totalCost] = await getCumulativeSize(pkg.data.URL, true);
+    [ pkgCost[pkg.metadata.ID].standaloneCost, pkgCost[pkg.metadata.ID].totalCost] = await getCumulativeSize(pkg.data.URL, false); //make false as to not crash instances
   } else {
     [ pkgCost[pkg.metadata.ID].totalCost, pkgCost[pkg.metadata.ID].standaloneCost] = await getCumulativeSize(pkg.data.URL, false);
   }
@@ -368,7 +368,6 @@ app.get('/tracks', (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  //console.log(`Express is listening exposed at: http://ec2-18-118-106-80.us-east-2.compute.amazonaws.com:${port}`);
   console.log(`Express is listening at https://api.ratethecratebackend.com/`);
 });
 

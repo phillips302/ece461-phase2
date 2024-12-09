@@ -9,6 +9,7 @@ import { readPackageLock,
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';
 import { logMessage } from '../../src/tools/utils.js';
+import { getPackageSize } from '../../src/tools/dependencyCost.js';;  // Adjust import as necessary
 
 
 vi.mock('fs/promises', () => ({
@@ -18,6 +19,15 @@ vi.mock('fs/promises', () => ({
   readFile: vi.fn(),
   writeFile: vi.fn(),
   mkdir: vi.fn(),
+}));
+
+vi.mock('./yourModule', () => ({
+  getDirectorySize: vi.fn(),
+  generatePackageLock: vi.fn(),
+  readPackageLock: vi.fn(),
+  readPackageJson: vi.fn(),
+  calculateDependenciesSize: vi.fn(),
+  logMessage: vi.fn(),
 }));
 
 vi.mock('child_process', () => ({
@@ -130,5 +140,30 @@ describe('dependencyCost functions', () => {
       const size = await getFileSize('http://example.com/file.tgz');
       expect(size).toBe(12345);
     });
+  });
+
+  it('should skip dependency size calculation when depends is false', async () => {
+    const seenPackages = new Map([['package1', 1024]]);
+    const name = 'package1';
+    const depends = false;
+  
+    const result = await getPackageSize(name, seenPackages, depends);
+  
+    expect(result).toEqual([1024, 0]);
+  });
+  
+  it('should log error if dependencies calculation fails', async () => {
+    const seenPackages = new Map([['package1', 1024]]);
+    const name = 'package1';
+    const depends = true;
+  
+    // Mock failure for calculateDependenciesSize
+    vi.fn().mockRejectedValue(new Error('Failed to calculate dependencies size'));
+  
+    try {
+      await getPackageSize(name, seenPackages, depends);
+    } catch (error) {
+      expect(error.message).toBe('Failed to calculate dependencies size');
+    }
   });
 });

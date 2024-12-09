@@ -143,8 +143,8 @@ body {
   margin-right: 10px;
   position: relative;
   display: inline-block;
-  width: 42.5px; /* Increased by a quarter from 34px */
-  height: 25px;  /* Increased by a quarter from 20px */
+  width: 42.5px; /* Scaled-up size */
+  height: 25px;
 }
 
 .switch input {
@@ -168,13 +168,18 @@ body {
 .slider:before {
   position: absolute;
   content: "";
-  height: 15px; /* Increased by a quarter from 12px */
-  width: 15px;  /* Increased by a quarter from 12px */
+  height: 15px;
+  width: 15px;
   border-radius: 50%;
-  left: 5px;  /* Increased by a quarter from 4px */
-  bottom: 5px; /* Increased by a quarter from 4px */
+  left: 5px;
+  bottom: 5px;
   background-color: white;
   transition: 0.4s;
+}
+
+input:focus-visible + .slider {
+  box-shadow: 0 0 0 1px white; /* White outline */
+  outline: none; /* Remove default focus outline */
 }
 
 input:checked + .slider {
@@ -182,7 +187,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(17.5px); /* Increased by a quarter from 14px */
+  transform: translateX(17.5px); /* Adjusted for new dimensions */
 }
 
 .App {

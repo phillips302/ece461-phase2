@@ -43,8 +43,8 @@ export async function getScores(owner: string, repo: string, url: string): Promi
   const prFractionLatency = latencies[6];
 
   // calculate the net score and latency
-  const netScore = Number(((0.125 * rampUp + 0.125 * correctness + 0.25 * busFactor + 0.25 * responsiveMaintainer + 0.125 * prFraction) * license).toFixed(3));
-  const netScoreLatency = Number((rampUpLatency + correctnessLatency + busFactorLatency + responsiveMaintainerLatency + licenseLatency + prFractionLatency).toFixed(3));
+  const netScore = Number(((0.125 * rampUp + 0.125 * correctness + 0.25 * busFactor + 0.25 * responsiveMaintainer + 0.125 * prFraction + 0.125 * fractionDependencies) * license).toFixed(3));
+  const netScoreLatency = Number((rampUpLatency + correctnessLatency + busFactorLatency + responsiveMaintainerLatency + licenseLatency + prFractionLatency + fractionDependenciesLatency).toFixed(3));
 
   const rating: PackageRating = {
     BusFactor: busFactor,

@@ -366,7 +366,7 @@ const App: React.FC = () => {
       <main>
         <label htmlFor="Searching">
         {/* Toggle Switch */}
-        <label htmlFor="toggleSearchBars" className="switch">
+        <label htmlFor="toggleSearchBars" className="switch" >
           <input
             id="toggleSearchBars"
             type="checkbox"
@@ -452,7 +452,7 @@ const App: React.FC = () => {
         </button>
   
         {/* Package List */}
-        <section className="darkBlueBox">
+        <section className="darkBlueBox" aria-labelledby="package-list-title">
           <ul>
             {packages.map((product) => (
               <li key={product.ID}>
